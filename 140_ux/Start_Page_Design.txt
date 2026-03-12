@@ -126,12 +126,23 @@ never shown. The check flow begins immediately.
   This section is only visible on the start page. It disappears when
   browsing begins.
 
-  2.3 (REMOVED — PRIMARY ACTION CARD)
-  ─────────────────────────────────────
-  The "Safe browsing starts here" card with "Paste from clipboard" button
-  has been removed in v2.0. The omnibox is now the sole entry point.
-  Users can paste directly into the omnibox field using standard iOS
-  paste gestures.
+  2.3 VERDICT STATS CARD
+  ───────────────────────
+  Below the app identity, a compact card shows verdict statistics when
+  the user has history entries. It provides "proof of work" — showing
+  that LinkLook is actively protecting the user.
+
+  Content:
+  - Header: total links checked (all-time)
+  - Verdict pills: OK / Info / Warn / Block counts (color-coded)
+  - Weekly breakdown: last 4 weeks with mini verdict bars (only weeks
+    with activity are shown)
+
+  Rules:
+  - Only visible when history is enabled and at least 1 entry exists
+  - Not tappable — informational only
+  - Disappears when browsing begins (same as app identity)
+  - If history is cleared or disabled, the card disappears
 
   2.4 RECENT SITES — REMOVED FROM HOME SCREEN
   ──────────────────────────────────────────────
@@ -179,7 +190,10 @@ never shown. The check flow begins immediately.
     `arrow.up.forward.app` for all browsers. The button label reads
     "Open in {browser name}" (e.g. "Open in Chrome"). The label
     identifies the browser, the icon signals "open in another app."
-    See CLAUDE.md rule 18 for the full spec.
+    When LinkLook is selected as the preferred browser (the default),
+    this button is hidden entirely — the user stays in LinkLook's
+    built-in browser with no redirect option shown.
+    See CLAUDE.md rules 9 and 18 for the full spec.
 
   Keyboard behavior: when the keyboard appears (user taps the omnibox
   to type a new URL while browsing), the browser toolbar shifts up to

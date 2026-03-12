@@ -78,10 +78,12 @@ Result screen rules (apply to all verdict screens):
 - link is safe — user continues with minimal friction
 - user barely notices LinkLook on the fast trusted path
 
-2. Inform flow
+2. Inform flow ("Heads Up")
 - link has something worth noting but risk is low
 - brief explanation shown
-- user proceeds easily, no heavy friction
+- primary action: "Go to Site" (proceed to page)
+- secondary action: "Go Back" (return to start page)
+- user has an explicit choice, same pattern as Warn flow
 
 3. Warn flow (suspicious / uncertain)
 - clear but calm warning
@@ -119,16 +121,22 @@ Result screen rules (apply to all verdict screens):
 - redirect sends the link to another browser
 - wording and placement must make clear this does not mean LinkLook considers
   the destination safe (MDL-087)
+- Safari redirect: iOS does not allow apps to force-open Safari when another
+  browser is the system default. LinkLook uses SFSafariViewController (Safari's
+  engine, presented in-app) to guarantee Safari. See CLAUDE.md rule 10.
 
 10. Settings flow (MDL-104, MDL-105)
 
 In-app settings (Settings tab in tab bar):
-- user picks which browser safe links should open in (default: Safari).
+- user picks which browser safe links should open in (default: LinkLook).
+  "LinkLook" is always the first option — it means "stay in LinkLook's
+  built-in browser, no redirect." When LinkLook is selected, the redirect
+  button is hidden from the browser toolbar entirely.
   The browser list MUST show all installed browsers on the device, not just
   Safari and Default. Use LSApplicationQueriesSchemes in Info.plist to declare
   supported URL schemes (googlechromes, firefox, brave, microsoft-edge, opera,
   ddgQuickLink, arc) and check availability at runtime with canOpenURL().
-  Only show browsers that are actually installed
+  Only show browsers that are actually installed. See CLAUDE.md rule 9.
 - user picks safe-link display mode (MDL-109, "always show result" by default):
   — "always show result": safe result screen shown briefly for reassurance,
     then page loads in minimal browser
@@ -144,7 +152,7 @@ In-app settings (Settings tab in tab bar):
   — when enabled, anonymous domain-level signals may be submitted
   — toggle is off by default because data leaves the device
 - foundation donation tier shown read-only
-- LinkLook itself is never shown as a redirect target
+- LinkLook is always the first browser option (means "stay in built-in browser")
 - preferences stored on-device, respected by all redirect paths
   (result screen, in-app browser toolbar)
 - if the chosen browser is later removed, LinkLook falls back to Safari
