@@ -20,7 +20,7 @@ Layout (top to bottom):
 - omnibox: back arrow (when applicable), unified address/search field
   ("Enter website or search") — browser-style, establishes LinkLook as a
   real browser. No settings gear in the top bar (accessible via tab bar).
-- app identity: "LinkLook" heading, "A safety-driven browser" tagline —
+- app identity: "LinkLook" heading + tagline (see CLAUDE.md rule 17) —
   centered, only visible on start page
 - tab bar: Home, Recent, Settings — persists across all screens
   NOTE: Recent sites are NOT shown on the Home/start page. History is only

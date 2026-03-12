@@ -435,11 +435,11 @@ MB-G7-24 | Recent sites limited to 3-5 items
 
 ID       | Title
 ---------|--------------------------------------------------------------
-MB-G7-25 | Browser toolbar shows preferred browser icon
+MB-G7-25 | Browser toolbar shows redirect button
          | When browsing, the bottom toolbar's rightmost button shows the
-         | SF Symbol icon matching the user's preferred browser choice
-         | (e.g. "safari" for Safari, "globe" for Chrome, "flame" for
-         | Firefox). Tapping it opens the current page in that browser.
+         | universal SF Symbol `arrow.up.forward.app`. Accessibility label
+         | reads "Open in {browser name}" (CLAUDE.md rule 18). Tapping it
+         | opens the current page in the user's preferred browser.
 
 --- 7H: Accessibility ---
 

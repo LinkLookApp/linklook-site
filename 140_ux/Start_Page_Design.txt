@@ -4,8 +4,9 @@ Date: 2026-03-12
 Origin: Founder mockup, documented via Cowork session
 References: Core_User_Flows.txt (Flow 0), UX_Principles.txt,
             Security_Warning_User_Experience.txt
-Visual reference: Start_Page_Mockup.html (in this folder — updated for v2.0,
-                  shows both idle and browsing states side by side)
+Visual reference: Start_Page_Mockup.html (in this folder — illustrative only,
+                  shows both idle and browsing states side by side. Exact
+                  values are authoritative in CLAUDE.md, not in the mockup.)
 
 Changelog v2.0 (2026-03-12):
 - Omnibox replaces paste-only model: one field for URLs, domains, and search
@@ -77,17 +78,17 @@ never shown. The check flow begins immediately.
     back/forward move to the bottom browser toolbar.
   - Omnibox field — placeholder text: "Enter website or search"
     Keyboard type: .webSearch (gives the user a space bar for search text).
-    Font size: 20pt minimum. LinkLook's primary audience includes elderly
-    users — the text in the omnibox must be large enough to read comfortably
-    without glasses. The field must also support Dynamic Type scaling.
+    Font size: large enough for elderly users to read comfortably without
+    glasses. Exact minimum defined in CLAUDE.md (rule 14). The field must
+    also support Dynamic Type scaling.
     Accepts URLs, domain names, and search queries (see §2.1a below).
   - Go button (→) — a green circular button at the right end of the
     omnibox field. Tapping it submits the current omnibox input (same as
     pressing Return on the keyboard). Visible whenever the omnibox has
     text. Hidden when the omnibox is empty (placeholder state).
-    SF Symbol: arrow.right, color: white on green (#4CAF76), size: 28pt
-    touch target. Provides an explicit tap target for users who may not
-    instinctively press the keyboard Return key.
+    Exact styling (SF Symbol, color, size) defined in CLAUDE.md (rule 15).
+    Provides an explicit tap target for users who may not instinctively
+    press the keyboard Return key.
   - No settings gear — settings are accessible via the tab bar only.
 
   The top bar persists across all screens. When browsing, it shows the
@@ -119,8 +120,8 @@ never shown. The check flow begins immediately.
   ─────────────────
   Centered below the top bar. Two lines of text:
   - "LinkLook" — app name, large bold text
-  - "A safety-driven browser" — tagline, smaller,
-    lighter text
+  - Tagline — smaller, lighter text. Exact wording defined in
+    CLAUDE.md (rule 17).
 
   This section is only visible on the start page. It disappears when
   browsing begins.
@@ -159,12 +160,10 @@ never shown. The check flow begins immediately.
     (3) reset the screen to the clean start page (omnibox + app identity)
     The Home button must never be a no-op. It always navigates.
   - Recent — opens the full history screen
-  - Settings — opens in-app settings. When a preferred browser has been
-    chosen in Settings, the Settings tab icon changes to show the icon
-    of that browser (e.g. Safari compass, Chrome globe, Firefox flame,
-    Brave shield) instead of the default gear icon. This gives the user
-    a persistent visual reminder of which browser they've selected.
-    If the preferred browser is "System Default", the gear icon remains.
+  - Settings — opens in-app settings. The Settings tab icon is always
+    the standard gear icon — never changes. The redirect button in the
+    browser toolbar (§2.6) uses `arrow.up.forward.app` with the browser
+    name as label. See CLAUDE.md rule 18.
 
   The tab bar persists across all screens.
 
@@ -176,14 +175,17 @@ never shown. The check flow begins immediately.
   - Back (chevron.left) — go back in web history, or exit browsing
   - Forward (chevron.right) — go forward in web history
   - Reload/Stop (arrow.clockwise / xmark) — reload page or stop loading
-  - Open in preferred browser — shows the SF Symbol icon of the user's
-    chosen browser (e.g. "safari" for Safari, "globe" for Chrome,
-    "flame" for Firefox, "shield" for Brave). Tapping opens the current
-    page in that browser.
+  - Open in preferred browser — uses the universal SF Symbol
+    `arrow.up.forward.app` for all browsers. The button label reads
+    "Open in {browser name}" (e.g. "Open in Chrome"). The label
+    identifies the browser, the icon signals "open in another app."
+    See CLAUDE.md rule 18 for the full spec.
 
-  The preferred browser icon makes it immediately clear where the link
-  will be redirected to, and acts as a visual reminder of the user's
-  browser preference from Settings.
+  Keyboard behavior: when the keyboard appears (user taps the omnibox
+  to type a new URL while browsing), the browser toolbar shifts up to
+  sit above the keyboard. The WebView shrinks to accommodate. When the
+  keyboard dismisses, the toolbar returns to its original position.
+  This ensures the toolbar is always accessible.
 
 ================================================================================
 3. VISUAL STYLE
@@ -227,10 +229,8 @@ never shown. The check flow begins immediately.
 
   Top bar: Go      arrow.right              →           white on    28pt    Circular green button
                                                         #4CAF76     touch   at right end of omnibox.
-                                                                    target  Visible only when
-                                                                            omnibox has text input.
-                                                                            Submits input (same as
-                                                                            keyboard Return).
+                                                                    target  See CLAUDE.md rule 15
+                                                                            for exact spec.
 
   Toolbar: back    chevron.left             ←           system      44pt    Bottom bar during
                                                                     frame   browsing
@@ -244,10 +244,10 @@ never shown. The check flow begins immediately.
   Toolbar: stop    xmark                    ✕           system      44pt    Shown while page is
                                                                     frame   loading
 
-  Toolbar: open    (varies by browser)      —           system      44pt    Shows the icon of the
-                   safari / globe /                                 frame   user's preferred browser.
-                   flame / shield /                                         See PreferredBrowser
-                   lock.shield                                              iconName mapping.
+  Toolbar: open    arrow.up.forward.app     —           system      44pt    Universal "open in app"
+                                                                    frame   icon for all browsers.
+                                                                            Label: "Open in {name}".
+                                                                            See CLAUDE.md rule 18.
 
   Tab: Home        house                    ⌂           #4CAF76     22pt    Active state: #4CAF76
                                                         (active)            Inactive: #9E9E9E
@@ -257,15 +257,11 @@ never shown. The check flow begins immediately.
   Tab: Recent      clock.arrow.circlepath   ◷           same        22pt    Shows full history
                                                                             screen
 
-  Tab: Settings    gearshape                ⚙           same        22pt    Default icon. When a
-                   (or browser icon)                                         preferred browser is
-                                                                            chosen in Settings,
-                                                                            shows that browser's
-                                                                            icon instead (e.g.
-                                                                            safari, globe, flame,
-                                                                            shield). Reverts to
-                                                                            gearshape if set to
-                                                                            "System Default".
+  Tab: Settings    gearshape                ⚙           same        22pt    Always the gear icon.
+                                                                            Never changes to a
+                                                                            browser icon. Settings
+                                                                            accessible only via
+                                                                            tab bar (not top bar).
 
   All icons use SF Symbols (Apple system icon library, available from iOS 13+).
   Rendering mode: monochrome. Weight: regular (matching body text weight).
@@ -288,7 +284,8 @@ never shown. The check flow begins immediately.
   - Toolbar: forward:      "Forward"
   - Toolbar: reload:       "Reload"
   - Toolbar: stop:         "Stop loading"
-  - Toolbar: open:         "Open in {browser name}" (e.g. "Open in Safari")
+  - Toolbar: open:         "Open in {browser name}" (e.g. "Open in Chrome")
+                           For System Default: "Open in Browser"
 
   Accessibility:
   - All text must pass WCAG AA contrast ratio

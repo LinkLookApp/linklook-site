@@ -13,6 +13,9 @@ This document defines what the user sees while LinkLook is checking a link.
 The checking state bridges the gap between user input and the verdict screen.
 It must feel active, protective, and honest — never fake or stuck.
 
+Authoritative rule summary: CLAUDE.md rule 13. This doc provides the full
+spec; CLAUDE.md provides the enforceable rule.
+
 ================================================================================
 2. CORE PRINCIPLE
 ================================================================================
@@ -126,8 +129,8 @@ Rules:
 
   Style:
   - Background: creamy white (#FAF8F4), same as start page
-  - Spinner: medium green (#4CAF76), standard iOS activity indicator
-    or a custom shield animation (calm, not aggressive)
+  - Spinner: primary green (see CLAUDE.md for exact hex), standard iOS
+    activity indicator or a custom shield animation (calm, not aggressive)
   - Primary message: dark text (#2C2C2C), 20pt, semibold
   - Secondary message: medium text (#6B6B6B), 15pt, regular
   - Protection mode label: light text (#9E9E9E), 13pt, regular
