@@ -25,6 +25,11 @@ Layout (top to bottom):
 - tab bar: Home, Recent, Settings — persists across all screens
   NOTE: Recent sites are NOT shown on the Home/start page. History is only
   accessible from the Recent tab. The Home screen stays clean and focused.
+  HOME BUTTON BEHAVIOR: Tapping Home ALWAYS navigates to the initial start
+  page. It must dismiss any active WebView, cancel any in-progress check,
+  and reset to the clean start page (omnibox + app identity). The Home
+  button must never be a no-op — it always navigates, even if the user is
+  already on the start page (in which case it clears the omnibox).
 
 Omnibox input classification:
 - Full URL (starts with http:// or https://) → use as-is
@@ -48,9 +53,22 @@ browser home page. Apple should see a genuine browser with a clear purpose.
 Full visual spec: 140_ux/Start_Page_Design.txt
 Visual reference: 140_ux/Start_Page_Mockup.html
 
+0b. Checking progress flow (all links pass through this)
+- after input classification, every link enters the checking state
+- the UI shows a spinner with time-based status messages:
+  0–2s "Checking link…", 2–5s "Still checking…", 5–8s "This is taking
+  longer than usual…"
+- no fake percentages, no technical jargon
+- protection mode shown separately: "Basic protection" (Free) or
+  "AI-enhanced protection" (Pro)
+- if no result within 8 seconds → timeout screen with Retry / Go back /
+  Open elsewhere (or Continue anyway depending on policy)
+- never auto-mark a link safe on timeout, never spin indefinitely
+- full spec: 140_ux/Checking_Progress_UX.txt
+
 1. Allow flow (transparent)
 - user taps a link
-- LinkLook checks quickly
+- LinkLook checks quickly (checking progress screen shown briefly)
 - link is safe — user continues with minimal friction
 - user barely notices LinkLook on the fast trusted path
 
@@ -150,4 +168,4 @@ Additional UX test note
 The accidental-click reassurance case should be treated as an explicit UX
 scenario. When a user taps a link impulsively or by mistake, LinkLook should
 quickly show that a safety check is in progress so the user immediately feels
-protected rather than lost.
+protected rather than lost. Full design: 140_ux/Checking_Progress_UX.txt §7.

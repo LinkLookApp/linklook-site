@@ -1,0 +1,186 @@
+LinkLook — Checking Progress UX
+Version: v1.0
+Date: 2026-03-12
+Origin: Founder specification
+References: Core_User_Flows.txt (Flows 1–6), Start_Page_Design.txt,
+            Trust_Visibility_Design.txt
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+This document defines what the user sees while LinkLook is checking a link.
+The checking state bridges the gap between user input and the verdict screen.
+It must feel active, protective, and honest — never fake or stuck.
+
+================================================================================
+2. CORE PRINCIPLE
+================================================================================
+
+The UI uses time-based status messaging with an indeterminate activity
+indicator. It must NOT show fake percentages or technical progress details.
+
+================================================================================
+3. TIMED STATUS MESSAGES
+================================================================================
+
+The checking screen shows a spinner (indeterminate activity indicator) with
+a status message that evolves over time:
+
+  Time window        Primary message              Secondary message
+  ──────────────────────────────────────────────────────────────────────────
+  0–2 seconds        "Checking link…"             "Verifying destination"
+  2–5 seconds        "Still checking…"            "Applying protection checks"
+  5–8 seconds        "This is taking longer       "Please wait"
+                      than usual…"
+
+Rules:
+  - Messages transition smoothly (fade or crossfade), not abruptly
+  - The spinner runs continuously — never pauses or resets between phases
+  - No percentage bar, no step count, no technical jargon
+  - The URL being checked is visible on screen (in the omnibox or below
+    the spinner) so the user knows what is being checked
+
+================================================================================
+4. TIMEOUT RULE
+================================================================================
+
+If no result is available within 8 seconds, LinkLook MUST end the checking
+state and show a neutral fallback screen. It must NOT spin indefinitely.
+
+  4.1 TIMEOUT MESSAGE
+
+    "We couldn't complete the check in time"
+    "Only continue if you trust this link"
+
+  4.2 TIMEOUT ACTIONS
+
+    Available actions on the timeout screen (order = visual priority):
+
+    - "Retry"             — re-run the safety check from scratch
+    - "Go back"           — return to the previous screen (start page or
+                            referring page)
+    - "Open elsewhere"    — open the URL in the preferred browser
+      OR "Continue anyway" — depending on policy and route:
+        · If the URL came via default-browser handoff → "Continue anyway"
+          (the user intended to visit this link)
+        · If the URL was entered manually in the omnibox → "Open elsewhere"
+          (safer to redirect than to load in LinkLook without a verdict)
+        · PROTECTED profile → "Continue anyway" is NOT available;
+          only "Retry" and "Go back" are shown
+
+  4.3 TIMEOUT RULES
+
+    - Do NOT auto-mark the link as safe on timeout
+    - Do NOT silently load the page
+    - The timeout verdict is recorded in history as "Check timed out"
+    - If the user taps "Retry" and the retry also times out, the same
+      timeout screen is shown again (no infinite retry loop — user decides)
+
+================================================================================
+5. PROTECTION MODE INDICATOR
+================================================================================
+
+The checking screen shows the user's current protection mode separately
+from the checking status. This appears as a small label or badge, not as
+part of the status message flow.
+
+  Mode                Label                       Context
+  ──────────────────────────────────────────────────────────────────────────
+  Free tier           "Basic protection"           Default for all users
+  Pro tier            "AI-enhanced protection"     Subscription users
+
+Rules:
+  - The protection mode label is subtle (small text, secondary color)
+  - It does NOT interfere with the primary status message
+  - It is shown during checking and on the timeout screen
+  - It is NOT shown on verdict screens (the verdict speaks for itself)
+  - The label is informational only — no upsell during an active check
+
+================================================================================
+6. VISUAL DESIGN
+================================================================================
+
+  Layout (checking state, top to bottom):
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  OMNIBOX (top bar)                                                   │
+  │  ←   [ https://bank.nl/login                                   ]    │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │                                                                      │
+  │                         (spinner)                                    │
+  │                                                                      │
+  │                      Checking link…                                  │
+  │                   Verifying destination                              │
+  │                                                                      │
+  │                     Basic protection                                 │
+  │                                                                      │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  TAB BAR                                                             │
+  │         Home              Recent              Settings               │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  Style:
+  - Background: creamy white (#FAF8F4), same as start page
+  - Spinner: medium green (#4CAF76), standard iOS activity indicator
+    or a custom shield animation (calm, not aggressive)
+  - Primary message: dark text (#2C2C2C), 20pt, semibold
+  - Secondary message: medium text (#6B6B6B), 15pt, regular
+  - Protection mode label: light text (#9E9E9E), 13pt, regular
+  - All elements centered vertically and horizontally
+  - Generous spacing between spinner, messages, and protection label
+
+  VoiceOver:
+  - Announce status changes: "Checking link", "Still checking",
+    "This is taking longer than usual"
+  - On timeout: "Check timed out. We couldn't complete the check in time.
+    Only continue if you trust this link."
+  - Action buttons are standard accessible buttons
+
+================================================================================
+7. ACCIDENTAL-CLICK REASSURANCE
+================================================================================
+
+When a user taps a link impulsively or by mistake (e.g. via default-browser
+handoff), the checking screen is the first thing they see. It must
+immediately communicate:
+
+  - "LinkLook is active and protecting you"
+  - "You can go back if this was a mistake"
+
+The back arrow in the omnibox is always enabled during checking. Tapping
+it cancels the check and returns to the start page (or the referring app
+if launched via handoff).
+
+This addresses the accidental-click reassurance case noted in
+Core_User_Flows.txt.
+
+================================================================================
+8. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Core_User_Flows.txt            Flows 1–6 all pass through the checking
+                                 state before reaching their verdict screens.
+                                 The "Additional UX test note" about
+                                 accidental-click reassurance is addressed
+                                 in section 7 above.
+
+  Start_Page_Design.txt          The checking screen replaces the start page
+                                 content area while the check runs. The
+                                 omnibox and tab bar persist.
+
+  Trust_Visibility_Design.txt    Timeouts are recorded in history as
+                                 "Check timed out" — visible in the Recent
+                                 tab with trust framing.
+
+  Reason_Code_To_Message_Mapping.txt  The timeout case needs a reason code
+                                      (e.g. TIMEOUT) mapped to the user-facing
+                                      message "Check timed out".
+
+================================================================================
+END OF DOCUMENT
+================================================================================

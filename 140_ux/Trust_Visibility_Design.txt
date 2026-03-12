@@ -20,8 +20,9 @@ stays calm and honest.
 
   - Recent tab with domain, verdict badge, timestamp, and open status
   - HistoryStore with local-only persistence (up to 100 entries)
-  - Start page shows 3-5 recent sites with domain and status label
   - Privacy: no page content, screenshots, or cookies stored
+  NOTE: Recent sites are no longer shown on the Home/start page (UX rule 11).
+  History is only accessible from the Recent tab.
 
 This is a good foundation. The gaps are:
 
