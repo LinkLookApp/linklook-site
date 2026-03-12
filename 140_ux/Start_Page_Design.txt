@@ -43,18 +43,8 @@ never shown. The check flow begins immediately.
   │              A minimal browser with a built-in safety check          │
   └──────────────────────────────────────────────────────────────────────┘
 
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │  RECENT SITES (list, rounded card)                                   │
-  │                                                                      │
-  │  Recent sites                                                        │
-  │  ┌──────────────────────────────────────────────────────────────┐    │
-  │  │  bank.nl                              Previously checked     │    │
-  │  ├──────────────────────────────────────────────────────────────┤    │
-  │  │  belastingdienst.nl                   Previously checked     │    │
-  │  ├──────────────────────────────────────────────────────────────┤    │
-  │  │  example.com                          Not opened yet         │    │
-  │  └──────────────────────────────────────────────────────────────┘    │
-  └──────────────────────────────────────────────────────────────────────┘
+  (No recent sites on the Home screen. History is shown only in the
+   Recent tab, keeping the Home screen clean and focused.)
 
   ┌──────────────────────────────────────────────────────────────────────┐
   │  TAB BAR (bottom, three items)                                       │
@@ -132,26 +122,23 @@ never shown. The check flow begins immediately.
   Users can paste directly into the omnibox field using standard iOS
   paste gestures.
 
-  2.4 RECENT SITES
-  ─────────────────
-  A rounded-corner card below the primary action. Shows the most recent
-  sites checked by LinkLook (from the history, MDL-106).
+  2.4 RECENT SITES — REMOVED FROM HOME SCREEN
+  ──────────────────────────────────────────────
+  Recent sites are NOT shown on the Home/start page. History is only
+  accessible from the Recent tab in the tab bar.
 
-  Each row shows:
+  In the Recent tab, each row shows:
   - Domain name (left-aligned, bold)
   - Status label (right-aligned, lighter text):
     "Previously checked" — the link was checked and a verdict was reached
     "Not opened yet" — the link was checked but the user did not proceed
 
-  Tapping a row could re-check the site or show the last verdict.
+  Every entry in the Recent list MUST be tappable. Tapping re-runs the
+  check (for URLs) or re-opens the search (for search queries).
 
-  If history is empty (first launch), this section is hidden. The start
-  page is even cleaner on first use.
-
-  If the user has disabled history (MDL-106), this section is hidden.
-
-  Maximum items shown: 3–5 most recent. A "See all" link leads to the
-  full history screen.
+  If history is empty, the Recent tab shows an empty state message.
+  If the user has disabled history (MDL-106), the Recent tab indicates
+  that history recording is turned off.
 
   2.5 TAB BAR
   ────────────
@@ -281,10 +268,8 @@ never shown. The check flow begins immediately.
 ================================================================================
 
   4.1 FIRST LAUNCH (empty state)
-  - Recent sites section is hidden (no history yet)
   - Start page shows only: omnibox, app identity, tab bar
-  - Even calmer and emptier than the normal state — just the field and
-    the app name
+  - Clean and minimal — just the field and the app name
 
   4.1b NOT-DEFAULT STATE (after onboarding, no handoff received yet)
   - A gentle reminder card appears below the app identity, prompting the
@@ -293,12 +278,12 @@ never shown. The check flow begins immediately.
   - Card disappears once LinkLook receives its first URL handoff.
 
   4.2 RETURNING USER (normal state)
-  - Recent sites section shows 3–5 most recent checks
-  - All elements visible as described in section 1
+  - Same as first launch: omnibox, app identity, tab bar
+  - No recent sites on the Home screen (history is in the Recent tab)
 
   4.3 HISTORY DISABLED
-  - Recent sites section is hidden
-  - Layout similar to first launch state
+  - Home screen unchanged (history was never shown here)
+  - Recent tab shows "History recording is off" message
 
   4.4 BROWSING (WebView active)
   - Omnibox shows current URL (or search query text if search-originated)

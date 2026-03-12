@@ -22,10 +22,9 @@ Layout (top to bottom):
   real browser. No settings gear in the top bar (accessible via tab bar).
 - app identity: "LinkLook" heading, "A minimal browser with a built-in safety
   check" tagline — centered, only visible on start page
-- recent sites: 3–5 most recent checks with domain name and status
-  ("Previously checked" / "Not opened yet") — hidden on first launch or if
-  history is disabled (MDL-106)
 - tab bar: Home, Recent, Settings — persists across all screens
+  NOTE: Recent sites are NOT shown on the Home/start page. History is only
+  accessible from the Recent tab. The Home screen stays clean and focused.
 
 Omnibox input classification:
 - Full URL (starts with http:// or https://) → use as-is
@@ -100,7 +99,12 @@ Visual reference: 140_ux/Start_Page_Mockup.html
 10. Settings flow (MDL-104, MDL-105)
 
 In-app settings (Settings tab in tab bar):
-- user picks which browser safe links should open in (Safari default)
+- user picks which browser safe links should open in (default: Safari).
+  The browser list MUST show all installed browsers on the device, not just
+  Safari and Default. Use LSApplicationQueriesSchemes in Info.plist to declare
+  supported URL schemes (googlechromes, firefox, brave, microsoft-edge, opera,
+  ddgQuickLink, arc) and check availability at runtime with canOpenURL().
+  Only show browsers that are actually installed
 - user picks safe-link display mode (MDL-109, "always show result" by default):
   — "always show result": safe result screen shown briefly for reassurance,
     then page loads in minimal browser
@@ -123,7 +127,9 @@ In-app settings (Settings tab in tab bar):
 
 11. History flow (MDL-106)
 - every link check is recorded locally: URL, verdict, reason code, timestamp
-- user can view recent checks from a history screen
+- user can view recent checks from the Recent tab (NOT the Home screen)
+- every entry in the Recent list MUST be tappable: tapping re-runs the check
+  (for URLs) or re-opens the search (for search queries)
 - history supports Proof of Activity (PRD 5.5) — user sees what LinkLook has
   done for them
 - user can clear all history from in-app settings

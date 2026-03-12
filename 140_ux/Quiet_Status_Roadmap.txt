@@ -1,0 +1,175 @@
+LinkLook — Quiet Status Roadmap
+Version: v1.0
+Date: 2026-03-12
+Origin: Founder design session
+References: Trust_Visibility_Design.txt, Start_Page_Design.txt,
+            UX_Principles.txt, Architecture_Constitution.txt
+
+================================================================================
+1. GOVERNING PRINCIPLE
+================================================================================
+
+LinkLook is silent by default and speaks by exception.
+
+Quiet Status exists to answer the user's unspoken question — "is it even doing
+anything?" — without turning that reassurance into noise. The user controls how
+much they see. LinkLook confirms its presence on the user's terms, not its own.
+
+================================================================================
+2. VERSIONED ROLLOUT
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1 v1 — MUST: Start Page Quiet Status Line
+--------------------------------------------------------------------------------
+
+When the user opens LinkLook, they see a simple, calm confirmation that
+protection is active:
+
+    Protected. X links checked today.
+
+Rules:
+  - Shown on the start page, below the app identity
+  - Only appears after at least 1 link has been checked
+  - "X" is the real count for today (rolling 24 hours), honest and unpadded
+  - If no links checked today: "Protected. No links checked yet today."
+  - If history is disabled: line is hidden (no data to show)
+  - No drama, no numbers designed to impress — just quiet reassurance
+  - Style: small text, green checkmark icon, secondary text color
+  - Not tappable (pure reassurance, not a navigation element)
+
+Why "Protected" and not "Active" or "Running":
+  - "Protected" speaks to the user's state, not the app's state
+  - It answers the emotional question, not the technical one
+
+--------------------------------------------------------------------------------
+2.2 v1.x — DEFERRED MUST: App Icon Green Dot
+--------------------------------------------------------------------------------
+
+A subtle green dot on the LinkLook app icon confirming it is running. No number,
+no alert — just presence.
+
+Rules:
+  - Small green dot, positioned like a notification badge but calmer
+  - Indicates LinkLook is set as the default browser and active
+  - No count, no number — just a dot
+  - Disappears if LinkLook loses default browser status
+  - Implementation: likely requires a dynamic app icon or home screen widget
+
+This was originally a "should" but becomes a must as the user base grows and
+trust becomes a competitive differentiator. Users who set LinkLook as their
+default browser should have quiet, ambient confirmation that it's working.
+
+Priority: deferred to v1.x because it requires either:
+  a) Dynamic app icon (limited iOS API), or
+  b) A minimal home screen widget (see v2 below)
+
+--------------------------------------------------------------------------------
+2.3 v2 — WIDGET: Home Screen Protection Status
+--------------------------------------------------------------------------------
+
+A simple iOS home screen widget showing protection status and a recent link
+count. The user chooses to place it. Always available if they want it, never
+intrusive if they don't.
+
+Widget content:
+  - Small widget: "Protected" + green shield icon + "X links today"
+  - Medium widget: adds last 3 checked domains with verdict dots
+  - Large widget: not planned (keep it minimal)
+
+Rules:
+  - User opts in by adding the widget — never prompted or suggested
+  - Widget updates periodically via WidgetKit timeline
+  - Data source: HistoryStore (local only, no network calls)
+  - If history is disabled: widget shows "Protected" only, no counts
+  - If not default browser: widget shows "Set as default to protect all links"
+  - Style: matches app brand colors, calm green tones
+
+--------------------------------------------------------------------------------
+2.4 v1.x — DEFERRED: Weekly Digest
+--------------------------------------------------------------------------------
+
+A weekly summary the user pulls when they want it — not a push notification.
+
+    This week LinkLook checked 47 links. All clear.
+
+    or:
+
+    This week LinkLook checked 47 links.
+    1 link was blocked · 2 warnings shown.
+
+Rules:
+  - Not a push notification — this is a pull model
+  - Accessible from the Recent tab or start page (TBD exact placement)
+  - Generated on-device from HistoryStore data
+  - Rolling 7-day window
+  - If history is disabled: digest is not available
+  - If no checks this week: "No links checked this week."
+  - Optional: could also be shown in the home screen widget (v2)
+
+The digest answers the question: "What has LinkLook done for me lately?"
+without the user having to scroll through individual entries.
+
+================================================================================
+3. WHAT QUIET STATUS IS NOT
+================================================================================
+
+Quiet Status is not:
+  - A security dashboard — no graphs, no trend lines, no risk scores
+  - A gamification system — no streaks, no achievements, no levels
+  - A marketing surface — no upsells, no "share your stats" prompts
+  - A notification system — nothing pushed, everything pulled
+  - An anxiety generator — no "threats detected!" alerts on the home screen
+
+If it would make the user feel watched, tracked, or pressured, it does not
+belong in Quiet Status.
+
+================================================================================
+4. DESIGN PRINCIPLES
+================================================================================
+
+  4.1 User controls visibility
+      Every Quiet Status element is either automatic-but-calm (start page line)
+      or opt-in (widget, digest). The user is never asked to enable anything.
+
+  4.2 Honest numbers
+      Show real counts. If only 2 links were checked, say 2. Never pad, round
+      up, or use language that inflates the perception of activity.
+
+  4.3 Emotional, not technical
+      "Protected" not "Active." "All clear" not "0 threats detected."
+      Speak to how the user feels, not how the system works.
+
+  4.4 Graceful degradation
+      If history is off, Quiet Status disappears. If no links were checked,
+      the message adapts. No error states, no empty-state guilt trips.
+
+  4.5 Silent by default, speaks by exception
+      This is the architectural principle that governs all of LinkLook's
+      communication with the user. Quiet Status is the controlled exception
+      — the minimum surface where LinkLook is allowed to speak unprompted.
+
+================================================================================
+5. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Trust_Visibility_Design.txt     MVP trust visibility (trust summary card,
+                                  Recent tab improvements). Quiet Status
+                                  extends and replaces the trust summary card
+                                  with the simpler "Protected. X links checked
+                                  today." line in v1.
+
+  Start_Page_Design.txt           Placement of the Quiet Status line on the
+                                  start page (between app identity and recent
+                                  sites).
+
+  UX_Principles.txt               "Calm confidence" principle — Quiet Status
+                                  is the primary expression of this principle.
+
+  Architecture_Constitution.txt   "Silent by default, speaks by exception" —
+                                  the architectural rule that Quiet Status
+                                  implements.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

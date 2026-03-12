@@ -115,12 +115,18 @@ This sets the expectation that the Recent tab is proof of activity.
 
 The following are explicitly deferred:
   - Push notifications about checks (too noisy, not calm)
-  - Weekly summary notifications (nice but not MVP)
-  - Badge count on app icon (misleading for a security product)
-  - Dashboard or statistics screen (over-engineered for MVP)
+  - Weekly summary digest (v1.x, pull model — see Quiet_Status_Roadmap.txt)
+  - Green dot on app icon (v1.x — see Quiet_Status_Roadmap.txt)
+  - Home screen widget (v2 — see Quiet_Status_Roadmap.txt)
+  - Dashboard or statistics screen (over-engineered, not planned)
 
 The trust summary card on the start page and the improved Recent tab
 are sufficient for MVP trust visibility.
+
+Note: the trust summary card (§3.1) will evolve into the simpler Quiet
+Status line ("Protected. X links checked today.") as defined in
+Quiet_Status_Roadmap.txt. The roadmap doc governs the full versioned
+rollout of trust visibility beyond MVP.
 
 ================================================================================
 4. PRIVACY RULES
