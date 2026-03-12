@@ -1,0 +1,49 @@
+Network Extension Signal Model
+Generated: 2026-03-08
+
+Purpose
+Define the concrete signals LinkLook may observe through the Network Extension layer and how those signals feed risk scoring.
+
+Primary signal families
+- DNS queries
+- TLS Server Name Indication (SNI)
+- HTTP host and path metadata where permitted
+- Connection timing and retry behavior
+- Destination IP reputation
+- Certificate metadata
+- Traffic burst patterns linked to suspicious infrastructure
+
+Candidate fields
+- timestamp
+- queried_domain
+- resolved_ip
+- ttl
+- sni_name
+- destination_port
+- certificate_subject
+- certificate_issuer
+- connection_result
+- request_frequency_window
+
+High-value detections
+- First-seen domains
+- Recently registered domains
+- Known malicious infrastructure
+- Fast-flux or rapidly rotating resolution patterns
+- Mismatch between claimed brand and destination network
+- Suspicious retries or redirect-linked domain sequences
+
+Scoring guidance
+Signals should not make final decisions in isolation unless they match known malicious infrastructure.
+Network signals are strongest when combined with:
+- AASA intelligence
+- domain age
+- brand similarity
+- redirect chain analysis
+- shortener expansion results
+
+Privacy boundary
+LinkLook should minimize collection and retain only the metadata strictly needed for security decisions, debugging, and model improvement.
+
+Implementation note
+The exact fields available depend on Apple platform constraints and entitlement scope. This model is the target analytical design, not a claim that every field is always available.

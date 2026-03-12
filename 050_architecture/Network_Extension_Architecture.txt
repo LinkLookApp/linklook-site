@@ -1,0 +1,41 @@
+LinkLook — Network Extension Architecture
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+The Network Extension is the protection layer that closes interception gaps the
+browser path cannot fully close by itself.
+
+Role
+- Observe outbound DNS / connection intent.
+- Enforce block decisions before page content is exchanged.
+- Act as the system-wide safety net when default-browser interception is missed.
+
+What it protects against
+- notification-tap scenarios that bypass browser routing
+- copy/paste or typed URLs opened in other browsers
+- app-routed traffic that still reveals suspicious infrastructure
+- partial universal-link bypass scenarios
+
+What it does not do
+- perform full HTTPS decryption
+- inspect pinned encrypted app content
+- replace content analysis for every scenario
+
+High-level flow
+1. Connection attempt observed.
+2. Domain / destination normalized.
+3. Local caches and policy checked.
+4. If known bad: block immediately.
+5. If uncertain: escalate to backend intelligence path where allowed.
+6. Present user-facing protection state.
+
+Engineering constraints
+- Must preserve device usability.
+- Must operate with tight latency budgets.
+- Must degrade safely under backend failure.
+- Must not become a privacy-invasive traffic archive.
+
+Logging rule
+Store minimal security-relevant metadata only. Avoid persistent user-linked
+browsing history on the backend.

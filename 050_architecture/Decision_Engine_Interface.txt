@@ -1,0 +1,60 @@
+LinkLook Decision Engine Interface
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Principle
+The decision engine should behave as a platform-independent pure service.
+
+Canonical interface
+evaluate(InputContext) -> DecisionResult
+
+InputContext
+Required fields
+- url
+- source_app or source_type
+- timestamp
+
+Optional fields
+- expanded_url
+- redirect_chain
+- network_available
+- dns_info
+- domain_age
+- page_metadata
+
+Example InputContext
+{
+  "url": "https://paypaI-login-example.com",
+  "source_app": "messages",
+  "timestamp": "2026-03-08T10:15:00Z",
+  "network_available": true
+}
+
+DecisionResult
+Fields
+- decision: allow | inform | warn | block | unknown
+- reason_code
+- confidence
+- triggered_rules
+- signals
+- decision_trace
+- engine_version
+- recommended_action
+
+Example DecisionResult
+{
+  "decision": "block",
+  "reason_code": "domain_impersonation",
+  "confidence": 0.92,
+  "triggered_rules": ["RULE-IMP-001"],
+  "signals": ["domain_character_substitution", "page_contains_login_form"],
+  "engine_version": "1.0",
+  "recommended_action": "go_back"
+}
+
+Why this interface matters
+- platform-independent
+- easy to test with fixtures
+- supports phishing lab and CI
+- supports future ML / SLM models as additional signal sources

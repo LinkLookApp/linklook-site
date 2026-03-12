@@ -1,0 +1,24 @@
+URL Entropy Detection
+Generated: 2026-03-08
+
+Purpose
+Flag URLs with unusually random or machine-generated characteristics often seen in phishing, malware staging, or tracking chains.
+
+Signals
+- very long path or query length
+- high ratio of random-looking characters
+- excessive encoding
+- many tracking parameters
+- base64-like or token-heavy segments
+- large number of nested redirects
+
+Use cases
+- suspicious login paths
+- malware download links
+- one-time campaign links
+- obfuscated affiliate or redirect abuse
+
+Output
+- entropy_score
+- dominant suspicious segments
+- explanatory flags for debugging and user-facing review

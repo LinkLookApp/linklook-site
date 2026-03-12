@@ -1,0 +1,19 @@
+LinkLook Canonical Repository Changelog
+Version: v19
+Date: 2026-03-08
+Origin: ChatGPT
+
+Summary
+This upgrade adds the first practical development starter assets on top of v18.
+
+Added
+- 100_testing/Initial_30_Phishing_Test_Fixtures.txt
+- 100_testing/Initial_30_Phishing_Test_Fixtures.yaml
+- 050_architecture/Initial_Rule_Set_v1.txt
+- 050_architecture/Initial_Signal_Detector_List.txt
+
+Purpose
+These files give LinkLook an immediate starting point for:
+- fixture-driven automated tests
+- a first deterministic rule engine
+- a first concrete detector backlog

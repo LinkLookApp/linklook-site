@@ -1,0 +1,38 @@
+LinkLook Repository Changelog v21
+Date: 2026-03-08
+Origin: ChatGPT
+
+Summary
+v21 closes the main gap between the important test/UX/architecture chat and the canonical repository.
+
+Added
+- 050_architecture/Reason_Code_Catalog.txt
+- 100_testing/Core_Test_Catalog_Framework.txt
+- 100_testing/Decision_UX_Test_Specification.txt
+- 100_testing/Human_Usability_Test_Plan.txt
+- 100_testing/Regression_Test_Policy.txt
+- 100_testing/Test_Fixture_Conventions.txt
+- 100_testing/Test_Traceability_Matrix.txt
+- 140_ux/Five_Security_UX_Failure_Patterns.txt
+- 140_ux/Reason_Code_To_Message_Mapping.txt
+- 140_ux/LinkLook_Trust_Speed_Friction_Principles.txt
+
+Upgraded
+- 050_architecture/Development_Architecture.txt
+- 050_architecture/Decision_Policy_Rule_Engine.txt
+- 050_architecture/Signal_Taxonomy.txt
+- 100_testing/Test_Strategy.txt
+- 100_testing/UX_Test_Strategy.txt
+- 130_phishing_lab/Phishing_Lab_Architecture.txt
+- 140_ux/Core_User_Flows.txt
+
+Intent
+The repository now captures the previously missing explicit documents around:
+- core test framework
+- reason codes
+- decision-to-UX mapping
+- human usability testing
+- regression policy
+- trust / speed / friction principles
+- five major security UX failure patterns
+- test traceability

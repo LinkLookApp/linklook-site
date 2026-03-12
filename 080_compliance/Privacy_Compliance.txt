@@ -1,0 +1,70 @@
+LinkLook – Privacy and Compliance (Updated)
+
+2026-03-04
+
+Privacy and Compliance (Updated)
+Updated: March 04, 2026
+
+Status
+
+Updated to incorporate the v1 scalability blueprint (Stage 0/1/2 pipeline,
+cache keys, thresholds, rate limits, and evidence-based warnings).
+
+Privacy goals
+• Minimize personal data collection; default to domain-level and derived features.
+• Avoid storing page content; store evidence as short, non-sensitive indicators.
+• No HTTPS decryption in v1.
+• Provide user transparency: what is inspected, what is stored, retention period.
+Blueprint impact: caching and event logging must be designed as privacy-minimized from day 1,
+because they become the long-term training dataset.
+
+Data minimization design
+• VPN mode: store domain_norm, tld, score, decision, reasons, timestamps. Avoid full URLs when not
+required.
+
+• Open-with mode: store normalized URL; drop common tracking parameters; strip fragments (#).
+• Replace any stable device identifier with a rotating install key (daily rotation) for abuse controls.
+• Separate “security telemetry” from any account/billing data.
+
+Retention and access
+Data class
+
+v1 retention suggestion
+
+Domain verdict cache
+
+TTL-based; expires automatically
+
+link_event (telemetry)
+
+30–90 days (tune); aggregate longer in anonymized form
+
+inspection_job (derived evidence)
+
+30–90 days; keep only features for long-term training
+
+Raw HTML/screenshots
+
+Off by default; if enabled for debugging, shortest possible
+retention + strict access
+
+Compliance notes (GDPR-ready posture)
+• Define lawful basis (legitimate interest or consent depending on feature set and messaging).
+• Make a clear DPIA/PIA if you run system-wide VPN filtering.
+
+Founder version
+
+Page 1
+
+LinkLook – Privacy and Compliance (Updated)
+
+2026-03-04
+
+• Provide export/delete capabilities for any user-associated data (if you create accounts).
+• Document processors/subprocessors for cloud inspection infrastructure.
+
+Founder version
+
+Page 2
+
+

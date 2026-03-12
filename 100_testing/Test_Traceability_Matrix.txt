@@ -1,0 +1,47 @@
+LinkLook Test Traceability Matrix
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Define the traceability model that links LinkLook tests to architecture, policy, UX, and compliance requirements.
+
+Why traceability matters
+LinkLook is not only a technical detector.
+It is also a user-facing security product with explainability and privacy requirements.
+A good test suite must therefore trace beyond allow or block alone.
+
+Each canonical test case should map to:
+- one or more architecture components
+- one or more signal categories or reason codes
+- one or more rule or policy entries
+- one or more UX mapping entries
+- one or more privacy / logging controls where relevant
+
+Example structure
+Test ID -> Component -> Rule / Reason -> UX mapping -> Privacy / Logging expectation
+
+Illustrative examples
+1. TC-PHISH-001
+- component: decision engine
+- reason: domain_impersonation
+- policy: impersonation block rule
+- UX mapping: phishing warning copy
+- privacy: only approved logging fields
+
+2. TC-FAIL-002
+- component: reputation adapter timeout handling
+- reason: network_timeout
+- policy: fail-informatively policy
+- UX mapping: could-not-verify message
+- privacy: no raw page capture
+
+3. TC-SAFE-004
+- component: normalization + decision engine
+- reason: safe_destination
+- policy: allow path
+- UX mapping: calm safe confirmation
+- privacy: minimal log footprint
+
+Operational rule
+New critical features should not be considered complete unless they are represented in the traceability model through one or more automated tests.

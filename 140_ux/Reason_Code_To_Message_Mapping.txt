@@ -1,0 +1,65 @@
+LinkLook Reason Code To Message Mapping
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Define how stable reason codes are translated into user-facing messages.
+
+Mapping principles
+- use plain language
+- explain likely user risk
+- avoid technical jargon where possible
+- distinguish confirmed danger from incomplete analysis
+
+Illustrative mappings
+1. domain_impersonation
+User message family:
+This website may be pretending to be another company.
+Severity:
+warn or block depending on confidence and policy
+
+2. known_malicious_domain
+User message family:
+This website is linked to known malicious activity.
+Severity:
+block
+
+3. suspicious_tld
+User message family:
+This website address looks unusual and may be unsafe.
+Severity:
+inform or warn
+
+4. redirect_chain_risk
+User message family:
+This link passes through multiple destinations and may be hiding where it really goes.
+Severity:
+warn
+
+5. shortener_unresolved
+User message family:
+LinkLook could not safely determine where this shortened link leads.
+Severity:
+inform or warn
+
+6. network_timeout
+User message family:
+LinkLook could not complete the safety check.
+Severity:
+inform
+
+7. insufficient_signal
+User message family:
+LinkLook does not have enough information to classify this link confidently.
+Severity:
+inform
+
+8. safe_destination
+User message family:
+This link looks safe.
+Severity:
+allow
+
+Button mapping rule
+Warn and block messages must pair with a safe primary action.

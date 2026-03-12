@@ -1,0 +1,87 @@
+LinkLook Test Strategy
+Version: v3.0
+Date: 2026-03-10
+Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
+
+Purpose
+Define how LinkLook verifies correctness, safety, user trust, and release readiness.
+
+Core rule
+No web content may load before LinkLook has reached the allowed state for that specific URL.
+
+Testing philosophy
+LinkLook follows automated test-first development for deterministic product behavior.
+Tests are not only for validation after coding; they are a primary design tool.
+
+Test pyramid
+1. Unit tests
+- normalization
+- parsing
+- detectors
+- decision rules
+- UX mapping functions
+
+2. Integration tests
+- InputContext -> signals -> policy -> DecisionResult
+- adapter failures
+- redirect resolution
+- reputation timeout behavior
+
+3. Acceptance / end-to-end tests
+- receive link
+- analyze
+- safe path: checked first, opens inside LinkLook, page not loaded before verdict
+- inform path: user sees inform screen, no auto-load, may continue into browser
+- warning path: user sees warning screen, no auto-load, may continue into browser
+- blocked path: no web content loads at all
+- continue from inform/warn: opens in minimal browser, no double-open,
+  pre-load gate verified
+- open elsewhere: explicit user action, correct URL handed off to preferred
+  browser (MDL-104), no hidden rewrite
+- minimal browser: page render, navigation, URL display, HTTPS handling,
+  background/foreground recovery
+  (see Minimal_Browser_Test_Specification.txt for full test set)
+
+4. UX tests
+- copy clarity
+- button hierarchy
+- accessibility
+- comprehension for non-technical users
+- low-friction safe path behavior
+
+Test data policy
+- prefer fixed fixtures
+- avoid live web dependencies where possible
+- maintain phishing and legitimate-link fixtures side by side
+- preserve regression fixtures permanently
+
+Release gate
+A release candidate is not ready unless:
+- required automated tests pass
+- no unresolved severe regression exists
+- critical UX warnings behave as designed
+- routing / external redirect behavior is verified
+- core rule verified: no web content loads before LinkLook reaches
+  the allowed state for that specific URL
+
+Expanded core-test guidance
+The initial test effort should focus on a risk-based starter package rather than a huge exhaustive list.
+Recommended minimum starting point:
+- 10 safe-path cases
+- 10 obvious malicious-path cases
+- 10 edge / ambiguity cases
+- 5 privacy / failure-mode cases
+
+Required expected fields
+Core LinkLook tests should not assert allow or block alone.
+They should also specify:
+- expected reason code
+- expected confidence band
+- expected user-facing message or UX outcome
+- expected logging fields
+- expected fallback behavior
+
+Three canonical test families
+- product behavior tests
+- security and abuse tests
+- technical component tests

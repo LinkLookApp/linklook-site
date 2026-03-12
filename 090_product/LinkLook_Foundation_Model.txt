@@ -1,0 +1,19 @@
+LinkLook Foundation Model
+Generated: 2026-03-08
+
+Purpose
+Capture the idea of a future foundation or support mechanism for users harmed by scams, while keeping it separate from core product claims unless formally launched.
+
+Potential goals
+- support scam awareness and education
+- define a transparent claims review process if assistance is offered
+- create a trusted public-interest layer around LinkLook's mission
+
+Preconditions
+- clear governance
+- sustainable funding model
+- strict evidence requirements
+- privacy-preserving case handling
+
+Important note
+This is a strategic and brand-adjacent concept, not part of the minimum viable product.

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkLook — Start Page Mockup</title>
+<style>
+  /* ── LinkLook brand colors ──
+     Primary green:    #4CAF76  (medium green — buttons, active states, accents)
+     Creamy white:     #FAF8F4  (warm background)
+     Card surface:     #F2EFE9  (slightly darker cream for cards)
+     Item surface:     #FDFCFA  (near-white for list items inside cards)
+     Logo green:       #2E7D4F  (dark green — "LinkLook" wordmark only)
+     Text dark:        #2C2C2C  (headings, primary text)
+     Text medium:      #6B6B6B  (body, secondary)
+     Text light:       #9E9E9E  (placeholders, status labels)
+     Green dark:       #3D8F62  (hover/pressed state)
+     Green light:      #E8F5ED  (subtle green tint for top bar)
+     Border:           #E5E0D8  (warm divider)
+  */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #e8e4de;
+    color: #2C2C2C;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  .phone-frame {
+    width: 390px;
+    min-height: 844px;
+    background: #FAF8F4;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 54px;
+    padding: 14px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2C2C2C;
+  }
+
+  /* Top browser bar */
+  .top-bar {
+    margin: 6px 16px 0;
+    padding: 10px 14px;
+    background: #E8F5ED;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #C8E6D0;
+  }
+  .nav-arrows {
+    display: flex;
+    gap: 8px;
+    color: #2E7D4F;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .address-field {
+    flex: 1;
+    font-size: 16px;
+    color: #9E9E9E;
+    background: none;
+    border: none;
+    outline: none;
+  }
+  .gear-icon {
+    font-size: 22px;
+    color: #4CAF76;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Content area */
+  .content {
+    flex: 1;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+  }
+
+  /* App identity */
+  .app-identity {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 28px;
+  }
+  .app-identity h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    color: #2E7D4F;
+  }
+  .app-identity p {
+    font-size: 16px;
+    color: #6B6B6B;
+    font-weight: 400;
+  }
+
+  /* Primary action card */
+  .action-card {
+    background: #F2EFE9;
+    border-radius: 16px;
+    padding: 32px 28px;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+  .action-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #2C2C2C;
+  }
+  .action-card p {
+    font-size: 15px;
+    color: #6B6B6B;
+    margin-bottom: 20px;
+  }
+  .paste-btn {
+    display: inline-block;
+    background: #4CAF76;
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+  }
+  .paste-btn:hover { background: #3D8F62; }
+
+  /* Recent sites */
+  .recent-card {
+    background: #F2EFE9;
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+  .recent-card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #2C2C2C;
+  }
+  .recent-item {
+    background: #FDFCFA;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .recent-item:last-child { margin-bottom: 0; }
+  .recent-item .domain {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2C2C2C;
+  }
+  .recent-item .status {
+    font-size: 13px;
+    color: #9E9E9E;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    border-top: 1px solid #E5E0D8;
+    padding: 10px 0 30px;
+    display: flex;
+    justify-content: space-around;
+    background: #FAF8F4;
+  }
+  .tab-item {
+    text-align: center;
+    font-size: 11px;
+    color: #9E9E9E;
+    cursor: pointer;
+    padding: 4px 16px;
+  }
+  .tab-item.active { color: #4CAF76; }
+  .tab-item .tab-icon {
+    font-size: 22px;
+    margin-bottom: 2px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <span class="icons">●●● ▮▮▮ 🔋</span>
+  </div>
+
+  <!-- Top browser bar -->
+  <div class="top-bar">
+    <div class="nav-arrows">
+      <span>←</span>
+      <span>→</span>
+    </div>
+    <span class="address-field">Enter website or paste link</span>
+    <span class="gear-icon">⚙</span>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- App identity -->
+    <div class="app-identity">
+      <h1>LinkLook</h1>
+      <p>A minimal browser with a built-in safety check</p>
+    </div>
+
+    <!-- Primary action card -->
+    <div class="action-card">
+      <h2>Safe browsing starts here</h2>
+      <p>Check a link before opening it.</p>
+      <button class="paste-btn">Paste from clipboard</button>
+    </div>
+
+    <!-- Recent sites -->
+    <div class="recent-card">
+      <h3>Recent sites</h3>
+      <div class="recent-item">
+        <span class="domain">bank.nl</span>
+        <span class="status">Previously checked</span>
+      </div>
+      <div class="recent-item">
+        <span class="domain">belastingdienst.nl</span>
+        <span class="status">Previously checked</span>
+      </div>
+      <div class="recent-item">
+        <span class="domain">example.com</span>
+        <span class="status">Not opened yet</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <div class="tab-item active">
+      <span class="tab-icon">⌂</span>
+      Home
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">◷</span>
+      Recent
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">⚙</span>
+      Settings
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

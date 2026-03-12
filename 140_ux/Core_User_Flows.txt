@@ -1,0 +1,135 @@
+LinkLook Core User Flows
+Version: v3.0
+Date: 2026-03-10
+Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
+
+Canonical alignment note (2026-03-10)
+LinkLook is a straightforward, security-driven browser for iOS. The canonical
+outcome model is: allow (transparent) / inform / warn / block. Redirect is
+part of the browser flow, not a separate product mode. The minimal-browser
+fallback direction has been superseded (MDL-007).
+
+Canonical UX flows
+
+0. Start page (app opened directly)
+- the user opens LinkLook without tapping a link
+- the screen is calm, clean, and almost empty
+
+Layout (top to bottom):
+- top bar: back/forward arrows, address field ("Enter website or paste link"),
+  settings gear icon — browser-style, establishes LinkLook as a real browser
+- app identity: "LinkLook" heading, "A minimal browser with a built-in safety
+  check" tagline — centered, only visible on start page
+- primary action card: "Safe browsing starts here" headline, "Check a link
+  before opening it." subtext, "Paste from clipboard" button (dark filled,
+  primary action)
+- recent sites: 3–5 most recent checks with domain name and status
+  ("Previously checked" / "Not opened yet") — hidden on first launch or if
+  history is disabled (MDL-106)
+- tab bar: Home, Recent, Settings — persists across all screens
+
+Visual style: white background, generous spacing, rounded card elements,
+dark primary button, light grey secondary text. No news, ads, bookmarks,
+or search suggestions.
+
+When iOS hands LinkLook a URL via default-browser handoff, the start page
+is never shown — the check flow begins immediately.
+
+Design principle: the start page should feel like a focused tool, not a
+browser home page. Apple should see a genuine browser with a clear purpose.
+
+Full visual spec: 140_ux/Start_Page_Design.txt
+Visual reference: 140_ux/Start_Page_Mockup.html
+
+1. Allow flow (transparent)
+- user taps a link
+- LinkLook checks quickly
+- link is safe — user continues with minimal friction
+- user barely notices LinkLook on the fast trusted path
+
+2. Inform flow
+- link has something worth noting but risk is low
+- brief explanation shown
+- user proceeds easily, no heavy friction
+
+3. Warn flow (suspicious / uncertain)
+- clear but calm warning
+- explain uncertainty without panic
+- safe action is primary
+- continue anyway remains available if policy allows
+
+4. Block flow (known phishing / malicious)
+- clear warning with explanation
+- safe action is primary (go back)
+- blocked by default
+
+5. Shortened link flow
+- expand destination first
+- show where the link really goes
+- then evaluate through the normal outcome model
+
+6. Network failure flow
+- explain that the safety check could not complete
+- fail informatively, not silently
+
+7. False positive flow
+- preserve trust by allowing a controlled override where appropriate
+
+8. Education flow
+- explain in plain language why a link is risky
+- help users learn scam patterns over time
+
+9. Redirect flow
+- user chooses redirect option/button
+- redirect sends the link to another browser
+- wording and placement must make clear this does not mean LinkLook considers
+  the destination safe (MDL-087)
+
+10. Settings flow (MDL-104, MDL-105)
+
+In-app settings (gear icon on main screen):
+- user picks which browser safe links should open in (Safari default)
+- user picks safe-link display mode (MDL-109, "always show result" by default):
+  — "always show result": safe result screen shown briefly for reassurance,
+    then page loads in minimal browser
+  — "auto-open safe links": safe links skip the result screen and load
+    directly in the minimal browser
+  — PROTECTED profile: always show result is enforced, cannot be changed
+  — STANDARD profile: user can choose either mode
+  — inform, warn, block verdicts always show their screens regardless
+- user manages whitelist, notification preferences
+- user can view, clear, or disable recent checks history (MDL-106, on by default)
+- user can enable crowdsourced threat contribution (MDL-108, off by default, V2)
+  — plain-language label like "Help improve safety for everyone"
+  — when enabled, anonymous domain-level signals may be submitted
+  — toggle is off by default because data leaves the device
+- foundation donation tier shown read-only
+- LinkLook itself is never shown as a redirect target
+- preferences stored on-device, respected by all redirect paths
+  (result screen, in-app browser toolbar)
+- if the chosen browser is later removed, LinkLook falls back to Safari
+
+11. History flow (MDL-106)
+- every link check is recorded locally: URL, verdict, reason code, timestamp
+- user can view recent checks from a history screen
+- history supports Proof of Activity (PRD 5.5) — user sees what LinkLook has
+  done for them
+- user can clear all history from in-app settings
+- user can disable history recording from in-app settings
+- no page content, screenshots, or cookies are stored
+- history data never leaves the device (personal trust data, MDL-100)
+
+iOS Settings bundle (device-level):
+- profile type (PROTECTED / STANDARD)
+- response mode (block / warn)
+- set during setup or by an adult child installer
+
+Acceptance-test note
+Each canonical user flow should map to one or more automated acceptance tests
+so UX behavior is stable across releases.
+
+Additional UX test note
+The accidental-click reassurance case should be treated as an explicit UX
+scenario. When a user taps a link impulsively or by mistake, LinkLook should
+quickly show that a safety check is in progress so the user immediately feels
+protected rather than lost.

@@ -1,0 +1,21 @@
+Shortener Unwrapping Strategy
+Generated: 2026-03-08
+
+Purpose
+Safely expand shortened URLs before the final risk decision.
+
+Supported examples
+- bit.ly
+- tinyurl
+- t.co
+- custom branded shorteners
+
+Rules
+- unwrap in a controlled environment
+- limit redirects
+- preserve full hop sequence
+- classify both the shortener and the final destination
+- cache safe expansions for performance where policy allows
+
+Risk notes
+Shorteners are not inherently malicious, but they remove destination transparency and are heavily used in SMS phishing.

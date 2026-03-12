@@ -1,0 +1,28 @@
+Redirect Chain Intelligence Model
+Generated: 2026-03-08
+
+Purpose
+Model and score redirect chains because many phishing and malware campaigns hide behind multiple hops.
+
+Example chain
+SMS link -> shortener -> tracker -> disposable domain -> phishing page
+
+Features to record
+- number_of_hops
+- hop_domains
+- domain_age_per_hop
+- status_codes
+- protocol changes
+- geo or hosting changes
+- whether a login page appears only at the final hop
+
+Risk indicators
+- multiple first-seen domains in one chain
+- hop into known suspicious hosting
+- sudden transition from trusted-looking domain to unrelated infrastructure
+- final destination contains password form or payment request
+
+Output
+- redirect_risk_score
+- resolved_final_url
+- explanation of the most suspicious hop(s)

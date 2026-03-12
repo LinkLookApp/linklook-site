@@ -1,0 +1,15 @@
+LinkLook — AASA Domain-App Graph
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Graph model
+- domain
+  → appID
+    → path scope
+
+Why it matters
+This graph can later support:
+- universal-link risk analysis
+- ecosystem intelligence
+- app/domain verification
+- anomaly detection when suspicious domains claim app relationships

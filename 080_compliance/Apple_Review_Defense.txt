@@ -1,0 +1,38 @@
+LinkLook — Apple Review Defense
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Provide a concise internal argument set for App Review, entitlement requests,
+and consistency across all compliance documents.
+
+Core claims
+- LinkLook’s purpose is user protection against malicious links.
+- URL interception exists to evaluate safety before navigation.
+- LinkLook minimizes retained data and avoids building a browsing-surveillance
+  product.
+- Any stated limitation is documented honestly rather than hidden.
+
+Support points
+- LinkLook checks destinations before navigation and then forwards safe links
+  to the user’s preferred browser.
+- LinkLook is a straightforward, security-driven browser. It does not modify web
+  traffic or operate as a VPN/proxy.
+- redirect option/button allows user to send a link to another browser
+- privacy constraints are architectural, not marketing language only
+- warnings should assist user judgment rather than remove user control in all
+  cases
+
+Reviewer concerns to pre-answer
+1. Why intercept links?
+   Because pre-navigation evaluation is the safety function.
+2. Is personal browsing monitored?
+   No. LinkLook keeps a local safety-check log on-device (URL, verdict, reason
+   code, timestamp) so users can review what was checked. This is not a general
+   browsing history. The user can clear or disable it. No check history data
+   leaves the device.
+3. Does the app break normal browsing?
+   No. Safe links are handed off to the user’s browser and suspicious links can
+   be explained in plain language.
+4. Does LinkLook claim perfect safety?
+   No. Public language is about warning and risk reduction, not guarantees.

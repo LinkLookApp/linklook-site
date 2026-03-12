@@ -1,0 +1,21 @@
+LinkLook Repository Changelog v22
+Date: 2026-03-11
+Origin: Claude (Cowork)
+
+Summary
+v22 is a housekeeping release that removes macOS archive artifacts, retires the fallback browser ADR, and aligns terminology across testing, architecture, and decision docs.
+
+Removed
+- __MACOSX resource-fork entries and Apple ._ metadata files stripped from all 5 root-level zip archives (LinkLook.zip, LinkLook 2.zip, LinkLook 3.zip, LinkLook-App.zip, LinkLook-App 2.zip)
+
+Changed
+- 110_decisions/ADR_Minimal_Browser_Fallback_if_Entitlement_Refused.txt — status changed from Proposed to Superseded; all "external-browser handoff" and "browser handoff" wording replaced with "safe-link routing"
+- 100_testing/Test_Strategy.txt — "browser handoff" → "safe-link routing"; "routing / handoff" → "routing / external redirect"
+- 100_testing/Automated_Test_Architecture.txt — "browser handoff routing logic" → "safe-link routing logic"; "safe-link handoff" → "safe-link routing"; "Routing and handoff" → "Routing and external redirect"; "safe link -> external browser handoff" → "safe-link routing within LinkLook"
+- 100_testing/Test_Driven_Development_Policy.txt — "browser handoff logic" → "safe-link routing logic"
+- 050_architecture/Development_Architecture.txt — "first browser handoff tests" → "first safe-link routing tests"
+- 050_architecture/AASA_Crawling_Architecture.txt — "default-browser handoff" → "default safe-link routing"
+- 000_overview/Document_Index.txt — added Repo_Changelog_v22.txt; added 3 previously missing entries: 050_architecture/C4_Architecture_Diagram.pdf, 100_testing/Initial_30_Phishing_Test_Fixtures.yaml, 120_misc/PoC_Dialog.pages
+
+Intent
+Consistent terminology across the entire doc set now uses "safe-link routing" instead of any "browser handoff" or "external-browser handoff" variant. The fallback ADR is preserved for historical reference but marked superseded. The document index now accounts for all non-txt assets. Archive hygiene removes macOS resource forks that bloat zip sizes and confuse non-Mac tools.

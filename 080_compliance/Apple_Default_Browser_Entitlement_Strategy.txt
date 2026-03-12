@@ -1,0 +1,52 @@
+Apple Default Browser Entitlement Strategy
+Version: v3.0
+Date: 2026-03-10
+Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
+
+Purpose
+Preserve the reasoning, positioning, and supporting arguments behind LinkLook's
+request to intercept URLs before navigation.
+
+Canonical alignment note (2026-03-10)
+LinkLook is now positioned as a straightforward, security-driven browser for iOS,
+not as a default-browser interceptor and not as a minimal-browser fallback concept.
+The default browser entitlement remains strategically important for receiving URLs
+before navigation, but it is no longer the sole identity of the product.
+Browser entitlement approval risk is an accepted showstopper risk (MDL-079).
+The minimal-browser fallback direction has been superseded (MDL-007).
+
+Core argument
+LinkLook's value depends on evaluating links before content loads, especially for
+phishing and smishing delivered from Messages, Mail, WhatsApp, and similar apps.
+
+Key points to preserve
+- LinkLook is designed as a security gateway before navigation
+- it evaluates URLs and destination risk before presenting results
+- it minimizes data collection
+- it does not need broad browsing-history retention to perform its security role
+- redirect option/button is part of the browser flow (MDL-077)
+
+Entitlement risk posture
+Browser entitlement approval risk is an accepted showstopper risk. The project
+proceeds with this risk acknowledged. If entitlement is refused, the product
+direction will need reassessment — but the minimal-browser fallback concept
+is no longer the active contingency path.
+
+Strategic rule
+- preferred path: straightforward, security-driven browser with redirect option
+- entitlement refusal requires strategic reassessment, not automatic fallback
+- all paths must preserve honest product claims and privacy-first analysis
+
+Documentation links
+- Default_Browser_Entitlement.txt
+- Apple_Review_Defense.txt
+- Privacy_Compliance.txt
+- Network_Extension_Justification.txt
+- ADR_Minimal_Browser_Fallback_if_Entitlement_Refused.txt (superseded direction)
+- Product_Requirements.txt
+- Core_User_Flows.txt
+- Risk_Log.txt
+
+Maintenance note
+Keep this document updated with every material architecture change that affects
+Apple's review posture.

@@ -1,0 +1,466 @@
+LinkLook — Security Assessment
+Version: v1.0
+Date: 2026-03-11
+Origin: Cowork session, consolidating ChatGPT analysis and project docs
+Status: Security-promising, not yet security-proven
+References: Security_Threat_Model.txt, Security_Control_Mapping.txt,
+            Entry_Path_Visibility.txt, Backend_Policy_Specification.txt,
+            Policy_Evaluation_Precedence.txt, Policy_JSON_Schema_Draft.txt,
+            Decision_Policy_Rule_Engine.txt, Privacy_Architecture_Summary.txt
+
+================================================================================
+PURPOSE
+================================================================================
+
+This document is an honest current-state security assessment of LinkLook.
+It evaluates what is strong, what is weak, what is unknown, and what must
+be hardened before the product can be called trustworthy.
+
+It is not marketing. It is not aspirational. It describes LinkLook as it
+actually is today and what it needs to become.
+
+Summary position:
+  "LinkLook can be made highly trustworthy within the browser-handoff path
+   it controls, but it does not cover all URL entry paths on iOS and
+   therefore should be positioned as a focused preventive layer, not
+   total device-wide protection."
+
+================================================================================
+1. SECURITY POSTURE RATING
+================================================================================
+
+  Dimension                   Rating         Notes
+  ──────────────────────────────────────────────────────────────────────────
+  Conceptual security         Strong         Minimal scope, deterministic
+                                             flow, policy-driven behavior,
+                                             fail-safe defaults.
+
+  Implemented security        Unknown        V1 code exists but has not
+                                             been externally reviewed or
+                                             penetration tested.
+
+  Coverage security           Partial        Covers default-browser handoff
+                                             path. Blind spots for universal
+                                             links, custom schemes, App Clips,
+                                             in-app browsers. See
+                                             Entry_Path_Visibility.txt.
+
+  Operational security        Depends        Depends entirely on backend
+                                             policy integrity (V2). V1 has
+                                             no backend, so this risk is
+                                             deferred but not eliminated.
+
+================================================================================
+2. STRENGTHS
+================================================================================
+
+These are genuine architectural advantages that make LinkLook easier to
+secure than a general-purpose browser.
+
+  2.1 MINIMAL SCOPE
+  LinkLook is a safety-driven browser with a preventive gate, not a full
+  browser with tabs, extensions, downloads, sync, and complex rendering.
+  A small, focused app has a smaller attack surface and is easier to
+  reason about, test, and harden.
+
+  2.2 DETERMINISTIC DECISION FLOW
+  The evaluation pipeline (Policy_Evaluation_Precedence.txt) is fully
+  deterministic: same URL + same policy + same signals = same verdict.
+  No randomness, no ML non-determinism in the critical path (V1).
+  This makes the engine auditable and testable.
+
+  2.3 POLICY-DRIVEN BEHAVIOR
+  Behavior is defined as data (policy), not code. The backend can adjust
+  weights, rules, thresholds, and overrides without shipping app updates.
+  This enables rapid response to new threats. See
+  Backend_Policy_Specification.txt.
+
+  2.4 EXACT URL VS DOMAIN SEPARATION
+  An approved exact URL does not approve the entire domain. This prevents
+  attackers from using one legitimate path to smuggle malicious paths on
+  the same domain. See Policy_Evaluation_Precedence.txt section 7.
+
+  2.5 FAIL-SAFE DEFAULT
+  When the engine cannot determine safety, it defaults to "inform" (V1)
+  or "warn" (baseline fallback). It never silently allows. See
+  Decision_Policy_Rule_Engine.txt section 7.
+
+  2.6 NO WEB CONTENT BEFORE VERDICT
+  Core rule: "No web content may load before LinkLook has reached the
+  allowed state for that specific URL." The preventive gate stops the
+  page before it can execute JavaScript, set cookies, or trigger
+  downloads.
+
+  2.7 PRIVACY-FIRST DATA SEPARATION
+  Personal trust data stays on-device. Threat signals (V2) are anonymous,
+  domain-level, and opt-in only. See Privacy_Architecture_Summary.txt
+  and MDL-108.
+
+================================================================================
+3. TRUST BOUNDARIES
+================================================================================
+
+A trust boundary is a point where data crosses from a trusted zone to
+a less-trusted zone or vice versa. LinkLook has five critical trust
+boundaries:
+
+  BOUNDARY 1: iOS → LinkLook (URL handoff)
+  ─────────────────────────────────────────
+  Trust level:  High (Apple-controlled mechanism)
+  Risk:         Low for the handoff itself.
+  Limitation:   iOS only hands off URLs it considers web links destined
+                for the default browser. Universal links, custom schemes,
+                App Clips, and in-app browsers bypass this boundary
+                entirely. LinkLook has no control over what iOS does NOT
+                hand off.
+  Reference:    Entry_Path_Visibility.txt
+
+  BOUNDARY 2: Backend → App (policy delivery)
+  ────────────────────────────────────────────
+  Trust level:  Critical — this is the highest-risk boundary
+  Risk:         If an attacker can modify the policy in transit or at
+                the source, they can make malicious links appear safe.
+  Controls:     Signature verification, certificate pinning (V2),
+                anti-rollback protection (V2), grace period fallback.
+  V1 status:    Not applicable (policy bundled in app binary).
+  Reference:    Backend_Policy_Specification.txt section 3
+
+  BOUNDARY 3: LinkLook → External browser (open elsewhere)
+  ────────────────────────────────────────────────────────
+  Trust level:  Medium
+  Risk:         When LinkLook says "safe enough" and hands off to Safari
+                or another browser, the user leaves LinkLook's protection.
+                The other browser may not apply the same checks. The
+                handoff itself is a moment where the URL could be
+                intercepted or modified (low probability on iOS).
+  Controls:     Clear UX messaging that the user is leaving LinkLook.
+                MDL-109 controls whether safe links auto-open or always
+                show the result screen first.
+
+  BOUNDARY 4: User → App (user input and bypass)
+  ───────────────────────────────────────────────
+  Trust level:  Low (users can be socially engineered)
+  Risk:         User bypass fatigue. If warn/inform screens appear too
+                often, users learn to tap through them. This degrades
+                the entire protection model.
+  Controls:     allow_user_bypass flag per override (hard block when
+                false), sticky overrides for emergency blocks, PROTECTED
+                profile that enforces block mode. Clear, non-repetitive
+                UX (Five_Security_UX_Failure_Patterns.txt).
+
+  BOUNDARY 5: App → On-device storage (cache and preferences)
+  ───────────────────────────────────────────────────────────
+  Trust level:  Medium
+  Risk:         If an attacker can modify the on-device cache or
+                preferences, they can pre-approve malicious URLs or
+                change the user's profile from PROTECTED to STANDARD.
+  Controls:     App Group container (sandboxed by iOS), cache TTL
+                expiry, expired approvals fall back to next rule (never
+                to silent allow). iOS keychain for sensitive values.
+
+================================================================================
+4. THREAT CATALOG
+================================================================================
+
+Threats are ordered by estimated impact, highest first.
+
+  THREAT 1: Policy backend compromise
+  ────────────────────────────────────
+  Impact:       Critical
+  Description:  If attackers gain control of the policy backend, they can
+                publish policy that marks malicious URLs as safe, or
+                disable blocking rules entirely.
+  V1 exposure:  None (no backend in V1).
+  V2 exposure:  High — this becomes the single most valuable target.
+  Mitigations:  Signed policy (HMAC or asymmetric), certificate pinning,
+                backend access controls, anti-rollback (reject policy
+                with version <= current), monitoring for anomalous
+                policy changes.
+
+  THREAT 2: Weak policy update trust model
+  ─────────────────────────────────────────
+  Impact:       Critical
+  Description:  If the app accepts policy updates too easily — without
+                strong signature checks, without pinning, without
+                anti-rollback — then a man-in-the-middle or rogue
+                backend can subvert LinkLook silently.
+  V1 exposure:  None (no fetch in V1).
+  V2 exposure:  High.
+  Mitigations:  Policy_JSON_Schema_Draft.txt section 7 validation rules,
+                signature verification before applying, reject unknown
+                schema versions, reject expired or downgraded policies.
+
+  THREAT 3: Overbroad allow rules
+  ────────────────────────────────
+  Impact:       High
+  Description:  If the policy approves domains too broadly, attackers
+                can abuse: subdomains, open redirects, user-generated
+                pages, or compromised paths under trusted domains.
+  V1 exposure:  Low (V1 has no domain-level allow rules, only signal-
+                based block/warn/inform rules).
+  V2 exposure:  Medium — increases as the policy grows.
+  Mitigations:  Scope principle (exact URL ≠ domain), include_subdomains
+                flag, validity expiry on approvals, regular review of
+                allow rules. See Policy_Evaluation_Precedence.txt
+                section 7.
+
+  THREAT 4: iOS entry path blind spots
+  ─────────────────────────────────────
+  Impact:       High (perception) / Medium (actual)
+  Description:  LinkLook cannot inspect what iOS never delivers to it.
+                Universal links, custom schemes, App Clips, in-app
+                browsers, and hardcoded browser notifications all bypass
+                LinkLook.
+  V1 exposure:  High (these paths exist from day one).
+  Mitigations:  Honest documentation, transparent marketing, V2 Action
+                Extension (partial mitigation for share sheet), V3
+                Network Extension (broader coverage). Never claim
+                device-wide protection.
+  Reference:    Entry_Path_Visibility.txt
+
+  THREAT 5: User bypass fatigue
+  ─────────────────────────────
+  Impact:       Medium
+  Description:  If warn/inform is shown too frequently, users learn to
+                ignore it. The security decision becomes a reflexive tap
+                rather than a considered choice.
+  V1 exposure:  Medium (depends on rule tuning — too many inform/warn
+                screens will train users to dismiss them).
+  Mitigations:  Tuned signal weights (avoid false positives), allow
+                verdict shows minimal friction (MDL-109), PROTECTED
+                profile enforces block mode for vulnerable users,
+                clear and distinct visual hierarchy between inform,
+                warn, and block screens.
+
+  THREAT 6: Dangerous "open elsewhere" handoff
+  ─────────────────────────────────────────────
+  Impact:       Medium
+  Description:  After LinkLook says "allowed", the user opens the URL
+                in Safari or another browser. The destination page may
+                have changed between check and load, or the other
+                browser may not enforce the same protections.
+  V1 exposure:  Medium (this is the default flow for allowed links).
+  Mitigations:  MDL-109 safe-link display preference, time-limited
+                cache entries, no persistent "always safe" without
+                re-evaluation, clear UX that the user is leaving
+                LinkLook.
+
+  THREAT 7: Privacy and logging mistakes
+  ───────────────────────────────────────
+  Impact:       Medium
+  Description:  A security product that stores or transmits too much
+                URL or user data becomes a privacy risk itself. If
+                LinkLook's history or cache is exfiltrated, it reveals
+                the user's browsing patterns.
+  V1 exposure:  Low (minimal local storage, no network transmission
+                of URLs in V1).
+  V2 exposure:  Medium (crowdsourced signals, even anonymized, need
+                careful handling).
+  Mitigations:  Privacy_Architecture_Summary.txt, MDL-108 opt-in only,
+                domain-level signals only (no full URLs), k-anonymity,
+                differential privacy, local history toggle.
+
+  THREAT 8: Cache poisoning
+  ─────────────────────────
+  Impact:       Medium
+  Description:  If an attacker can modify the on-device Stage 0 cache,
+                they can pre-approve malicious URLs so LinkLook skips
+                evaluation entirely.
+  V1 exposure:  None (cache not built yet).
+  V2 exposure:  Medium.
+  Mitigations:  Cache TTL expiry, cache entries include policy_version,
+                cache invalidation on policy update, iOS sandbox
+                protects the App Group container.
+
+  THREAT 9: Signal detector evasion
+  ──────────────────────────────────
+  Impact:       Medium
+  Description:  Attackers adapt to detection patterns — changing domains
+                frequently, avoiding known brand keywords, using novel
+                TLDs, rotating infrastructure.
+  V1 exposure:  Medium (static rule set, static detection config).
+  V2 exposure:  Lower (backend can update detection config and signal
+                weights without app update).
+  Mitigations:  Backend policy updates (V2), crowdsourced signals (V2),
+                partner threat feeds (V2), regular rule review.
+
+  THREAT 10: App binary tampering
+  ───────────────────────────────
+  Impact:       Low (iOS makes this difficult)
+  Description:  If an attacker can modify the LinkLook binary, they can
+                disable the gate entirely.
+  V1 exposure:  Very low (App Store code signing, iOS sandbox).
+  Mitigations:  Apple code signing, App Store distribution only,
+                no sideloading assumption.
+
+================================================================================
+5. TOP 10 HARDENING REQUIREMENTS
+================================================================================
+
+These are the controls that must be in place for LinkLook to be called
+trustworthy. Ordered by priority.
+
+  HR-01  SIGNED POLICY FILES
+  ──────────────────────────
+  Version: V2
+  The app must verify a cryptographic signature on every policy document
+  before applying it. A policy that fails verification is rejected.
+  The previous valid policy remains in effect.
+  Reference: Policy_JSON_Schema_Draft.txt section 7, rule 2.
+
+  HR-02  CERTIFICATE PINNING FOR POLICY FETCH
+  ────────────────────────────────────────────
+  Version: V2
+  The policy fetch endpoint must use certificate pinning or a similarly
+  strong trust mechanism. Standard HTTPS alone is not sufficient for the
+  highest-value target in the system.
+
+  HR-03  ANTI-ROLLBACK PROTECTION
+  ───────────────────────────────
+  Version: V2
+  The app must reject any policy whose policy_version is <= the currently
+  cached version. This prevents an attacker from replaying an older policy
+  that had more permissive rules.
+
+  HR-04  STRICT RULE PRECEDENCE
+  ─────────────────────────────
+  Version: V1 (partially), V2 (fully)
+  The evaluation order must be deterministic and tested: overrides > rules >
+  scoring > default. Equal-priority conflicts resolve by specificity then
+  severity. No ambiguity.
+  Reference: Policy_Evaluation_Precedence.txt section 2.
+
+  HR-05  EXACT URL ≠ DOMAIN APPROVAL
+  ──────────────────────────────────
+  Version: V2
+  An approved exact URL must NOT automatically approve the domain. This
+  must be enforced in the engine and tested.
+  Reference: Policy_Evaluation_Precedence.txt section 7.1.
+
+  HR-06  FAIL-SAFE ON POLICY FAILURE
+  ──────────────────────────────────
+  Version: V1 (partial), V2 (full)
+  If policy is expired, unavailable, corrupt, or fails signature check:
+  fall back to hardcoded baseline (default_action = warn). Never fall back
+  to allow. Never silently become permissive.
+  Reference: Policy_Evaluation_Precedence.txt section 4.
+
+  HR-07  MINIMAL SENSITIVE LOGGING
+  ────────────────────────────────
+  Version: V1
+  Do not log full URLs in production builds. Log normalized domain + path
+  pattern at most. Decision traces log reason codes and rule IDs, not
+  user-identifiable browsing history.
+  Reference: Privacy_Architecture_Summary.txt.
+
+  HR-08  STRONG TEST COVERAGE FOR MATCHING AND PRECEDENCE
+  ───────────────────────────────────────────────────────
+  Version: V1 (partial), V2 (full)
+  The matching order, conflict resolution, fail-safe behavior, and scope
+  rules must be tested with dedicated test suites — not just integration
+  tests. Every path through Policy_Evaluation_Precedence.txt must have
+  at least one test.
+  Reference: Decision_UX_Test_Specification.txt, Test_Strategy.txt.
+
+  HR-09  TAMPER-AWARE LOCAL CACHE
+  ──────────────────────────────
+  Version: V2
+  Cache entries must include the policy_version they were computed under.
+  If the policy changes, stale cache entries must be invalidated. Expired
+  cache entries must not produce allow verdicts.
+  Reference: URL_Reuse_Data_Model.txt.
+
+  HR-10  CLEAR BLIND SPOT DOCUMENTATION
+  ─────────────────────────────────────
+  Version: V1
+  All entry paths that bypass LinkLook must be documented, communicated
+  in onboarding, and reflected in the App Store description. Never claim
+  universal protection.
+  Reference: Entry_Path_Visibility.txt.
+
+================================================================================
+6. WHAT "SECURITY-PROVEN" WOULD REQUIRE
+================================================================================
+
+To move from "security-promising" to "security-proven", LinkLook needs:
+
+  6.1 External code review
+  An independent security review of the decision engine, policy handling,
+  and data storage. Internal testing is necessary but not sufficient.
+
+  6.2 Penetration test
+  A focused pentest on the policy fetch chain (V2), cache handling,
+  and the "open elsewhere" handoff path.
+
+  6.3 Formal test coverage report
+  Documented coverage of every path in Policy_Evaluation_Precedence.txt,
+  every fail-safe scenario, and every scope rule.
+
+  6.4 Incident response plan
+  A documented plan for: policy compromise, false-positive wave, false-
+  negative miss, cache poisoning, and detection evasion at scale.
+
+  6.5 Bug bounty or responsible disclosure program
+  A public channel for security researchers to report vulnerabilities.
+
+  6.6 Compliance audit trail
+  Proof that the policy chain is auditable: who changed what rule, when,
+  from what source, with what ref. The source field in
+  Policy_JSON_Schema_Draft.txt supports this.
+
+================================================================================
+7. PRODUCT POSITIONING GUIDANCE
+================================================================================
+
+Based on this assessment, LinkLook should be positioned as:
+
+  DO say:
+  - "LinkLook checks every web link that reaches it as your default browser."
+  - "Focused preventive layer for web link safety."
+  - "Stops you before a dangerous page loads."
+  - "Policy-driven, deterministic, auditable."
+
+  DO NOT say:
+  - "LinkLook protects all links on your phone."
+  - "100% phishing protection."
+  - "Your iPhone is fully secured."
+  - "No phishing link can get through."
+
+  The honesty is a strength, not a weakness. Users and reviewers trust
+  products that describe their limits clearly.
+
+================================================================================
+8. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Security_Threat_Model.txt        Adversary profiles, attack surfaces,
+                                   and bypass strategies. This assessment
+                                   builds on that model with a current-state
+                                   evaluation.
+
+  Security_Control_Mapping.txt     Threat-to-control pairing. This
+                                   assessment adds hardening requirements
+                                   that go beyond control mapping.
+
+  Entry_Path_Visibility.txt        iOS entry path blind spots. Referenced
+                                   in trust boundary 1 and threat 4.
+
+  Backend_Policy_Specification.txt Policy shape, delivery, caching.
+                                   Referenced in trust boundary 2 and
+                                   threats 1–2.
+
+  Policy_Evaluation_Precedence.txt Runtime evaluation rules. Referenced
+                                   in hardening requirements 4–6, 8–9.
+
+  Policy_JSON_Schema_Draft.txt     JSON data contract. Referenced in
+                                   hardening requirements 1, 3.
+
+  Privacy_Architecture_Summary.txt Privacy controls. Referenced in
+                                   threat 7 and hardening requirement 7.
+
+  Decision_Policy_Rule_Engine.txt  Engine contract. Referenced in
+                                   strength 2.5 and hardening req 4.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

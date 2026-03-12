@@ -1,0 +1,133 @@
+LinkLook Decision UX Test Specification
+Version: v2.0
+Date: 2026-03-11
+Origin: ChatGPT, updated to align with minimal browser model and Canonical Master Decision Log 2026-03-10
+
+Purpose
+Define how LinkLook verifies that security decisions are translated into the correct UX behavior.
+
+Core rule
+No web content may load before LinkLook has reached the allowed state for that specific URL.
+Every decision-UX test must verify that this rule is respected for the given verdict.
+
+Scope
+This document focuses on the decision-to-UX mapping layer rather than the phishing decision itself.
+The core question is:
+When the engine returns a given decision and reason code, does the user see the correct explanation, severity, and safe action layout?
+
+Test object
+DecisionResult -> UX mapping -> UXModel -> rendered screen
+
+Required assertions per decision-UX test
+Each decision-UX test should verify:
+- decision severity level
+- displayed title
+- displayed explanation body
+- button labels
+- button priority
+- whether override is offered
+- page load state (not loaded / loading / loaded)
+- browser chrome visibility (address bar, back/forward, reload)
+- open elsewhere button visibility and target (MDL-104)
+- back button availability
+- accessibility labels and reading order where applicable
+
+Canonical mappings to verify
+1. allow
+- calm confirmation tone
+- no alarming language
+- page loads inside LinkLook browser only after this verdict is reached
+- no web content is visible before the allowed state
+- browser chrome (address bar, back/forward, reload) becomes active
+- open elsewhere button available
+- safe-link display preference (MDL-109) affects this path:
+  - "always show result" (default): safe result screen shown briefly, then
+    page loads. Test must verify screen appears before page render.
+  - "auto-open safe links": page loads directly without result screen.
+    Test must verify verdict was still computed before page load.
+  - PROTECTED profile: always show result is enforced regardless of setting
+  - both modes must preserve the core rule: no web content before allowed state
+
+2. inform
+- subtle caution tone
+- explanation of incomplete or low-confidence risk
+- no auto-load: page is NOT loaded yet
+- user sees inform screen first
+- continue button opens page in minimal browser
+- open elsewhere button hands off to preferred browser (MDL-104)
+- back button available
+
+3. warn
+- clear plain-language explanation
+- safe action (back) is primary
+- no auto-load: page is NOT loaded yet
+- user sees warning screen first
+- override (continue) is available only when policy allows
+- continue opens page in minimal browser, no double-open
+- open elsewhere button available
+- back button available
+
+4. block
+- strong warning language without panic language
+- safe action (back) is primary
+- no web content loads at all — not in browser, not in background
+- dangerous continuation is hidden or strongly de-emphasized according to policy
+- open elsewhere is NOT available for blocked URLs
+
+Reason-code specific mapping tests
+For each stable reason code, verify:
+- expected UX message key
+- expected explanation text family
+- expected severity band
+- expected iconography or styling level
+- expected primary and secondary action set
+
+Examples
+1. domain_impersonation
+Expected UX behavior:
+- severity: warn or block depending on confidence
+- plain-language explanation that the site may be pretending to be another company
+- safe action primary
+
+2. shortener_unresolved
+Expected UX behavior:
+- severity: inform or warn
+- explain that destination could not be safely expanded
+- do not falsely claim phishing certainty
+
+3. network_timeout
+Expected UX behavior:
+- severity: inform
+- explain that the safety check could not complete
+- define fallback behavior clearly
+
+4. insufficient_signal
+Expected UX behavior:
+- severity: inform
+- explain uncertainty without overclaiming danger
+
+Button hierarchy rule
+Dangerous continuation must never be the primary visual action for warn or block states.
+
+Accessibility rule
+Decision-UX tests should also verify:
+- dynamic type compatibility
+- VoiceOver labels on primary actions
+- understandable warning order for screen readers
+- sufficient contrast for severity states
+
+Automation approach
+Decision-UX tests should run without full end-to-end iOS plumbing where possible.
+They should be executable as deterministic mapping tests against the UX layer.
+
+Failure examples to catch
+- wrong message for reason code
+- technical jargon exposed to user
+- continue-anyway shown when policy forbids it
+- dangerous action shown as default button
+- network failure incorrectly shown as confirmed phishing
+- web content visible before verdict is reached (core rule violation)
+- page auto-loads on inform or warn screen
+- double browser instance opened on continue tap
+- open elsewhere sends wrong or rewritten URL
+- blocked URL loads content in background

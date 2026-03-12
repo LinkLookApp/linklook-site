@@ -1,0 +1,198 @@
+LinkLook — Entry Path Visibility
+Version: v1.0
+Date: 2026-03-11
+Origin: ChatGPT analysis of Apple documentation, documented via Cowork session
+References: Architecture.txt, QR_Code_Link_Threat_Model.txt,
+            Universal_Link_Bypass_Mitigation.txt, Architecture_Pipeline.txt
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+LinkLook is set as the default browser by the user. This document describes
+which URL entry paths reach LinkLook and which do not, so the product is honest
+about where protection applies and where blind spots exist.
+
+================================================================================
+2. CORE RULE
+================================================================================
+
+LinkLook receives a URL only when iOS delivers it as a standard web-link
+handoff to the system default browser. Any path that routes the URL elsewhere
+— to an associated app, an App Clip, a custom scheme handler, or an in-app
+browser — bypasses LinkLook entirely via the default-browser route.
+
+================================================================================
+3. PATHS THAT REACH LINKLOOK (V1)
+================================================================================
+
+These entry paths deliver the URL to LinkLook as default browser:
+
+  3.1 Tapped link in Messages, Mail, or other apps
+      When the user taps an https:// link in an app and no universal link claim
+      captures it, iOS routes the URL to the default browser. LinkLook receives
+      it, evaluates it, and shows the result.
+
+  3.2 QR code scanned with Camera or Code Scanner (standard https:// URL)
+      When a QR code contains a plain https:// URL and no universal link or App
+      Clip claims the domain, tapping the Camera banner ("Open in LinkLook")
+      delivers the URL to LinkLook as default browser.
+
+  3.3 Link tapped in a notification (respects default browser)
+      When a push notification contains a web URL and the app opens it via the
+      system default browser path, LinkLook receives it.
+
+  3.4 Copy-paste into LinkLook
+      The user manually pastes a URL into LinkLook's paste field. Always reaches
+      LinkLook by design.
+
+  3.5 Share sheet (V2 Action Extension)
+      In V2, the Action Extension allows users to share a URL from any app into
+      LinkLook for evaluation.
+
+================================================================================
+4. PATHS THAT DO NOT REACH LINKLOOK (BLIND SPOTS)
+================================================================================
+
+These paths bypass LinkLook via the default-browser route. They are grouped
+into two categories: "not a browser case at all" and "still a web URL but
+another app keeps control."
+
+--------------------------------------------------------------------------------
+4.1 NOT A BROWSER CASE
+--------------------------------------------------------------------------------
+
+  4.1.1 Universal links
+        If the domain has an Apple App Site Association (AASA) file and the
+        matching app is installed, iOS opens the app directly instead of the
+        browser. LinkLook does not receive the URL.
+        Mitigation: AASA crawling intelligence (see AASA_Crawling_Architecture.txt),
+        Network Extension backstop in V3.
+        Named limitation, documented honestly.
+
+  4.1.2 Custom URL schemes
+        QR codes or links using app-specific schemes (e.g. bankapp://...,
+        maps://..., tel://...) launch the target app directly. Apple's default
+        browser setting applies only to web URLs (http/https), not custom
+        schemes.
+        Mitigation: none in V1. Not a web URL, so not in LinkLook's scope.
+        Named limitation, documented honestly.
+
+  4.1.3 App Clips
+        A QR code or NFC tag can encode an App Clip URL. iOS launches the App
+        Clip experience directly without routing through the default browser.
+        Mitigation: none in V1. App Clips are a separate Apple platform path.
+        Named limitation, documented honestly.
+
+  4.1.4 Non-web QR content
+        QR codes can contain Wi-Fi configuration, vCard contacts, calendar
+        events, plain text, or other non-URL payloads. There is no browser
+        step in this path.
+        Mitigation: none. Not a URL, not in scope.
+
+--------------------------------------------------------------------------------
+4.2 STILL A WEB URL, BUT ANOTHER APP KEEPS CONTROL
+--------------------------------------------------------------------------------
+
+  4.2.1 In-app browser (WKWebView / SFSafariViewController)
+        Even when a QR code or link decodes to a normal https:// URL, the
+        scanning or messaging app may show the page in its own embedded browser
+        (WKWebView or SFSafariViewController) instead of handing it to the
+        system default browser. The user never leaves the app, so LinkLook
+        does not receive the URL.
+        Examples: some social media apps, some QR scanner apps, some messaging
+        apps that open links internally.
+        Mitigation: V2 Action Extension lets the user share the URL into
+        LinkLook manually. V3 Network Extension intercepts the outbound
+        connection regardless of which app initiates it.
+        Named limitation, documented honestly.
+
+  4.2.2 Notification hardcodes a specific browser
+        Some push notifications use a hardcoded URL scheme to open a link in a
+        specific browser (e.g. googlechrome://...) rather than using the system
+        default browser.
+        Mitigation: V3 Network Extension intercepts the outbound connection.
+        Named limitation, documented honestly.
+
+================================================================================
+5. VISIBILITY SUMMARY TABLE
+================================================================================
+
+  Entry path                          V1 visibility  V2 visibility  V3 visibility
+  ──────────────────────────────────────────────────────────────────────────────
+  Tapped https link (Messages etc.)   YES            YES            YES
+  QR code → https (Camera/Scanner)    YES            YES            YES
+  Notification → default browser      YES            YES            YES
+  Copy-paste into LinkLook            YES            YES            YES
+  Share sheet → Action Extension      NO             YES            YES
+  Universal link → app                NO             NO*            YES**
+  Custom URL scheme → app             NO             NO             NO***
+  App Clip                            NO             NO             NO***
+  Non-web QR content                  NO             NO             NO***
+  In-app browser (WKWebView etc.)     NO             NO*            YES**
+  Notification → hardcoded browser    NO             NO             YES**
+
+  *  V2 Action Extension: user can manually share the URL into LinkLook.
+  ** V3 Network Extension: intercepts outbound connections regardless of app.
+  *** Not a web URL — outside LinkLook's defined scope.
+
+================================================================================
+6. HONESTY PRINCIPLE
+================================================================================
+
+LinkLook does not claim to protect against every possible link delivery path.
+The blind spots listed in section 4 are:
+
+  - documented in onboarding
+  - documented in the App Store description
+  - acknowledged in the founding story
+  - explained honestly when users ask
+
+The product promise is: "LinkLook checks every web link that reaches it as
+your default browser." Not: "LinkLook checks every link on your phone."
+
+This aligns with the honesty principles (MDL-035, MDL-071) and the detection
+capability targets in Architecture_Pipeline.txt (80–90% of genuinely malicious
+links, with the 10–20% gap honestly disclosed).
+
+================================================================================
+7. QR-SPECIFIC PRACTICAL RULE
+================================================================================
+
+A plain https:// QR code scanned with the iPhone Camera or Code Scanner will
+normally go through the default browser path to LinkLook — UNLESS:
+  - the domain has a universal link claim and the matching app is installed
+  - the QR encodes an App Clip URL
+  - the QR scanner app opens the link in its own in-app browser
+
+For the primary audience (elderly users scanning QR codes from letters, parcels,
+or posters), the most common case — plain https:// URL scanned with the native
+Camera — reaches LinkLook. This is the highest-risk QR scenario (parcel scams,
+bank impersonation) and it is covered.
+
+================================================================================
+8. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+QR_Code_Link_Threat_Model.txt        Threat model for QR-driven links.
+                                     This doc adds the visibility/entry path
+                                     dimension that the threat model does not
+                                     cover.
+
+Universal_Link_Bypass_Mitigation.txt Mitigation strategy for universal link
+                                     blind spot. This doc places universal
+                                     links in the broader entry path context.
+
+Architecture.txt (section 5)         Browser flow — the main path where
+                                     LinkLook has full visibility.
+
+Architecture_Pipeline.txt            Full pipeline flow. Covers both default
+                                     browser and Network Extension paths
+                                     (V3 reference).
+
+Risk_Log.txt                         Entry path blind spots should be tracked
+                                     as named risks.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

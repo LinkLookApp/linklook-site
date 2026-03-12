@@ -1,0 +1,52 @@
+Phishing Campaign Early Detection System
+Generated: 2026-03-08
+
+Purpose
+Describe how LinkLook can detect phishing infrastructure and campaign patterns before large-scale victim impact.
+
+Core idea
+Do not wait for confirmed victim reports alone.
+Look for weak early signals that become powerful when correlated.
+
+Signal families
+- newly registered domains
+- recently first-seen certificates
+- brand similarity to protected domains
+- suspicious keyword patterns such as login, verify, billing, support, secure
+- clusters of related domains using similar naming conventions
+- shared hosting or IP infrastructure
+- redirect chains converging on similar targets
+- shortener links resolving into new suspicious domains
+- AASA anomalies or suspicious app-link mappings
+- repeated appearance of similar form structures
+
+Detection pipeline
+1. collect domain and infrastructure observations
+2. correlate against protected brand dataset
+3. identify clusters
+4. score campaign likelihood
+5. publish high-confidence campaign indicators to detection engine
+6. review false positives and refine thresholds
+
+Campaign cluster example
+- secure-postnl-track.example
+- postnl-billing-check.example
+- postnl-secure-update.example
+
+Possible outputs
+- campaign_id
+- suspected_target_brand
+- related_domains
+- infrastructure_overlap
+- campaign_confidence
+- first_seen
+- recommended_action
+
+Actions
+- raise risk for all linked indicators
+- prioritize analyst review
+- enrich the block / suspicious decision layer
+- feed model training and test cases
+
+Important boundary
+Early detection should bias toward correlation and review, not automatic hard blocking of every weak signal.

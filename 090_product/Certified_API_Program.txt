@@ -1,0 +1,18 @@
+LinkLook — Certified API Program
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Concept
+Apps that integrate the LinkLook API can be reviewed against technical and
+policy requirements and then identified as certified integrators.
+
+Purpose
+- create ecosystem trust
+- standardize safe link handling expectations
+- make integration quality visible
+
+Possible certification requirements
+- use LinkLook verdicts correctly
+- preserve user warnings
+- avoid deceptive overrides
+- provide auditable integration behavior

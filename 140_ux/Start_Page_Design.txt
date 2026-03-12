@@ -1,0 +1,294 @@
+LinkLook — Start Page Design
+Version: v1.0
+Date: 2026-03-11
+Origin: Founder mockup, documented via Cowork session
+References: Core_User_Flows.txt (Flow 0), UX_Principles.txt,
+            Security_Warning_User_Experience.txt
+Visual reference: Start_Page_Mockup.html (in this folder)
+
+================================================================================
+PURPOSE
+================================================================================
+
+This document describes the start page — the screen the user sees when they
+open LinkLook directly (not via a link handoff). It is the home state of the
+app.
+
+When iOS hands LinkLook a URL via default-browser handoff, this screen is
+never shown. The check flow begins immediately.
+
+================================================================================
+1. LAYOUT (TOP TO BOTTOM)
+================================================================================
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  TOP BAR                                                             │
+  │  ← →   [ Enter website or paste link                        ]   ⚙   │
+  │  back/forward arrows, address field, settings gear icon              │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  APP IDENTITY (centered)                                             │
+  │                                                                      │
+  │                         LinkLook                                     │
+  │              A minimal browser with a built-in safety check          │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  PRIMARY ACTION CARD (centered, rounded corners, subtle background)  │
+  │                                                                      │
+  │                    Safe browsing starts here                         │
+  │                 Check a link before opening it.                      │
+  │                                                                      │
+  │                    [ Paste from clipboard ]                          │
+  │                    (primary button, dark/filled)                     │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  RECENT SITES (list, rounded card)                                   │
+  │                                                                      │
+  │  Recent sites                                                        │
+  │  ┌──────────────────────────────────────────────────────────────┐    │
+  │  │  bank.nl                              Previously checked     │    │
+  │  ├──────────────────────────────────────────────────────────────┤    │
+  │  │  belastingdienst.nl                   Previously checked     │    │
+  │  ├──────────────────────────────────────────────────────────────┤    │
+  │  │  example.com                          Not opened yet         │    │
+  │  └──────────────────────────────────────────────────────────────┘    │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  TAB BAR (bottom, three items)                                       │
+  │                                                                      │
+  │         Home              Recent              Settings               │
+  └──────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+2. ELEMENT DESCRIPTIONS
+================================================================================
+
+  2.1 TOP BAR
+  ────────────
+  A browser-style navigation bar that establishes LinkLook as a real browser
+  for Apple App Review.
+
+  Elements:
+  - Back arrow (←) and forward arrow (→) — standard browser navigation,
+    greyed out on the start page since there is no browsing history yet
+  - Address field — placeholder text: "Enter website or paste link"
+    This is a tappable text field. When tapped, the keyboard appears and
+    the user can type or paste a URL.
+  - Settings gear icon (⚙) — opens in-app settings
+
+  The top bar persists across all screens. When browsing, it shows the
+  current URL. On the start page, it shows the placeholder.
+
+  2.2 APP IDENTITY
+  ─────────────────
+  Centered below the top bar. Two lines of text:
+  - "LinkLook" — app name, large bold text
+  - "A minimal browser with a built-in safety check" — tagline, smaller,
+    lighter text
+
+  This section is only visible on the start page. It disappears when
+  browsing begins.
+
+  2.3 PRIMARY ACTION CARD
+  ────────────────────────
+  A rounded-corner card with a subtle light grey background. Centered on
+  the page. Contains:
+  - "Safe browsing starts here" — headline, large bold text
+  - "Check a link before opening it." — subtext, lighter
+  - "Paste from clipboard" — primary action button, dark filled style
+
+  The "Paste from clipboard" button reads the system clipboard. If the
+  clipboard contains a URL, tapping the button immediately starts the
+  check flow. If the clipboard does not contain a URL, the button can
+  either be hidden or show a brief message.
+
+  iOS clipboard access note: since iOS 16, reading the clipboard triggers
+  a system permission banner ("LinkLook pasted from [app]"). This is
+  expected and acceptable — it shows the user that LinkLook is transparent
+  about clipboard access.
+
+  2.4 RECENT SITES
+  ─────────────────
+  A rounded-corner card below the primary action. Shows the most recent
+  sites checked by LinkLook (from the history, MDL-106).
+
+  Each row shows:
+  - Domain name (left-aligned, bold)
+  - Status label (right-aligned, lighter text):
+    "Previously checked" — the link was checked and a verdict was reached
+    "Not opened yet" — the link was checked but the user did not proceed
+
+  Tapping a row could re-check the site or show the last verdict.
+
+  If history is empty (first launch), this section is hidden. The start
+  page is even cleaner on first use.
+
+  If the user has disabled history (MDL-106), this section is hidden.
+
+  Maximum items shown: 3–5 most recent. A "See all" link leads to the
+  full history screen.
+
+  2.5 TAB BAR
+  ────────────
+  A standard iOS tab bar at the bottom with three items:
+  - Home — returns to this start page
+  - Recent — opens the full history screen
+  - Settings — opens in-app settings
+
+  The tab bar persists across all screens.
+
+================================================================================
+3. VISUAL STYLE
+================================================================================
+
+  Brand colors:
+  - Primary green:    #4CAF76  (medium green — buttons, active tab, accents)
+  - Logo green:       #2E7D4F  (dark green — "LinkLook" wordmark only)
+  - Green dark:       #3D8F62  (hover/pressed state)
+  - Green light:      #E8F5ED  (subtle green tint for top bar background)
+  - Creamy white:     #FAF8F4  (main background — warm, not clinical white)
+  - Card surface:     #F2EFE9  (slightly darker cream for card backgrounds)
+  - Item surface:     #FDFCFA  (near-white for list items inside cards)
+  - Text dark:        #2C2C2C  (headings, primary text)
+  - Text medium:      #6B6B6B  (body, secondary text)
+  - Text light:       #9E9E9E  (placeholders, status labels)
+  - Border/divider:   #E5E0D8  (warm divider, tab bar separator)
+
+  Application:
+  - Background: creamy white (#FAF8F4), not pure white
+  - Cards: slightly darker cream (#F2EFE9), rounded corners (iOS style)
+  - Primary button: medium green (#4CAF76), white text
+  - Top bar: light green tint (#E8F5ED) with subtle green border
+  - Active tab: green text (#4CAF76), inactive tabs grey (#9E9E9E)
+  - Navigation arrows and gear icon: green (#4CAF76)
+  - Text hierarchy: large bold for headlines, regular weight for body,
+    lighter grey for secondary text
+  - Spacing: generous white space between elements
+  - No decorative images, no gradients, no complex visual effects
+  - No news, ads, trending content, bookmarks grid, or search suggestions
+  - The overall impression: calm, warm, professional, trustworthy
+
+  Icons and symbols (SF Symbols):
+
+  Location         SF Symbol name           Fallback    Color       Size    Notes
+  ─────────────────────────────────────────────────────────────────────────────────
+  Top bar: back    chevron.left             ←           #2E7D4F     20pt    Disabled (opacity 0.35)
+                                                                            on start page, enabled
+                                                                            when browsing history
+                                                                            exists
+
+  Top bar: fwd     chevron.right            →           #2E7D4F     20pt    Same disabled/enabled
+                                                                            behavior as back
+
+  Top bar: gear    gearshape                ⚙           #4CAF76     22pt    Opens in-app settings.
+                                                                            Always enabled.
+
+  Tab: Home        house                    ⌂           #4CAF76     22pt    Active state: #4CAF76
+                                                        (active)            Inactive: #9E9E9E
+                                                        #9E9E9E
+                                                        (inactive)
+
+  Tab: Recent      clock.arrow.circlepath   ◷           same        22pt    Shows full history
+                                                                            screen
+
+  Tab: Settings    gearshape                ⚙           same        22pt    Same icon as top bar
+                                                                            gear, but in tab bar
+                                                                            context
+
+  Paste button     doc.on.clipboard         —           #FFFFFF     16pt    Inside the "Paste from
+                   (optional, left of                   (on green            clipboard" button.
+                   button text)                          bg)         Optional — text-only
+                                                                            button is also fine.
+
+  All icons use SF Symbols (Apple system icon library, available from iOS 13+).
+  Rendering mode: monochrome. Weight: regular (matching body text weight).
+  SF Symbols scale automatically with Dynamic Type.
+
+  Disabled state for nav arrows:
+  - On the start page, both arrows are disabled (no browsing history).
+  - Disabled = same color (#2E7D4F) at 35% opacity.
+  - Enabled = full color, tappable.
+
+  VoiceOver labels:
+  - Back arrow:       "Back"
+  - Forward arrow:    "Forward"
+  - Gear (top bar):   "Settings"
+  - Address field:    "Enter website or paste link"
+  - Paste button:     "Paste link from clipboard"
+  - Home tab:         "Home"
+  - Recent tab:       "Recent sites"
+  - Settings tab:     "Settings"
+  - Recent site row:  "{domain}, {status}" (e.g. "bank.nl, Previously checked")
+
+  Accessibility:
+  - All text must pass WCAG AA contrast ratio
+  - Button targets must meet minimum 44pt touch target (Apple HIG)
+  - VoiceOver labels on all interactive elements (see above)
+  - Dynamic Type support for all text and SF Symbols
+
+================================================================================
+4. STATES
+================================================================================
+
+  4.1 FIRST LAUNCH (empty state)
+  - Recent sites section is hidden (no history yet)
+  - Start page shows only: top bar, app identity, primary action card,
+    tab bar
+  - Even calmer and emptier than the normal state
+
+  4.2 RETURNING USER (normal state)
+  - Recent sites section shows 3–5 most recent checks
+  - All elements visible as described in section 1
+
+  4.3 CLIPBOARD HAS URL
+  - "Paste from clipboard" button is prominent
+  - Optionally: the URL is previewed below the button (truncated)
+
+  4.4 CLIPBOARD EMPTY OR NO URL
+  - "Paste from clipboard" button can be dimmed or hidden
+  - The address field becomes the primary entry point
+
+  4.5 HISTORY DISABLED
+  - Recent sites section is hidden
+  - Layout similar to first launch state
+
+================================================================================
+5. DESIGN PRINCIPLES
+================================================================================
+
+  5.1 One thing well
+  The start page communicates: "this app does one thing — check links."
+
+  5.2 Calm confidence
+  The user should feel safe and in control. No urgency, no alarm, no
+  marketing pressure.
+
+  5.3 Real browser, focused purpose
+  Apple must see a genuine browser with navigation, address bar, and
+  browsing capability. But the purpose is clear: safety first.
+
+  5.4 Progressive disclosure
+  First launch is minimal. Returning users see recent sites. Power users
+  find settings in the tab bar. Nothing is forced.
+
+================================================================================
+6. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Core_User_Flows.txt (Flow 0)     Canonical flow description for the
+                                   start page. This doc adds visual detail.
+
+  UX_Principles.txt                General UX principles that apply to
+                                   all screens including the start page.
+
+  Security_Warning_User_Experience.txt  Result screens that follow after
+                                       the user enters a link from the
+                                       start page.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

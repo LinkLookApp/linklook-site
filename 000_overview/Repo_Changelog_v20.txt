@@ -1,0 +1,29 @@
+LinkLook Repo Changelog v20
+Date: 2026-03-08
+Origin: ChatGPT
+
+Summary
+Full canonical rebuild based on the TDD / automated testing discussion and the LinkLook Browser Feasibility discussion.
+
+Added
+- 100_testing/Test_Driven_Development_Policy.txt
+- 110_decisions/ADR_Minimal_Browser_Fallback_if_Entitlement_Refused.txt
+- 000_overview/Repo_Changelog_v20.txt
+
+Updated
+- 100_testing/Automated_Test_Architecture.txt
+- 100_testing/Test_Strategy.txt
+- 050_architecture/Development_Architecture.txt
+- 080_compliance/Apple_Default_Browser_Entitlement_Strategy.txt
+- 090_product/Product_Requirements.txt
+- 110_decisions/Decision_Log.txt
+- 140_ux/Core_User_Flows.txt
+- 010_governance/Risk_Log.txt
+- 000_overview/Document_Index.txt
+
+Result
+The canonical set now states more explicitly that:
+- TDD is a real engineering policy for deterministic core behavior
+- automated tests start from day one
+- UX testing is a first-class requirement
+- LinkLook has a documented fallback if the default browser entitlement is refused

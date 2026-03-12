@@ -1,0 +1,37 @@
+LinkLook Reason Code Catalog
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Define stable machine-readable reason codes returned by the decision engine.
+
+Why reason codes matter
+Stable reason codes allow:
+- deterministic automated assertions
+- consistent UX mapping
+- analyzable structured logs
+- cleaner future training datasets
+
+Initial v1 reason codes
+- safe_destination
+- known_malicious_domain
+- domain_impersonation
+- suspicious_tld
+- redirect_chain_risk
+- shortener_unresolved
+- network_timeout
+- insufficient_signal
+- malformed_url
+- policy_blocked_destination
+
+Rules for reason codes
+- reason codes describe the primary explanation for the final outcome
+- they should be stable over time
+- they should not be free-text
+- deprecate rather than silently rename when possible
+
+Relationship to signals
+Signals are facts and observations.
+Reason codes are the main explanation selected for the final decision.
+Multiple signals may support one reason code.

@@ -1,0 +1,37 @@
+Brand Domain Dataset Design
+Generated: 2026-03-08
+
+Purpose
+Define the protected brand dataset used for brand impersonation and typosquatting detection.
+
+Priority brands
+- Apple
+- Google
+- Microsoft
+- PayPal
+- major Dutch banks
+- major EU banks
+- national government and tax portals
+- major package and delivery providers
+- major telecom providers
+
+Record structure
+{
+  canonical_domain,
+  brand_name,
+  category,
+  region,
+  importance_tier,
+  known_legitimate_tlds,
+  known_login_paths,
+  notes
+}
+
+Governance
+- Version the dataset
+- Record source and date added
+- Allow manual review of additions
+- Keep a suppression list for false alarms
+
+Why it matters
+Without a protected dataset, similarity algorithms are much weaker and harder to explain.

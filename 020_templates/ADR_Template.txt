@@ -1,0 +1,12 @@
+ADR TEMPLATE
+
+Title:
+Status:
+Date:
+
+Context
+-------
+Decision
+--------
+Consequences
+------------

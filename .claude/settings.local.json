@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \":*)",
+      "Bash(xcodebuild -resolvePackageDependencies -project LinkLook.xcodeproj)",
+      "Bash(xcodebuild build -project LinkLook.xcodeproj -scheme LinkLook -destination 'platform=iOS Simulator,name=iPhone 16' -quiet)",
+      "Bash(xcodebuild build -project LinkLook.xcodeproj -scheme LinkLook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -quiet)",
+      "Bash(swift test)",
+      "Bash(while read f)",
+      "Bash(do echo \"\")",
+      "Bash(done)",
+      "Bash(xcodebuild build -project LinkLook.xcodeproj -scheme LinkLook -destination 'platform=iOS Simulator,name=iPhone 17 Pro')",
+      "Bash(xcodebuild -project LinkLook.xcodeproj -scheme LinkLook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build)",
+      "Bash(xcodebuild -project LinkLook.xcodeproj -scheme LinkLook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test)",
+      "Bash(xcodebuild -project LinkLook.xcodeproj -scheme LinkLook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test-without-building)",
+      "Bash(xcodebuild -project LinkLook.xcodeproj -scheme LinkLookCore -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test)",
+      "Bash(xcodebuild test -project LinkLook.xcodeproj -scheme LinkLook -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:LinkLookCoreTests)",
+      "Bash(xcodebuild -list -project LinkLook.xcodeproj)",
+      "Bash(xcodebuild test -scheme LinkLookCore -destination 'platform=iOS Simulator,name=iPhone 17 Pro')",
+      "Bash(swift test --package-path LinkLookCore)"
+    ]
+  }
+}

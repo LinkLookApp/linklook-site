@@ -1,0 +1,84 @@
+LinkLook – Comprehensive Strategic &
+Architectural Summary
+Version 1.0
+Generated: 2026-03-03 10:29 UTC
+
+This document summarizes the strategic, architectural, data, privacy, and execution decisions
+discussed during the LinkLook design sessions.
+
+1. Strategic Vision
+LinkLook is a pre-click interception security layer designed to protect users from impulsive digital
+risk.
+Core philosophy: Intercept → Analyze → Decide → Explain → Learn.
+Security-first, privacy-by-design, SLM-first architecture.
+
+2. Architectural Constitution
+Non-negotiable principles include:
+Security > Convenience > Performance
+Layered defense (Deterministic → Docking → SLM → LLM)
+No silent fail-open behavior
+Modular and replaceable components
+Privacy-by-architecture
+
+3. SLM-First Model Strategy
+SLM handles majority of traffic (>=80% target).
+LLM used for edge cases, reasoning, and auditing.
+Continuous learning loop (sample audit → validate → retrain).
+No live self-modifying production models.
+
+4. Critical v1 Architectural Decision (ADR-003)
+Every classified page must emit a structured classification record.
+Purpose: build future SLM training dataset from day one.
+Key stored elements:
+Canonical URL (privacy-minimized)
+Hashes/fingerprints
+Classification label + reason codes
+Engine + version
+Timestamp
+
+5. Claims & Evidence Logging (ADR-004)
+Optional evidence capture (opt-in or high-risk trigger).
+Encrypted screenshots or redacted DOM (short retention).
+Tamper-evident logging (signatures + hash chaining).
+
+No continuous browsing reconstruction.
+
+6. Privacy & GDPR Considerations
+Avoid storing unnecessary personal data.
+Privacy-safe training store:
+Domain-level or hashed URLs
+No IP storage
+No raw HTML by default
+Strict retention policies
+Evidence vault:
+Short-lived (7–30 days)
+Encrypted
+User-controlled
+
+7. Compliance Proof Strategy
+Proof is architectural, not declarative:
+Enforced minimal schemas
+Append-only logging
+Event signing
+Automated retention deletion
+Access logging
+DPIA documentation
+
+8. 90-Day Execution Plan Overview
+Phase 1: Interception + Docking + Structured Logging
+Phase 2: Stability, Monitoring, Adversarial Testing
+Phase 3: Beta Readiness + Dataset Evaluation
+
+9. Founder Discipline Principles
+Log all architectural decisions (ADR discipline).
+Monitor latency and false positives weekly.
+Prevent scope creep.
+Keep privacy posture minimal.
+Build data pipeline before SLM training.
+
+10. Strategic Positioning
+LinkLook protects users without becoming a surveillance product.
+Architecture enforces privacy by design.
+Data collection is minimized, structured, and purpose-bound.
+
+

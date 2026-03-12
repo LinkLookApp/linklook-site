@@ -1,0 +1,54 @@
+LinkLook UX Test Strategy
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Why UX testing matters
+A phishing tool can fail even if the detection engine is correct when users:
+- do not understand the warning
+- ignore the warning
+- do not trust the app
+- feel too much friction
+
+Three UX test layers
+1. Automated UI behavior tests
+- right screen appears
+- buttons work
+- safe links continue correctly
+- malicious links default to the safe action
+
+2. Decision-to-message mapping tests
+- each reason_code maps to the intended message
+- severity and actions match the underlying decision
+
+3. Human usability testing
+- observe whether users understand the warning
+- observe override behavior
+- measure trust and friction
+
+Key UX metrics
+- warning obedience rate
+- warning fatigue / override rate
+- time to decision
+- trust level
+- false positive tolerance
+
+Expanded UX-testing model
+LinkLook UX should be tested through three complementary layers:
+1. automated UI behavior tests
+2. decision-to-message mapping tests
+3. human usability testing
+
+Special UX risks to monitor
+- warning fatigue
+- comprehension failure caused by technical language
+- unsafe default button hierarchy
+- over-alarming visual treatment
+- user frustration caused by excessive friction or delay
+
+Important behavioral metrics
+- warning obedience rate
+- override rate
+- tap-to-decision time
+- user trust feedback
+- false-positive tolerance

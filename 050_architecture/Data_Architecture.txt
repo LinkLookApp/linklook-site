@@ -1,0 +1,243 @@
+LinkLook – Data Architecture and Data Model (Updated)
+
+2026-03-04
+
+Data Architecture and Data Model
+(Updated)
+Updated: March 04, 2026
+
+Status
+
+Updated to incorporate the v1 scalability blueprint (Stage 0/1/2 pipeline,
+cache keys, thresholds, rate limits, and evidence-based warnings).
+
+Data architecture principles (v1)
+• Store only what is needed for security decisions and for proving the system’s behavior.
+• Prefer derived features over raw content; avoid storing page bodies by default.
+• Separate PII-free telemetry (domain/features/verdict) from any user-identifying operational data.
+• Make every decision reproducible: features + thresholds + model version + cache hit state.
+Blueprint impact: Stage 0/1/2 requires explicit cache keys, TTLs, and a unified event schema across
+VPN and Open-with-LinkLook modes.
+
+Three-tier URL reuse model (MDL-107)
+
+URL reuse uses a three-tier lookup with decreasing trust strength.
+Full schema with field definitions, examples, and V1 KISS scope is in
+URL_Reuse_Data_Model.txt.
+
+Safety principle: domain trust alone never approves a URL. A trusted domain
+with a safe homepage does not mean every URL on that domain is safe.
+
+V1 scope (KISS): domains, urls, decisions tables only.
+V2 adds: url_patterns, redirects tables.
+
+Lookup order:
+1. Normalize URL (lowercase scheme + host, strip tracking params, strip
+   fragments, normalize query order, remove default port)
+2. Check exact normalized URL match (tier 1, strongest)
+3. Check URL pattern rules (tier 2, medium, V2)
+4. Check domain reputation (tier 3, weakest)
+5. Check redirect chain cache
+6. If no cache hit → proceed to Stage 1
+
+Core schemas
+Table
+
+Purpose
+
+url_verdict_cache
+
+Tier 1: verdicts keyed by full normalized URL + optional redirect-chain
+signature. Exact URL match = strongest reuse. "This specific link was
+already evaluated."
+
+url_pattern_rules
+(V2)
+
+Tier 2: reusable rules per domain with path patterns and query rules.
+Example: amazon.com + /gp/help/* → likely safe. Avoids storing millions
+of near-identical URLs.
+
+domain_verdict_cache
+
+Tier 3: latest reputation for a normalized registered domain. Status:
+unknown / trusted / suspicious / blocked. This is a base signal only —
+it does not automatically approve any URL on the domain.
+
+redirect_target_cache
+
+Tracks redirect chains. Source URL hash, final URL hash, redirect chain,
+verdict. Catches safe-looking first URLs that redirect to unsafe
+destinations.
+
+link_event
+
+Append-only log of observed link/DNS events with features, decisions,
+latency. Every decision must be reproducible: input URL, normalized URL,
+matched domain, matched pattern, matched exact URL, final verdict, why.
+
+inspection_job
+
+Stage 2 jobs and outcomes (redirect chain, evidence, classifier result).
+
+feature_dictionary
+
+Versioned feature definitions for reproducibility (and SLM training).
+
+link_event (minimal, privacy-safe)
+Field
+
+Notes
+
+event_id
+
+UUID
+
+ts
+
+UTC timestamp
+
+mode
+
+VPN | OPEN_WITH | SHARE_EXT
+
+channel
+
+sms | whatsapp | email | browser | other (optional; best-effort)
+
+Founder version
+
+Page 1
+
+LinkLook – Data Architecture and Data Model (Updated)
+
+2026-03-04
+
+domain_norm
+
+punycode-normalized, lowercase
+
+tld
+
+last label
+
+url_norm
+
+Only for OPEN_WITH/SHARE_EXT; strip #; normalize query; drop
+tracking params
+
+stage1_score
+
+0–100
+
+stage1_features
+
+Compact map (feature_id → value)
+
+decision
+
+ALLOW | WARN | BLOCK | ESCALATE
+
+reasons
+
+Top 2–3 strings
+
+cache_hit
+
+none | exact_url | pattern | domain | redirect
+
+latency_ms
+
+End-to-end for decision
+
+stage2_job_id
+
+nullable
+
+Proving implementation: link_event + feature_dictionary + decision thresholds let you replay decisions
+offline and show the system behaved as designed.
+
+inspection_job (Stage 2)
+Field
+
+Notes
+
+job_id
+
+UUID
+
+created_ts / completed_ts
+
+For SLA and abuse detection
+
+initial_url_norm
+
+Input
+
+redirect_chain_domains
+
+Domains only (privacy-min); cap hops
+
+final_url_norm
+
+Normalized
+
+content_signals
+
+Derived: forms, password fields, brand matches, etc.
+
+classifier_label
+
+PHISHING | SCAM_PAYMENT | MALWARE | BENIGN |
+UNCERTAIN
+
+confidence
+
+0–1
+
+evidence_snippets
+
+Short, non-sensitive extracted indicators (avoid full HTML)
+
+verdict
+
+ALLOW | WARN | BLOCK
+
+model_version
+
+SLM/LLM versioning
+
+Cache TTL policy
+Founder version
+
+Page 2
+
+LinkLook – Data Architecture and Data Model (Updated)
+
+Verdict
+
+Suggested TTL (v1)
+
+ALLOW
+
+12h (refresh on repeated hits)
+
+WARN
+
+3h
+
+BLOCK
+
+48h (refresh if re-seen)
+
+2026-03-04
+
+• Cache keys must include normalization rules; keep these rules versioned.
+• Store the reason strings with cache entries so VPN mode can explain blocks without cloud
+round-trips.
+
+Founder version
+
+Page 3
+
+

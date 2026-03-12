@@ -1,0 +1,69 @@
+LinkLook Principles
+Date: 2026-03-10
+Source: ChatGPT reconstruction and consolidation from prior LinkLook chats and repo context
+
+Core principle
+LinkLook protects users before navigation with layered security, low-friction UX, privacy-by-design, and clear explanations.
+
+1. Protect before harm
+LinkLook exists to reduce the chance that a user reaches a malicious destination in the first place. Prevention before navigation is the core value.
+
+2. Security before convenience before performance
+When these goals conflict, user safety comes first. Convenience matters, and speed matters, but neither may quietly overrule security.
+
+3. Intercept, analyze, decide, explain, learn
+LinkLook should work as a disciplined flow: receive the link, analyze risk, make a decision, explain that decision clearly, and improve over time from what is learned.
+
+4. Layered defense
+No single signal or mechanism is enough. LinkLook should use multiple complementary layers of protection so one missed signal does not become one missed threat.
+
+5. Warn on uncertainty; never silently allow
+When certainty is too low, LinkLook should prefer a safe and transparent response over silently passing a risky destination.
+
+6. KISS: simple by default
+Keep LinkLook simple in product promise, UX, architecture, and operations. Add complexity only when it clearly improves user safety, reliability, or delivery speed.
+
+7. Low-friction safety
+Safe links should feel fast and smooth. Protection that creates too much friction will be bypassed, ignored, or distrusted.
+
+8. Calm, clear, human communication
+LinkLook should explain risk in plain language. Warnings must be understandable, meaningful, and calm, not technical, vague, or alarmist.
+
+9. Privacy by design
+Collect and retain only what is needed for protection, quality improvement, and accountability. LinkLook must not become a surveillance product.
+
+10. Reproducible decisions
+Where feasible, LinkLook decisions should be traceable and explainable. The system should make it possible to understand later why a link was allowed, warned on, or blocked.
+
+11. Core independence
+The core decision logic must remain independent from UI code, iOS app code, and Apple-specific frameworks. This keeps the engine testable, reusable, and easier to evolve.
+
+12. Build for learning
+Structure data and outputs so LinkLook can improve over time. Prepare the foundation for better policy tuning, analysis, and future model support without overbuilding too early.
+
+13. Test-first, not hope-first
+Define critical scenarios early and build against them. Test automation should start early, and testing must cover both detection logic and user experience.
+
+14. First Things First
+Always prioritize urgent and important matters, especially incidents and active risks. At the same time, preserve a healthy balance between curative work and preventive work so short-term urgency does not crowd out long-term safety.
+
+15. Plan Do Check Act
+Work in a disciplined cycle of planning, execution, verification, and improvement. Planning deserves special weight: thinking before starting often saves large amounts of time, rework, and confusion later.
+
+16. Honest positioning
+LinkLook should make strong safety claims only where they can be supported. It should never present itself as perfect, and it should be transparent about limits and uncertainty.
+
+17. Accessibility and trust
+The product should be understandable and usable for ordinary people, including users who are vulnerable, stressed, older, or less technical. Trust is part of the product.
+
+18. Keep the promise simple
+The public promise should stay easy to understand: LinkLook checks links before they open and helps users avoid malicious destinations.
+
+19. Prevention matters as much as response
+Incidents require immediate attention, but preventive improvements are essential. The product should steadily reduce future risk, not only react to current problems.
+
+20. One source of truth
+Important decisions, principles, and scope choices should be recorded clearly and maintained consistently so the project does not drift across documents.
+
+Short version
+Protect before harm. Keep it simple. Use layered defense. Explain clearly. Respect privacy. Test early. Handle incidents first, but keep investing in prevention. Think before acting.

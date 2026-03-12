@@ -1,0 +1,60 @@
+ADR — Minimal Browser Fallback if Default Browser Entitlement Is Refused
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Status
+Superseded — see LinkLook_Master_Decision_Log_2026-03-10.txt for current routing strategy
+
+Context
+LinkLook’s preferred v1 route is default-browser interception so links can be checked before destination content opens in the user’s preferred browser.
+Apple may refuse or constrain that entitlement path.
+A fallback product mode is therefore needed so product progress does not fully depend on one platform decision.
+
+Decision
+If the default browser entitlement is refused, LinkLook may pivot to a minimal browser fallback mode.
+
+Fallback principles
+1. Safety check remains primary.
+2. LinkLook remains security-first, not feature-rich browser-first.
+3. Browser scope stays intentionally minimal.
+4. External safe-link routing may remain available where compliant and useful.
+
+Minimum fallback scope
+- receive URL input into LinkLook
+- evaluate URL before full navigation
+- render destination in a minimal in-app browser when needed
+- show warnings before risky navigation
+- allow safe-link routing when product/compliance rules permit
+
+Explicit non-goals for fallback v1
+- full tab management
+- sync
+- bookmarks
+- browsing-history productization beyond what is strictly needed
+- browser-feature competition with Safari-class products
+
+Why
+- reduces platform dependency risk
+- preserves product momentum
+- allows testing of the safety proposition even if the preferred entitlement path fails
+- keeps architecture useful across multiple routing models
+
+Consequences
+Positive
+- product development can continue after refusal
+- safety logic, UX logic, and test fixtures remain reusable
+- launch strategy becomes more resilient
+
+Negative
+- compliance and review posture changes
+- UX becomes more complex
+- rendering introduces additional privacy and security considerations
+- safe-link routing rules require explicit testing and product decisions
+
+Required follow-up
+- update Product Requirements
+- update entitlement strategy
+- add risk-log entry
+- add UX flows for fallback mode
+- add automated tests for safe-link routing behavior

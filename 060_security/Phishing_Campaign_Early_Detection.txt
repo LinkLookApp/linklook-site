@@ -1,0 +1,19 @@
+LinkLook — Phishing Campaign Early Detection
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Objective
+Spot suspicious infrastructure before it becomes a mass campaign.
+
+Candidate early signals
+- newly registered domains
+- certificate transparency issuance bursts
+- domain names resembling brands
+- repeated registrar / hosting patterns
+- unusual redirect infrastructure
+- suspicious AASA claims or changes
+
+Practical use
+Early-detection signals should raise scrutiny, shorten cache TTLs, and increase
+escalation priority. They should not auto-block on their own unless reinforced
+by stronger evidence.

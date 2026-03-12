@@ -1,0 +1,28 @@
+LinkLook Repository Changelog
+
+Version: v17
+Timestamp: 2026-03-08_10-05-00
+
+Changes
+- Rebuilt the full canonical repository after the March 8 Dutch-market / Apple-review discussion
+- Updated Business Plan with explicit Netherlands-first launch focus and Dutch PR / channel logic
+- Updated Founder Execution Guide with market-focus rule and press-timing guidance
+- Updated Growth Strategy and Distribution / Discovery Strategy with Netherlands-first execution details
+- Updated Product Requirements with launch-market requirements
+- Updated Apple Review Defense and Privacy Architecture Summary for clearer reviewer-facing positioning
+- Added App_Review_Notes.txt
+- Updated Risk Log and Decision Log with Netherlands-first and App Review risks / decisions
+- Cleaned overview folder so the canonical set keeps only the latest active overview files
+v18 upgrade notes (2026-03-08)
+- Added Development_Architecture.txt
+- Added Decision_Engine_Interface.txt
+- Added Signal_Taxonomy.txt
+- Added Decision_Policy_Rule_Engine.txt
+- Added Test_Case_Schema.txt
+- Added Automated_Test_Architecture.txt
+- Added UX_Test_Strategy.txt
+- Added Core_Test_Fixtures.txt
+- Added Phishing_Lab_Architecture.txt
+- Added Core_User_Flows.txt
+- Added UX_Principles.txt
+- Added new folders 130_phishing_lab and 140_ux

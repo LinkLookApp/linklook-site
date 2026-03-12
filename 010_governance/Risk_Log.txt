@@ -1,0 +1,196 @@
+LINKLOOK — RISK LOG
+Version: 2026-03-10
+Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
+
+Purpose
+Track operational product, market, reputation, and execution risks in one place
+without duplicating full analysis text across documents.
+
+================================================================================
+RISK 001 — COLD START / NO USER MOMENTUM
+================================================================================
+Description:
+LinkLook may be technically strong but fail to reach enough users to generate
+learning, trust stories, and distribution momentum.
+Likelihood: High
+Impact: High
+Mitigation:
+- keep v1 free
+- optimise App Store discovery
+- publish problem-solution website pages
+- focus on family / elderly protection wedge
+- treat early user stories as core growth assets
+Owner: Founder
+Status: Open
+
+================================================================================
+RISK 002 — EXPECTATION MISMATCH / REPUTATIONAL DAMAGE
+================================================================================
+Description:
+If public claims imply perfect protection, a miss may cause outsized trust
+loss even if the architecture is within normal security-product limits.
+Likelihood: Medium
+Impact: High
+Mitigation:
+- use “reduces risk” language
+- use “checks links before they open” language
+- avoid “prevents all scams” language
+- explain boundaries honestly in onboarding and marketing
+Owner: Founder
+Status: Open
+
+================================================================================
+RISK 003 — FALSE POSITIVES ON LEGITIMATE LINKS
+================================================================================
+Description:
+Incorrect blocking or warning on legitimate destinations can create rapid
+uninstalls and poor reviews.
+Likelihood: Medium
+Impact: High
+Mitigation:
+- warnings over hard blocks unless confidence is very high
+- measure false positive rate from TestFlight onward
+- maintain clear override / safe return behaviour where appropriate
+Owner: Founder / Product
+Status: Open
+
+================================================================================
+RISK 004 — PRODUCT LOOKS LIKE SPYWARE
+================================================================================
+Description:
+Because LinkLook inspects links before navigation, some users may assume the
+app reads private browsing or tracks traffic.
+Likelihood: Medium
+Impact: High
+Mitigation:
+- privacy-first App Store copy
+- plain language in onboarding
+- minimise stored data architecturally
+- publish privacy architecture summaries
+Owner: Founder / Compliance
+Status: Open
+
+================================================================================
+RISK 005 — PRODUCT FEELS INACTIVE
+================================================================================
+Description:
+Users may install LinkLook, experience no visible warnings, and conclude that
+it does nothing.
+Likelihood: High
+Impact: Medium
+Mitigation:
+- activity summaries such as links checked this week
+- visible but calm proof-of-work screens
+- educational onboarding that explains safe-path behaviour
+Owner: Product
+Status: Open
+
+================================================================================
+RISK 006 — NETWORK EXTENSION DELAYS FIRST MARKET ENTRY
+================================================================================
+Description:
+Pursuing >80% protection in the first release may materially delay launch due
+to entitlement, engineering, privacy, and test complexity.
+Likelihood: High
+Impact: High
+Mitigation:
+- V1 is a straightforward, security-driven browser without Network Extension
+- Network Extension is planned for V3, after Action extension (V2)
+- this risk is mitigated by the canonical roadmap (MDL-081)
+Owner: Founder / Architecture
+Status: Mitigated by canonical roadmap
+
+================================================================================
+RISK 007 — DISCOVERY FAILURE AFTER NEAR-SCAM SEARCHES
+================================================================================
+Description:
+A person searches for an iPhone scam-link solution but does not find LinkLook
+in App Store or search results.
+Likelihood: Medium
+Impact: High
+Mitigation:
+- App Store ASO for plain-language searches
+- simple search-optimised website pages
+- editorial mentions on scam-prevention topics
+Owner: Founder / Marketing
+Status: Open
+
+================================================================================
+RISK 008 — AI COST / COMPLEXITY OUTRUNS VALUE
+================================================================================
+Description:
+AI classification may become too expensive or too central to the product,
+creating latency, cost, or reliability problems.
+Likelihood: Medium
+Impact: Medium
+Mitigation:
+- deterministic checks first
+- AI only for ambiguous or higher-risk cases
+- log structured data for future SLM training
+Owner: Architecture
+Status: Open
+
+
+================================================================================
+RISK 009 — NETHERLANDS-FIRST POSITIONING GETS LOST
+================================================================================
+Description:
+The repo and messaging may drift toward generic global language and lose the
+clarity of a focused Netherlands-first launch strategy.
+Likelihood: Medium
+Impact: Medium
+Mitigation:
+- keep Netherlands-first language in business and product strategy docs
+- prepare Dutch PR and launch assets early
+- treat Dutch validation as the first market milestone
+Owner: Founder / Marketing
+Status: Open
+
+================================================================================
+RISK 010 — APP REVIEW MISUNDERSTANDS THE PRODUCT ROLE
+================================================================================
+Description:
+Apple may misread LinkLook as a browser replacement, proxy, or surveillance
+product rather than a pre-navigation safety layer.
+Likelihood: Medium
+Impact: High
+Mitigation:
+- maintain dedicated App Review notes
+- explain browser hand-off clearly
+- state privacy constraints and non-VPN behaviour plainly
+Owner: Founder / Compliance
+Status: Open
+
+================================================================================
+RISK 011 — DEFAULT BROWSER ENTITLEMENT REFUSAL OR RESTRICTION
+================================================================================
+Description:
+Apple may refuse, narrow, or reinterpret the default browser entitlement path
+needed for LinkLook’s browser model.
+Likelihood: Medium
+Impact: High
+Mitigation:
+- maintain entitlement documentation and review defense
+- preserve reusable decision-engine architecture
+- browser entitlement approval risk is an accepted showstopper risk (MDL-079)
+- the minimal-browser fallback direction has been superseded (MDL-007);
+  entitlement refusal would require strategic reassessment
+- avoid coupling core product value to one platform approval path
+Owner: Founder / Product / Architecture
+Status: Accepted showstopper risk (MDL-079)
+
+================================================================================
+RISK 012 — TEST DISCIPLINE ERODES DURING BUILD PRESSURE
+================================================================================
+Description:
+As implementation accelerates, developers may bypass test-first discipline,
+causing regressions and reduced confidence in security behavior.
+Likelihood: Medium
+Impact: High
+Mitigation:
+- explicit TDD policy
+- CI merge gate
+- regression-test requirement for every important bug
+- fixture requirement for rule changes
+Owner: Engineering
+Status: Open

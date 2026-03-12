@@ -1,0 +1,53 @@
+Global AASA Domain-App Graph Model
+Generated: 2026-03-08
+
+Purpose
+Define the graph model LinkLook can build from Apple App Site Association discovery data.
+
+Why this matters
+AASA crawling creates a map of domain-to-app relationships that can help explain Universal Link routing, bypass behavior, and suspicious claims.
+
+Graph entities
+- domain
+- app_id
+- team_id
+- bundle_id
+- path_pattern
+- observation_timestamp
+
+Edges
+- domain claims app
+- app handles path
+- team owns app
+- domain observed at timestamp
+
+Example graph
+bank.example -> app.link.bank
+bank.example -> /login/*
+bank.example -> /payments/*
+
+Security uses
+- detect domains that may bypass normal browser interception
+- detect suspicious or unexpected app-domain relationships
+- enrich Universal Link risk scoring
+- support ecosystem intelligence and future certification logic
+- identify patterns across brands, app families, and path structures
+
+Quality controls
+- store first_seen and last_seen
+- validate file format before ingest
+- version observations over time
+- keep historical changes rather than only current state
+
+Analytical uses
+- domain -> apps lookup
+- app -> domains lookup
+- path risk analysis
+- brand and region clustering
+- suspicious claim change detection
+
+Relationship to other documents
+- AASA_Crawling_Architecture.txt
+- Universal_Links_Strategy.txt
+- Network_Extension_Signal_Model.txt
+- Certified_API_Program.txt

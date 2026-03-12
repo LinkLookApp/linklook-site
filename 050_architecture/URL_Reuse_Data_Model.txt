@@ -1,0 +1,208 @@
+LinkLook — URL Reuse Data Model
+Version: 1.0
+Date: 2026-03-11
+Reference: MDL-107 (Three-tier URL reuse model)
+
+================================================================================
+PURPOSE
+================================================================================
+
+Define the schema for URL verdict reuse across LinkLook's decision pipeline.
+The model uses three tiers of decreasing trust strength so that domain trust
+alone never approves a URL.
+
+================================================================================
+SAFETY PRINCIPLE
+================================================================================
+
+A trusted domain does NOT automatically approve all URLs on that domain.
+
+Example of why this matters:
+  https://trusted.com/home            → approved (exact URL match)
+  https://trusted.com/redirect?target=evil.com → must be inspected separately
+
+Exact URL match is the strongest form of reuse. Domain reputation is the
+weakest and is only a base signal, never a final approval.
+
+================================================================================
+TRUST STRENGTH
+================================================================================
+
+  Exact URL match   = strongest reuse
+  Pattern match     = medium reuse
+  Domain match      = weakest reuse (never sufficient alone)
+
+================================================================================
+LOOKUP ORDER
+================================================================================
+
+  1. Normalize the input URL
+  2. Check exact URL table        (tier 1)
+  3. Check URL pattern table      (tier 2)
+  4. Check domain table           (tier 3)
+  5. Check redirect table if needed
+  6. Store final decision in decision log
+
+================================================================================
+V1 SCOPE (KISS)
+================================================================================
+
+V1 uses only three tables to keep the first release simple:
+
+  domains
+  urls
+  decisions
+
+The remaining tables are added later:
+
+  url_patterns    → V2
+  redirects       → V2
+
+================================================================================
+TABLE 1: domains
+================================================================================
+
+Stores general trust about a registered domain. This is the weakest reuse
+tier — a trusted domain alone does not approve any specific URL.
+
+  Field               Type        Notes
+  ─────────────────────────────────────────────────────────────────
+  id                  INTEGER     Primary key
+  registered_domain   TEXT        e.g. amazon.com
+  status              TEXT        unknown / trusted / suspicious / blocked
+  confidence          INTEGER     0–100
+  source              TEXT        manual / backend / reputation-feed
+  last_checked_at     DATETIME
+
+Example rows:
+  1 | amazon.com               | trusted    | 95 | backend | 2026-03-11
+  2 | weird-payments-check.net | blocked    | 90 | backend | 2026-03-11
+  3 | example.org              | unknown    | 20 | system  | 2026-03-11
+
+================================================================================
+TABLE 2: urls
+================================================================================
+
+Stores exact URLs that were already checked. This is the strongest reuse tier.
+URLs are stored in normalized form. A hash is stored alongside for fast lookups
+because full URLs can be long.
+
+Normalization rules:
+  - lowercase scheme and host
+  - remove default port (:443 for https, :80 for http)
+  - strip tracking parameters
+  - strip fragments (#)
+  - normalize query parameter order
+
+  Field               Type        Notes
+  ─────────────────────────────────────────────────────────────────
+  id                  INTEGER     Primary key
+  normalized_url      TEXT        Full normalized URL
+  url_hash            TEXT        Hash of normalized_url for fast lookup
+  registered_domain   TEXT        FK → domains.registered_domain
+  status              TEXT        approved / blocked / inspect / unknown
+  reason              TEXT        Human-readable reason
+  first_seen_at       DATETIME
+  last_seen_at        DATETIME
+  ttl_until           DATETIME    Cache expiry
+
+Example rows:
+  1 | https://amazon.com/help/account       | abc123 | amazon.com  | approved | known safe help page  | ...
+  2 | https://example.com/redirect?target=x | def456 | example.com | blocked  | open redirect pattern | ...
+
+================================================================================
+TABLE 3: url_patterns (V2)
+================================================================================
+
+Stores reusable rules per domain with path patterns and query rules. This
+avoids storing millions of near-identical URLs individually. Medium reuse tier.
+
+  Field               Type        Notes
+  ─────────────────────────────────────────────────────────────────
+  id                  INTEGER     Primary key
+  registered_domain   TEXT        FK → domains.registered_domain
+  path_pattern        TEXT        Glob-style path, e.g. /gp/help/*
+  query_rule          TEXT        e.g. "contains target=" or "none"
+  status              TEXT        approved / inspect / blocked
+  notes               TEXT        Human-readable explanation
+  last_updated_at     DATETIME
+
+Example rows:
+  1 | amazon.com  | /gp/help/*  | none             | approved | known help section
+  2 | example.com | /redirect   | contains target= | inspect  | possible redirect abuse
+  3 | bank.nl     | /login      | none             | inspect  | login pages always inspect
+
+================================================================================
+TABLE 4: redirects (V2)
+================================================================================
+
+Stores what happened after opening a link — tracks redirect chains. This is
+critical because a good-looking first URL may end somewhere bad.
+
+  Field                   Type        Notes
+  ─────────────────────────────────────────────────────────────────
+  id                      INTEGER     Primary key
+  source_url_hash         TEXT        Hash of the initial URL
+  final_url_hash          TEXT        Hash of the final destination
+  final_registered_domain TEXT        Where the chain ended
+  redirect_chain          TEXT        e.g. a.com -> b.com -> evil-site.com
+  status                  TEXT        approved / blocked / suspicious
+  checked_at              DATETIME
+
+Example row:
+  1 | aaa111 | zzz999 | evil-site.com | a.com -> b.com -> evil-site.com | blocked | 2026-03-11
+
+================================================================================
+TABLE 5: decisions
+================================================================================
+
+Stores why LinkLook gave a verdict. Every decision must be reproducible for
+debugging, audits, and future ML training.
+
+  Field                   Type        Notes
+  ─────────────────────────────────────────────────────────────────
+  id                      INTEGER     Primary key
+  input_url               TEXT        URL as received
+  normalized_url          TEXT        After normalization
+  matched_exact_url_id    INTEGER     FK → urls.id (nullable)
+  matched_pattern_id      INTEGER     FK → url_patterns.id (nullable)
+  matched_domain_id       INTEGER     FK → domains.id (nullable)
+  final_verdict           TEXT        allow / inform / warn / block
+  explanation             TEXT        Human-readable reason
+  created_at              DATETIME
+
+Example row:
+  1 | https://example.com/redirect?target=evil.com
+    | https://example.com/redirect?target=evil.com
+    | null
+    | 2
+    | 5
+    | blocked
+    | matched redirect pattern with target parameter
+    | 2026-03-11
+
+================================================================================
+ALIGNMENT WITH EXISTING ARCHITECTURE
+================================================================================
+
+This model maps to the existing Data Architecture schemas:
+
+  This model         →  Data_Architecture.txt equivalent
+  ──────────────────────────────────────────────────────────
+  domains            →  domain_verdict_cache
+  urls               →  url_verdict_cache
+  url_patterns       →  (new, V2)
+  redirects          →  redirect_target_cache
+  decisions          →  link_event (decision log aspect)
+
+The cache_hit field in link_event now reflects all tiers:
+  none | exact_url | pattern | domain | redirect
+
+================================================================================
+PRIVACY NOTE
+================================================================================
+
+All tables above are part of the threat-intelligence data flow, not the
+personal trust data flow (MDL-100). URL data is stored in normalized,
+non-user-linked form. The local check history visible to the user (MDL-106)
+is a separate on-device store and is part of personal trust data.

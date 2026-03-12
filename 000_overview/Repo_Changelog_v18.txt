@@ -1,0 +1,32 @@
+LinkLook Canonical Repository Changelog
+Version: v18
+Date: 2026-03-08
+Origin: ChatGPT
+
+Summary
+This rebuild restores the full v17 file set and adds the new documents created from the architecture / testing / UX / phishing-lab planning chat.
+
+Added
+- 050_architecture/Development_Architecture.txt
+- 050_architecture/Decision_Engine_Interface.txt
+- 050_architecture/Signal_Taxonomy.txt
+- 050_architecture/Decision_Policy_Rule_Engine.txt
+- 100_testing/Test_Case_Schema.txt
+- 100_testing/Automated_Test_Architecture.txt
+- 100_testing/UX_Test_Strategy.txt
+- 100_testing/Core_Test_Fixtures.txt
+- 130_phishing_lab/Phishing_Lab_Architecture.txt
+- 140_ux/Core_User_Flows.txt
+- 140_ux/UX_Principles.txt
+
+Repository rules preserved
+- full set retained from v17
+- one root folder
+- text files where possible
+- numbering stays in 3 digits and multiples of 10
+v19 upgrade notes (2026-03-08)
+- Added 100_testing/Initial_30_Phishing_Test_Fixtures.txt
+- Added 100_testing/Initial_30_Phishing_Test_Fixtures.yaml
+- Added 050_architecture/Initial_Rule_Set_v1.txt
+- Added 050_architecture/Initial_Signal_Detector_List.txt
+- Repository now includes the first practical starter set for implementing the decision engine

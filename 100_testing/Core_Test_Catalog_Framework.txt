@@ -1,0 +1,119 @@
+LinkLook Core Test Catalog Framework
+Version: v2.0
+Date: 2026-03-11
+Origin: ChatGPT, updated to align with minimal browser model and Canonical Master Decision Log 2026-03-10
+
+Purpose
+Define the canonical structure for LinkLook v1 core test coverage so test design starts with the highest-risk user and threat flows instead of expanding randomly.
+
+Core rule
+No web content may load before LinkLook has reached the allowed state for that specific URL.
+This rule is the foundation of every test layer and must be verified in gate, handoff, and browser tests.
+
+Core principle
+LinkLook should not attempt to write every possible test before implementation.
+It should begin with a focused risk-based core set that is both human-readable and machine-runnable.
+
+Primary test layers
+1. Product behavior test cases
+These describe expected user-visible and system-visible behavior.
+Examples:
+- safe HTTPS link from Messages: verdict is safe, page loads inside LinkLook
+  browser only after verdict, no pre-load
+- known phishing domain: verdict is block, no web content loads at all
+- shortener is expanded and re-evaluated before any page load
+- warn URL: user sees warning screen first, no auto-load, may continue
+  into minimal browser or open elsewhere (MDL-104)
+- inform URL: user sees inform screen first, no auto-load, may continue
+- network failure follows the defined fail-safe path (fail-safe, not fail-open)
+- open elsewhere: only the approved URL is handed off to preferred browser
+
+2. Security and abuse test cases
+These describe attacker behaviors and phishing patterns.
+Examples:
+- punycode / IDN spoofing
+- brand impersonation through subdomain tricks
+- redirect chains and open redirects
+- shortener chains
+- fake credential harvesting pages
+- newly registered suspicious domains
+- universal-link bypass attempts
+
+3. Technical component test cases
+These verify deterministic behavior of internal building blocks.
+Examples:
+- URL normalization
+- host and registrable-domain extraction
+- redirect stopping rules
+- rule-evaluation priority handling
+- deterministic DecisionResult generation
+- privacy-safe logging fields
+
+Recommended v1 starter package
+Use an initial 35-case package as the minimum strong starting point:
+- 10 safe-path cases
+- 10 obvious malicious-path cases
+- 10 edge / ambiguity cases
+- 5 privacy / failure-mode cases
+
+Safe-path cases should include
+- well-known HTTPS domain: page loads in LinkLook browser after safe verdict
+- legitimate login page on trusted brand domain: page loads after verdict
+- ordinary informational link: verdict first, then browser renders page
+- safe shortened link after expansion: expanded URL evaluated, then loads
+- safe link from different source apps: same gate behavior regardless of source
+
+Obvious malicious-path cases should include
+- known phishing brand lookalike
+- domain impersonation + login form
+- credential-harvesting fake bank page
+- malicious redirect chain
+- known malicious domain from intelligence source
+
+Edge / ambiguity cases should include
+- newly registered domain with limited evidence
+- suspicious TLD but no other strong signal
+- unusual URL encoding
+- long subdomain chain
+- suspicious but not confirmed universal-link flow
+
+Privacy / failure-mode cases should include
+- network unavailable
+- reputation timeout
+- fetcher blocked or sandbox failure
+- malformed URL
+- insufficient signal to classify confidently
+
+Canonical per-test fields
+Every canonical LinkLook test case should define at least:
+- test id
+- title
+- category
+- source context
+- input URL or fixture reference
+- expected decision
+- expected reason code
+- expected confidence band
+- expected user message key or UX outcome
+- expected logging fields
+- expected fallback behavior
+
+Why this matters
+The same test case must be useful for:
+- product acceptance
+- security evaluation
+- engineering automation
+- UX validation
+- privacy and compliance review
+
+Traceability rule
+Each core test case should be traceable to one or more of:
+- architecture component
+- signal category
+- rule or policy entry
+- UX mapping entry
+- compliance or privacy control
+
+Maintenance rule
+The core catalog is not static.
+Each important misclassification, production bug, or newly observed scam pattern should be added to the permanent automated regression set.

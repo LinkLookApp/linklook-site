@@ -1,0 +1,480 @@
+================================================================================
+LINKLOOK — ARCHITECTURE AND PIPELINE
+Document:  01 of 11
+Version:   1.3 — alignment note added 2026-03-10
+Date:      2026-03-06 (updated), 2026-03-10 (alignment note)
+Authority: pipeline_decisions_8.txt is the authoritative source for all
+           decisions. linklook technical architecture 1.txt provides
+           additional component and stack detail.
+           Architecture_Constitution_v1 provides the foundational principles.
+           Security_Threat_Deep_Dive_Appendix_v1 provides threat mitigations.
+
+CANONICAL ALIGNMENT NOTE (2026-03-10)
+This document was written when "Network Extension + Default Browser both
+required for v1" was the active direction. Per the Canonical Master Decision
+Log 2026-03-10, the current canonical direction is:
+- V1: straightforward, security-driven browser (no NE in first release)
+- V2: Action extension
+- V3: Network Extension
+- Outcome model: allow (transparent) / inform / warn / block
+The detailed pipeline logic below remains architecturally valid as a reference
+for V3 integration. For the current V1 architecture, see Architecture.txt.
+================================================================================
+
+================================================================================
+ARCHITECTURE CONSTITUTION (from Architecture_Constitution_v1)
+================================================================================
+
+CORE PRINCIPLE
+Security > Convenience > Performance.
+
+FLOW
+Intercept → Analyze → Decide → Explain → Learn.
+
+LAYERED DEFENSE
+Deterministic → Static → Docking → SLM → LLM.
+
+PRIVACY BY DESIGN
+No surveillance, minimal data retention.
+
+FAIL-SAFE
+Warn on uncertainty, never silent allow.
+
+================================================================================
+GOVERNING PRINCIPLES (implementation of the Constitution)
+================================================================================
+
+MAX SAFETY FIRST
+Implements: Core Principle (Security > Convenience > Performance).
+No gap that allows any smishing or phishing attack to reach an elderly user
+is acceptable, regardless of how narrow the gap is. One high-profile failure
+is existential for an unknown app in the security category.
+[SUPERSEDED 2026-03-10: Network Extension is now planned for V3, not V1.
+V1 is a straightforward, security-driven browser. See Architecture.txt.]
+
+BEST UX
+Implements: Core Principle (Convenience as second priority after Security).
+Maximum safety and best UX are not a trade-off. Both are required. The
+overlay appears in all scenarios — default browser and Network Extension.
+The user always sees "Checking this link…" The experience is consistent.
+
+HONESTY
+Implements: Fail-Safe (warn on uncertainty, never silent allow).
+One known UX constraint exists: a brief browser loading spinner (200–500ms
+on older devices) may be visible before the overlay appears in Network
+Extension scenarios. This is safe — no page content is ever displayed before
+the block because the connection is blocked at DNS/TCP level before any HTTP
+request is sent. This is documented honestly in onboarding and the App Store
+description. It is not hidden.
+
+PRIVACY BY DESIGN
+Implements: Privacy by Design (no surveillance, minimal data retention).
+Privacy constraints are architectural, not policy statements. The URL is
+never stored on the backend linked to a device or user identity. The only
+backend retention is the anonymised classification record (URL hash only,
+no user linkage). GDPR compliance is built into the architecture.
+
+LAYERED DEFENSE
+Implements: Layered Defense (Deterministic → Static → Docking → SLM → LLM).
+The analysis pipeline follows a strict escalation order. Each layer handles
+what it can confidently resolve before passing uncertainty to the next. The
+full pipeline flow (see below) implements this principle in both the default
+browser and Network Extension paths.
+
+================================================================================
+SYSTEM OVERVIEW
+================================================================================
+
+LinkLook is a two-component system: an iOS client and a Python backend.
+
+iOS CLIENT RESPONSIBILITIES
+- Intercept tapped URLs via two mechanisms (see below).
+- Perform on-device first-pass analysis (personal cache, pre-filter, local
+  caches).
+- Display the analysis overlay and verdict screen.
+- Hand off safe URLs to the user's chosen browser.
+- Maintain the personal cache and on-device local log.
+- Export the local log for claims verification.
+
+PYTHON BACKEND RESPONSIBILITIES
+- Perform URL resolution (follow redirect chains to final destination).
+- Retrieve domain registration date.
+- Execute Google Safe Browsing API lookup.
+- Call the Claude API for uncertain cases.
+- Return a structured verdict to the iOS client.
+- Accumulate anonymised classification records for future SLM training.
+- Distribute cache updates and blacklist pushes to devices via APNs.
+
+WHAT THE BACKEND DOES NOT DO
+- Store any URL linked to a user identity or device identifier.
+- Retain any URL data beyond the analysis window (except the anonymised
+  classification record — URL hash only, no user or device linkage).
+- Log IP addresses alongside URL data.
+- Communicate with any third party beyond Google Safe Browsing API, Claude
+  API, and the blocklist feed subscription sources.
+
+BACKEND TECH STACK
+- Runtime:   Python 3.12, FastAPI
+- Hosting:   Railway (EU region only — confirmed before first deployment)
+- Database:  PostgreSQL on Railway (operational data)
+             Separate PostgreSQL instance for classification records
+             (no join between classification record table and any user or
+             device table — architectural constraint, not policy)
+
+================================================================================
+DUAL INTERCEPTION MECHANISM
+================================================================================
+
+TWO MECHANISMS — REFERENCE FOR V3
+[SUPERSEDED 2026-03-10: V1 uses the browser mechanism only. The dual
+interception model below is reference material for V3 Network Extension
+integration. See Architecture.txt for the current V1 architecture.]
+
+Network Extension = protection layer (closes all gaps)
+Default Browser   = UX layer (provides split-second overlay experience)
+
+Both mechanisms feed the same backend analysis pipeline.
+
+ENTITLEMENTS REQUIRED (both must be filed):
+1. com.apple.developer.web-browser            (UX layer)
+2. com.apple.developer.networking.networkextension  (protection layer)
+
+--- DEFAULT BROWSER MECHANISM (UX layer — tapped links inside apps) ---
+
+Intercepts all tapped links inside apps when LinkLook is set as default
+browser. Provides the immediate overlay before any browser involvement.
+Writes URL hash to shared App Group container (10-second TTL).
+Makes no independent security decisions — protection is the Network Extension.
+
+If LinkLook is not set as default browser: Network Extension handles all
+cases; protection is identical, UX is slightly less smooth.
+
+--- NETWORK EXTENSION MECHANISM (protection layer — all outbound connections)
+    Handles: notification taps (smishing), copy-paste, typed URLs,
+    Case C (notification hardcodes a specific browser), and anything the
+    default browser mechanism misses ---
+
+Intercepts all outbound connections at DNS/TCP level. Blocks before any
+page content is exchanged. Browser shows loading spinner only.
+
+SMISHING GAP — FULLY CLOSED
+Sub-case 1: Notification respects default browser setting → routes through
+  default browser mechanism → full split-second UX → Network Extension
+  stands down.
+Sub-case 2: Notification hardcodes a specific browser (Case C) → Network
+  Extension intercepts the outbound connection → gap closed → UX: brief
+  loading spinner then overlay.
+Both sub-cases covered.
+
+DNS CACHE EDGE CASE
+If domain IP is in device DNS cache, DNS lookup is skipped. Browser may
+attempt TCP connection before Network Extension blocks it. Network Extension
+blocks at TCP level — no HTTP request is sent, no page content exchanged.
+Browser shows loading spinner only.
+
+CERTIFICATE PINNING LIMITATION
+Network Extension cannot inspect certificate-pinned connections without
+breaking the app. Banking and payment apps commonly use certificate pinning.
+The Network Extension allows or blocks based on domain analysis only.
+Named limitation, documented in onboarding and App Store description.
+
+CONFLICT RULE (if both mechanisms produce a verdict for the same URL)
+BLOCK overrules UNCERTAIN. BLOCK overrules SAFE. UNCERTAIN overrules SAFE.
+Most conservative verdict always wins.
+
+================================================================================
+EXTERNAL ATTACK SURFACE CONTROLS (from Security_Threat_Deep_Dive_Appendix_v1)
+================================================================================
+
+LINK INTERCEPTION LAYER:
+Threats: bypass attempts via deep links and protocol handlers; obfuscation
+via URL encoding and IDN homograph attacks.
+Controls:
+- URL canonicalization before any analysis.
+- IDN normalization (Punycode detection and homograph resolution).
+- Strict protocol filtering (only HTTP/HTTPS analysed; others pass through).
+
+DOCKING SANDBOX (Stage 2):
+Threats: sandbox escape attempts; resource exhaustion (CPU/memory abuse);
+malicious JS payloads.
+Controls:
+- Container isolation — sandbox has no access to internal networks.
+- Resource limits (CPU, memory, execution time).
+- Network egress restrictions (strict allowlist).
+- No shared state persistence between sandbox invocations.
+
+================================================================================
+FULL PIPELINE FLOW
+================================================================================
+
+--- DEFAULT BROWSER FLOW ---
+
+URL intercepted (Swift layer)
+    ↓
+Write URL hash to shared App Group container (10-second TTL)
+    ↓
+Personal cache hit? → act on cached verdict, done
+    ↓ no
+On-device pre-filter (top-500, hardcoded) → pass silently, done
+    ↓ no
+Local blacklist push hit? → block, done
+    ↓ no
+Local whitelist cache hit? → pass silently, done
+    ↓ no
+Local blacklist cache hit? → block, done
+    ↓ no
+Local greylist cache hit? → skip to Claude directly
+    ↓ no
+Overlay appears immediately: "Checking this link…"
+    ↓
+Backend receives full original URL + user profile + user mode
+    ↓
+Resolve to final destination URL
+    ↓
+Retrieve domain registration date
+    ↓
+GSB lookup
+    → known malicious → block, update local blacklist cache
+    → known safe → pass silently, update local whitelist cache
+    → unknown ↓
+SLM [v2+ slot — empty in v1, all unknown URLs go directly to Claude]
+    → confident BLOCK → block, update local blacklist cache
+    → confident SAFE → pass silently, update local whitelist cache
+    → uncertain ↓
+Claude API (receives full URL + destination + domain age + profile + mode)
+    → BLOCK → overlay transitions to verdict screen
+    → SAFE → overlay dismisses, browser opens
+    → UNCERTAIN → overlay transitions to verdict screen
+    → error → UNCERTAIN verdict, template explanation
+All verdicts → update personal cache
+    ↓
+Clear URL hash from shared App Group container
+
+--- NETWORK EXTENSION FLOW ---
+
+Outbound connection detected
+    ↓
+Check shared App Group container
+    → URL hash found → default browser handling it → stand down
+    → URL hash not found ↓
+Block connection at DNS/TCP level immediately
+(page never loads — browser shows loading spinner only;
+ no content exchanged before block)
+    ↓
+Trigger main app to foreground via linklook:// URL scheme simultaneously
+    ↓
+Main app comes to foreground
+    ↓
+Overlay appears: "Checking this link…"
+(user sees: brief browser loading spinner → LinkLook overlay)
+    ↓
+Same backend analysis pipeline as default browser flow
+    ↓
+SAFE → overlay dismisses, connection released, browser loads normally
+BLOCK → overlay transitions to verdict screen with bridge line
+UNCERTAIN + BLOCK mode → overlay transitions to verdict screen with bridge line
+UNCERTAIN + WARN mode → overlay transitions to verdict screen, user decides
+    ↓
+Clear URL hash from shared App Group container
+
+BRIDGE LINE (Network Extension verdict screen only):
+"You tapped a link in a message. We checked it before it opened."
+Required to orient the user who did not see the overlay before the browser
+started. Required for BLOCK and UNCERTAIN verdicts in Network Extension flow.
+Not required in the default browser flow.
+
+RETURN PATH after Network Extension verdict:
+SAFE: connection already released during overlay; browser loads; user returned
+  to browser automatically.
+BLOCK: browser never loaded; one calm close button returns user to previous
+  context; no "open anyway" option; no browser open button.
+
+================================================================================
+WHAT LIVES WHERE
+================================================================================
+
+ON-DEVICE
+- Personal cache (append-only, claims verification, never LRU-evicted)
+- Top-500 pre-filter (hardcoded, ~50KB, almost never changes)
+- Local blacklist push cache (daily backend push, ~500KB fixed size)
+- Local whitelist cache (max 5,000 entries, LRU eviction, ~250KB)
+  NOTE (MDL-099): The whitelist must not be static. It requires risk-tiered
+  re-validation frequency, behavioural anomaly detection on approved domains,
+  certificate and DNS monitoring, quarantine-not-delete logic, and automatic
+  reinstatement with a log entry. See Smart Whitelist architecture (MDL-099).
+- Local blacklist cache (max 2,000 entries, LRU eviction except confirmed
+  malicious entries which are never evicted by size pressure, ~100KB)
+- Local greylist cache (max 500 entries, LRU eviction, ~25KB)
+- Shared App Group container (URL hash coordination, 10-second TTL per entry)
+- Cache policy store (TTL values, size caps — updatable from backend)
+- Cache management receiver (applies backend push instructions)
+- APNs device token (push address only, never linked to user data)
+- User profile setting (PROTECTED / STANDARD — set at onboarding)
+- User mode setting (BLOCK / WARN — set at onboarding or by user)
+- Default browser status (stored in App Group, updated by D15 checks)
+- On-device local log (URL + hash + verdict + timestamp; encrypted storage;
+  12-month rolling retention; for claims verification export only)
+- Swift interception code (main app — default browser mechanism)
+- Network Extension process (separate iOS process, same App Group)
+
+BACKEND
+- URL resolution service (follows redirect chain to final destination)
+- Domain registration date retrieval
+- Google Safe Browsing API lookup
+- Global verdict cache (by URL hash, no user linkage)
+- Three separate GDPR-compliant logs (see document 03: Data Architecture)
+- SLM slot (v2+ — empty in v1)
+- Claude API integration
+- User report aggregation
+- APNs integration for push delivery
+- Cache management instruction sender
+- Cache policy configuration store
+- Daily blacklist push generator
+
+BACKEND BLOCKLIST FEED SOURCES
+- Google Safe Browsing API (primary)
+- PhishTank (phishing-specific)
+- OpenPhish (phishing-specific)
+- URLhaus (malware URL-specific)
+- LinkLook-maintained additions (Fraudehelpdesk data + user-reported)
+Scheduled job runs every hour to fetch, deduplicate, and rebuild the
+aggregated blocklist.
+
+================================================================================
+IOS CLIENT COMPONENTS
+================================================================================
+
+SWIFT COMPONENTS REQUIRED:
+
+1. OVERLAY VIEW
+   Appears immediately on tap (default browser) or on foreground transition
+   (Network Extension). Shows "Checking this link…" with LinkLook icon.
+   Updates on URL change. Transitions on verdict (dismiss/verdict screen).
+
+2. ANALYSIS TASK MANAGER
+   Deduplication lock: in-memory set of URLs currently in analysis;
+   subsequent taps of the same URL ignored until verdict arrives.
+   Cancel-and-replace: different link tapped mid-analysis cancels in-flight
+   task and starts analysis for new URL immediately.
+   Cancelled URL added to greylist cache — treated as UNCERTAIN on next tap.
+   Two links in rapid succession: cancel-and-replace handles it.
+
+3. BACKEND REQUEST TASK
+   Async/await single HTTP request — native Swift pattern.
+   Connection timeout: 3 seconds.
+   Response timeout: 8 seconds.
+   Task is cancellable via Swift structured concurrency.
+
+4. VERDICT HANDLER
+   Routes verdict to correct outcome (dismiss overlay / show verdict screen).
+
+5. CONFIGURATION LOCK (SET-UP-FOR-SOMEONE-ELSE MODE)
+   When "set up for someone else" onboarding is completed, device is locked
+   to BLOCK mode. WARN setting not surfaced in device UI.
+   Lock stored in iOS Keychain (not UserDefaults — UserDefaults can be
+   cleared by user; Keychain cannot without reinstalling the app).
+   Lock can only be removed by the setup person authenticated via the same
+   account used during onboarding.
+   Must be confirmed working in TestFlight before App Store submission.
+
+6. DEFAULT BROWSER STATUS MONITOR (D15)
+   Three check triggers:
+   - Onboarding (synchronous — onboarding does not proceed until check passes)
+   - Every app foreground transition (lightweight, runs in background)
+   - BGAppRefreshTask (minimum 15-minute interval; actual frequency iOS-
+     controlled at 15–60 minutes depending on device state and battery)
+   Status stored in shared App Group container.
+   Notification on loss: STANDARD profile → in-app banner on next foreground.
+     PROTECTED profile → push notification to setup person, not to elderly
+     user. Maximum two notifications per loss event.
+   Check mechanism is entirely on-device — no backend call, no GDPR concern.
+
+APP LIFECYCLE HANDLING
+- App moves to background mid-analysis: cancel all in-flight tasks on
+  sceneDidEnterBackground.
+- App terminated: Swift structured concurrency cleans up automatically.
+- Pending verdict screen on wake: v2 named requirement (show verdict that
+  arrived while app was suspended).
+
+ADDITIONAL TAP SCENARIOS (ALL COVERED)
+- Tap during overlay dismissal (300ms): deduplication lock stays active.
+- App closed mid-analysis: tasks cancelled; URL treated as fresh on next tap.
+- Background URL routing: physical device testing required — Simulator
+  behaviour differs.
+- Extremely long URLs (>2,048 chars): treat as UNCERTAIN; block in BLOCK
+  mode; URL length passed as signal to Claude.
+- Non-HTTP/HTTPS schemes: pass through immediately, no analysis.
+
+================================================================================
+BACKEND API ENDPOINTS (V1)
+================================================================================
+
+POST /analyse
+Input:  { url: string, tier: "free" | "premium" }
+Output: { verdict: "BLOCK" | "PASS" | "UNCERTAIN",
+          confidence: "HIGH" | "MEDIUM" | "LOW",
+          explanation: string,
+          layer: integer }
+Auth:   Device token (not user-linked — see document 04: Privacy and GDPR)
+Rate:   Applied per device token, configurable ceiling.
+
+GET /blocklist/update
+Returns current blocklist file if newer than client's cached version.
+Input:  { last_synced: timestamp }
+Output: Blocklist binary file or 304 Not Modified.
+Auth:   None required. Blocklist is not sensitive data.
+
+POST /report
+User-reported URL — feeds into LinkLook-maintained blocklist additions.
+Input:  { url_hash: string, reported_verdict: "MALICIOUS" | "SAFE" }
+Output: { acknowledged: boolean }
+Auth:   Device token.
+NOTE (MDL-100): User reports follow the two-data-flow separation. Personal
+trust data stays on-device. Threat signal data is submitted anonymously
+using differential privacy and k-anonymity. A domain enters the global
+shared blocklist only after 1,000+ distinct user reports.
+
+================================================================================
+DETECTION CAPABILITY — INTERNAL DESIGN TARGETS
+================================================================================
+
+These are internal targets, not marketing claims. Based on reasoned
+construction, not measured data. Must be tested against real data in
+TestFlight and revised accordingly.
+
+Layer 1 (blocklist + GSB):     ~60–70% of genuinely malicious links.
+Layer 2 (structural analysis): ~15–20% additional (independent of blocklist).
+Layer 3 (page content + Claude): ~5–10% additional.
+Combined estimated detection rate: 80–90%.
+For primary audience (elderly users, mass-market phishing): 85–92%.
+False positive target: below 1% of safe links. Design ambition: below 0.5%.
+
+The 10–20% that passes through the full pipeline is weighted toward
+sophisticated zero-day attacks — the same cases that evade professional
+enterprise security tools. This boundary is stated honestly in onboarding,
+the App Store description, and the founding story.
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+
+================================================================================
+AASA DISCOVERY LAYER
+================================================================================
+
+LinkLook periodically discovers Apple App Site Association (AASA) files for
+selected domains. This creates an internal mapping of domain → appID → path
+scope. The purpose is not to trust app claims blindly, but to understand where
+universal links may cause the browser-interception path to be bypassed.
+
+AASA intelligence feeds:
+- universal-link risk handling
+- domain intelligence scoring
+- ecosystem graph building
+- future certified API analysis
+v3 pipeline enrichments
+- shortener unwrapping before final classification where applicable
+- redirect chain intelligence across every hop
+- safe page docking sandbox for controlled deep inspection
+- threat intelligence pipeline feeding the detection engine
+- network extension signal model feeding infrastructure risk

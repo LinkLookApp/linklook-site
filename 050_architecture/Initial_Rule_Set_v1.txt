@@ -1,0 +1,43 @@
+LinkLook Initial Rule Set v1
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Principles
+- keep the first rule set explainable and deterministic
+- prefer precision over broad overblocking
+- use controlled inform/warn outcomes when signals are incomplete
+
+Rule format
+RULE-ID | Conditions | Decision | Reason code | Priority
+
+Critical block rules
+RULE-IMP-001 | domain_lookalike_brand + page_contains_login_form | block | domain_impersonation | critical
+RULE-IMP-002 | domain_character_substitution + url_contains_suspicious_keywords | block | domain_impersonation | critical
+RULE-REP-003 | domain_known_phishing | block | known_phishing_domain | critical
+RULE-REP-004 | redirect_to_known_malicious_domain | block | malicious_redirect_chain | critical
+RULE-CRED-005 | page_contains_password_field + page_brand_mismatch | block | credential_harvest_risk | critical
+RULE-CRYPTO-006 | page_contains_crypto_wallet_prompt + domain_low_reputation | block | crypto_wallet_phishing | critical
+
+High warn rules
+RULE-DOM-101 | domain_recently_registered + domain_unusual_tld | warn | suspicious_domain | high
+RULE-URL-102 | url_has_ip_address | warn | raw_ip_link | high
+RULE-URL-103 | url_contains_username_section | warn | deceptive_url_structure | high
+RULE-RED-104 | redirect_chain_exceeds_threshold | warn | redirect_chain_risk | high
+RULE-RED-105 | redirect_from_shortener | inform | shortener_unresolved | high
+RULE-IDN-106 | domain_punycode | warn | idn_spoofing_risk | high
+RULE-SUB-107 | url_contains_long_subdomain_chain + url_contains_suspicious_keywords | warn | suspicious_url_structure | high
+RULE-INF-108 | domain_points_to_suspicious_ip_range | warn | suspicious_infrastructure | high
+
+Medium / informative rules
+RULE-INFM-201 | external_lookup_failed | inform | external_lookup_failed | medium
+RULE-INFM-202 | network_unavailable + unknown_domain | inform | network_unavailable | medium
+RULE-INFM-203 | open_redirect_risk | warn | open_redirect_risk | medium
+RULE-INFM-204 | domain_first_seen | inform | first_seen_domain | medium
+
+Conflict handling
+- most severe decision wins
+- severity order: block > warn > inform > allow
+
+Fallback rule
+RULE-FALLBACK-999 | analysis_incomplete | inform | insufficient_signal | low

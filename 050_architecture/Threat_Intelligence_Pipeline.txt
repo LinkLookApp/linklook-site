@@ -1,0 +1,71 @@
+Threat Intelligence Pipeline
+Generated: 2026-03-08
+
+Purpose
+Define how LinkLook ingests, normalizes, validates, and uses external and internal threat intelligence.
+
+Sources
+- PhishTank
+- OpenPhish
+- MalwareBazaar or equivalent malware indicator feeds
+- Certificate Transparency observations
+- Domain age / registration signals
+- DNS and passive DNS sources
+- Internal detections and user-reported outcomes
+- AASA discovery results
+
+Pipeline stages
+1. Collect
+2. Normalize
+3. Deduplicate
+4. Score source reliability
+5. Correlate with existing intelligence
+6. Publish to detection engine
+7. Archive for audit and model training
+
+Normalized record example
+{
+  indicator_type,
+  indicator_value,
+  first_seen,
+  last_seen,
+  source_name,
+  source_confidence,
+  threat_category,
+  supporting_context
+}
+
+Quality controls
+- Reject malformed indicators
+- Timestamp every ingestion event
+- Preserve source attribution
+- Track false-positive and false-negative feedback
+- Expire stale indicators according to policy
+
+Crowdsourced user signal flow (MDL-100, MDL-108)
+In addition to external feeds, LinkLook can receive anonymous domain-level
+threat signals from users. This flow uses a clean two-data-flow separation:
+- Personal trust data stays on-device and never leaves.
+- Threat signal data (domain-level, not user-level) is submitted anonymously.
+- Signals are aggregated centrally using differential privacy and k-anonymity.
+- A domain enters the global shared blocklist only after 1,000+ distinct user
+  reports.
+- User must explicitly opt in (MDL-108) — toggle is OFF by default because
+  this flow sends data off-device. No signals are submitted until the user
+  enables the "Help improve safety for everyone" toggle in in-app settings.
+- V2 feature. V1 must keep the data-flow separation clean so the toggle can
+  be wired without refactoring.
+This crowdsourced intelligence layer feeds into the same pipeline stages above.
+
+Reclassification monitoring (MDL-101)
+When a previously cleared domain is later reclassified as malicious through any
+pipeline source, affected users receive a proactive plain-English notification
+with actionable steps.
+
+Output consumers
+- Detection engine
+- Redirect chain analyzer
+- Network Extension analytics (V3)
+- Early campaign detection
+- Model training dataset
+- Smart whitelist re-validation (MDL-099)

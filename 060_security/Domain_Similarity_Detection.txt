@@ -1,0 +1,34 @@
+Domain Similarity Detection
+Generated: 2026-03-08
+
+Purpose
+Detect domains that imitate trusted brands or high-value targets.
+
+Typical attack patterns
+- character substitution
+- missing or added letters
+- visually similar characters
+- brand plus security-related words
+- bank name plus regional modifier
+
+Example patterns
+- paypaI.com
+- rnicrosoft-login.example
+- secure-apple-id-check.example
+
+Detection methods
+- Levenshtein distance against protected brand domains
+- keyboard-adjacency checks
+- token similarity on domain labels
+- Unicode normalization before comparison
+- suspicious keyword combinations such as login, verify, support, secure, update
+
+Proposed output
+- matched_brand
+- similarity_score
+- suspicious_tokens
+- confidence
+
+Operational rule
+Similarity alone is rarely enough to block.
+Similarity + new domain + login form + redirecting behavior can justify a block.

@@ -1,0 +1,130 @@
+Milestone 1 Execution Plan
+Date: 2026-03-08
+Project: LinkLook
+
+Goal
+Build the first 3-week milestone without depending on browser entitlement.
+
+Success at the end of 3 weeks
+- Core engine works independently from iOS UI
+- Automated tests run on every push
+- At least 20 fixtures exist
+- Engine returns: allow / warn / block / unknown
+- Every decision has a reason code
+- iOS app can accept a pasted link
+- App shows a result screen
+- Safe links can be opened externally
+
+Out of scope
+- Browser entitlement
+- Default browser interception
+- Network Extension
+- Page fetching
+- External reputation APIs
+- LLM / SLM
+- Advanced UX polish
+- Onboarding
+- Payments
+- Analytics backend
+
+Week 1
+Goal: foundation and test harness
+
+Tasks
+- Create core, ios-app, tests, fixtures structure
+- Define core models:
+  InputContext
+  NormalizedURL
+  Signal
+  DecisionResult
+  ReasonCode
+  DecisionTrace
+- Define engine interface:
+  evaluate(input: InputContext) -> DecisionResult
+- Create fixture format
+- Create fixture runner
+- Set up automated tests and CI
+- Add first 15-20 fixtures
+
+Week 1 done when
+- Repo builds
+- Tests run automatically
+- Fixture runner works
+- Engine stub exists
+- Core has no Apple/UI dependency
+
+Week 2
+Goal: deterministic URL analysis
+
+Tasks
+- Implement URL normalization
+- Implement hostname and structure extraction
+- Add detectors for:
+  raw IP URL
+  @ userinfo trick
+  deceptive subdomain
+  suspicious TLD
+  excessive URL length
+  shortener marker
+  simple lookalike marker
+- Add punycode/unicode handling
+- Add decision trace generation
+- Expand fixtures for signal coverage
+
+Week 2 done when
+- URL normalization works
+- Signals are produced deterministically
+- Every detector has tests
+- Decision trace is available
+
+Week 3
+Goal: first verdict engine and minimal app shell
+
+Tasks
+- Implement policy/rule engine
+- Add verdicts:
+  allow
+  warn
+  block
+  unknown
+- Add reason code mapping
+- Add basic explanation mapping
+- Build minimal iOS paste-link screen
+- Build result screens:
+  safe
+  suspicious
+  blocked
+  unknown
+- Add external open action for safe links
+- Add end-to-end regression cases
+
+Week 3 done when
+- Core returns real verdicts
+- iOS app can check pasted links
+- Result screens work
+- Safe links can be opened externally
+- No browser entitlement is needed
+
+Build order
+1. Core models
+2. Engine interface
+3. Fixture format
+4. Fixture runner
+5. CI
+6. URL normalization
+7. Signal detectors
+8. Decision trace
+9. Verdict engine
+10. Reason codes
+11. Explanation mapping
+12. Paste-link screen
+13. Result screen
+14. Safe external open action
+
+Stop rule
+If a task is not needed for this milestone, park it.
+
+Start now with
+- Core models
+- Engine interface
+- Fixture format

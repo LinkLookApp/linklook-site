@@ -1,0 +1,82 @@
+LinkLook Automated Test Architecture
+Version: v3.0
+Date: 2026-03-10
+Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
+
+Testing layers
+1. Unit tests
+- URL normalization
+- hostname parsing
+- punycode handling
+- signal detectors
+- decision rules
+- UX mapping functions
+
+2. Integration tests
+- InputContext -> signals -> policy -> decision
+- redirect resolution
+- reputation adapter failures
+- timeout behavior
+- decision screen to minimal browser handoff
+
+3. End-to-end tests
+- receive link
+- analyze
+- safe path: verdict first, then page loads inside LinkLook browser
+- inform / warn path: no auto-load, user sees decision screen first
+- block path: no web content loads at all
+- continue from inform/warn: opens in minimal browser, no double-open
+- open elsewhere: explicit user action, correct URL to preferred browser
+- page render, navigation, URL display, HTTPS handling
+- background/foreground recovery
+- minimal browser tests (see Minimal_Browser_Test_Specification.txt):
+  gate behavior, decision-to-browser handoff, browser functionality,
+  security-sensitive cases, failure/recovery, UX/accessibility
+
+4. UX tests
+- reason_code to message mapping
+- correct buttons
+- accessibility labels
+- safe defaults
+- warning clarity for non-technical users
+
+Core rule
+No web content may load before LinkLook has reached the allowed state for that specific URL.
+This rule must be verified in gate tests, handoff tests, and browser tests.
+
+Principles
+- tests should be automated from the start
+- avoid live web dependencies where possible
+- use fixed fixtures and mocks
+- every important bug becomes a permanent regression test
+
+TDD enforcement
+- core decision logic should be developed test-first
+- every new detector or rule starts with a failing test
+- every important bug starts with a failing regression test
+- minimal browser gate behavior must be covered by automated tests
+- open elsewhere handoff must be testable without live platform dependency
+
+Required test coverage areas
+1. Decision engine
+- URL normalization
+- hostname and punycode parsing
+- detector outputs
+- scoring / rule evaluation
+- deterministic verdict generation
+
+2. UX mapping
+- decision to message mapping
+- safe default button order
+- override availability rules
+- warning copy selection
+
+3. Open Elsewhere and browser gate behavior
+- open elsewhere hands off correct URL to preferred browser (MDL-104)
+- no web content loads before LinkLook reaches the allowed state
+- suspicious link -> warning interstitial, no auto-load
+- blocked link -> no web content at all
+- redirect to unsafe destination handled by policy
+
+4. Regression discipline
+- every production incident of significance becomes a permanent automated regression test

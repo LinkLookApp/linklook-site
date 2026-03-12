@@ -1,0 +1,91 @@
+LinkLook — Detection Engine Specification
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Goal
+Produce a conservative verdict for a URL or destination domain:
+- SAFE
+- WARNING
+- BLOCK
+- ERROR / UNKNOWN
+
+Design principle
+Layered defense: deterministic → static analysis → deep inspection → model
+assistance. The most conservative justified verdict wins.
+
+Inputs
+- original URL
+- canonical URL
+- final URL after redirects (when resolved)
+- domain / subdomain / TLD
+- user mode / invocation path
+- cache state
+- domain intelligence signals
+- optional sandbox features
+
+Stage 0 — normalization
+- lower-case hostname
+- punycode / IDN normalization
+- remove tracking noise where safe
+- extract path, query, fragments
+- classify scheme
+
+Stage 1 — fast deterministic checks
+- local allow / deny caches
+- hard blocklists
+- malformed URL patterns
+- suspicious protocol checks
+- obvious homograph / typosquat patterns
+- domain age threshold checks
+- redirect shortener detection
+
+Stage 2 — domain intelligence scoring
+Signals may include:
+- domain registration age
+- registrar / hosting risk signals
+- DNS stability / resolver anomalies
+- certificate transparency recency
+- threat-feed matches
+- AASA presence and anomalies
+- brand-token similarity
+
+Stage 3 — deep inspection
+Only for suspicious or uncertain cases.
+- controlled redirect chasing
+- metadata extraction
+- page-title / form / login signal extraction
+- brand impersonation cues
+- high-risk payment / credential collection cues
+
+Stage 4 — model-assisted classification
+Use LLM/SLM only after deterministic evidence is gathered.
+Model output must be structured and never be the sole source of a hard allow.
+
+Verdict policy
+BLOCK when:
+- known malicious,
+- strong impersonation + credential lure,
+- malware delivery indicators,
+- multiple high-risk signals converge.
+
+WARNING when:
+- signals are concerning but not sufficient for hard block,
+- infrastructure is fresh / unusual,
+- domain is legitimate but path or content looks unsafe,
+- deep inspection fails on a mid-risk case.
+
+SAFE when:
+- no meaningful risk signals remain after analysis,
+- trusted caches or repeated clean history justify pass-through.
+
+Fail-safe
+High-risk uncertainty must not silently fall through to SAFE.
+
+Output schema
+- verdict
+- confidence
+- triggered_signals[]
+- explanation_for_user
+- explanation_for_log
+- cache_ttl
+- escalation_path

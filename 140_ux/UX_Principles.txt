@@ -1,0 +1,12 @@
+LinkLook UX Principles
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+1. Warnings must be rare and meaningful.
+2. Safe links must feel fast and low-friction.
+3. Messages must use human language, not technical jargon.
+4. Dangerous links must default to the safer action.
+5. The user must understand why the warning appears.
+6. The experience should feel calm and trustworthy, not alarmist.
+7. Accessibility must be considered from the start, especially for elderly users.

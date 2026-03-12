@@ -1,0 +1,43 @@
+Split Second Support
+
+One day, my 90-year-old mother called me. Her voice was shaky. She was
+confused and worried about a transaction she didn’t recognise.
+
+My heart dropped. I was sure she’d been scammed.
+
+And it wouldn’t have been her fault.
+
+We sat down, logged into her account, and went through it together. In
+the end, it was a false alarm. The relief was enormous.
+
+But that moment stayed with me.
+
+I’ve worked in security-focused IT for years. And yet, I still sometimes
+tap a link and only afterwards think, “What did I just do?”
+
+It happens in an instant. We’ve all had that moment.
+
+And that automatic, almost routine tap — before we’ve really thought —
+is where things can go wrong.
+
+After that call with my mum, I went looking for an app that protects
+people in that exact moment — one that gives you that split second back.
+
+I couldn’t find one. So I started building it myself.
+
+LinkLook:
+
+Look before you link. Link only when it’s safe.
+
+LinkLook works quietly in the background. Tap a link — in any app,
+anywhere — and it’s checked instantly.
+
+If the link is safe, everything carries on as normal. If the link is
+dangerous, LinkLook steps in — in the way you’ve chosen.
+
+I’m building LinkLook as we speak, aiming for the App Store in 2026.
+
+This isn’t about telling people to be more careful. It’s about taking
+care of people.
+
+If this resonates with you, I’d love to connect.

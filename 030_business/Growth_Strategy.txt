@@ -1,0 +1,51 @@
+LINKLOOK — GROWTH STRATEGY
+Version: 2026-03-08
+Origin: ChatGPT
+
+SUMMARY
+LinkLook should grow by becoming easy to discover at the exact moment a person
+becomes aware of scam-link risk.
+
+CORE THESIS
+The best early growth trigger is not generic advertising. It is the near-scam
+moment: a user or family member feels relief, then searches, tells others, or
+installs protection for a relative.
+
+PRIMARY GROWTH LOOPS
+
+1. Post-scare search loop
+near scam -> search for solution -> find LinkLook -> install
+
+2. Family protection loop
+elderly relative almost scammed -> adult child searches -> installs LinkLook ->
+recommends to siblings / friends
+
+3. Near-miss sharing loop
+LinkLook warns -> user feels relief -> user tells others -> installs increase
+
+4. Visibility loop
+LinkLook checks links quietly -> user sees activity summary -> trust grows ->
+retention improves -> more chance of future sharing
+
+KEY GROWTH DECISIONS
+- Keep v1 free
+- Optimise App Store and website copy for problem-solution search intent
+- Make the product easy to explain in one sentence
+- Use calm, credible warning UX
+- Avoid overclaiming
+
+FIRST-YEAR PRIORITY
+Discovery and trust before monetisation.
+
+
+MARKET FOCUS
+Primary beachhead market: Netherlands.
+Use the Dutch market for trust validation, first PR, first user stories, and
+family-protection distribution loops. Keep the assets broadly reusable for
+English-speaking expansion after validation.
+
+PRESS MOMENTS
+Approach journalists at three moments:
+1. launch of the first public version
+2. first real interception / near-miss proof story
+3. during visible scam waves already in the news

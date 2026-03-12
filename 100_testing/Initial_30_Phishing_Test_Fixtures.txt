@@ -1,0 +1,50 @@
+LinkLook Initial 30 Phishing Test Fixtures
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Format
+ID | Input URL / scenario | Expected decision | Reason code | Notes
+
+Safe-path cases
+TC-SAFE-001 | https://www.apple.com | allow | trusted_benign | Well-known benign domain
+TC-SAFE-002 | https://www.wikipedia.org/wiki/Phishing | allow | trusted_benign | Informational page about phishing
+TC-SAFE-003 | https://github.com/login | allow | benign_login_page | Legitimate login page
+TC-SAFE-004 | https://www.rabobank.nl | allow | trusted_benign | Legitimate banking site
+TC-SAFE-005 | https://www.ing.nl | allow | trusted_benign | Legitimate banking site
+TC-SAFE-006 | https://www.bol.com | allow | trusted_benign | Legitimate consumer site
+TC-SAFE-007 | https://www.postnl.nl | allow | trusted_benign | Legitimate parcel site
+TC-SAFE-008 | https://www.microsoft.com | allow | trusted_benign | Legitimate platform site
+TC-SAFE-009 | https://support.apple.com | allow | trusted_benign | Legitimate support site
+TC-SAFE-010 | https://www.kvk.nl | allow | trusted_benign | Legitimate Dutch public site
+
+Obvious malicious cases
+TC-PHISH-011 | https://paypaI-login-check.com | block | domain_impersonation | Capital I in place of l
+TC-PHISH-012 | https://appleid-security-update.net | block | brand_impersonation | Fake Apple credential lure
+TC-PHISH-013 | https://microsoft-auth-verify-login.xyz | block | brand_impersonation | Suspicious brand + auth language
+TC-PHISH-014 | https://rabobank-secure-check-login.com | block | brand_impersonation | Bank impersonation
+TC-PHISH-015 | https://ing-verificatie-alert.com | block | brand_impersonation | Dutch bank impersonation
+TC-PHISH-016 | https://dhl-track-confirm-login.com | block | parcel_impersonation | Delivery lure
+TC-PHISH-017 | https://crypto-wallet-restore-now.biz | block | crypto_wallet_phishing | Wallet recovery lure
+TC-PHISH-018 | https://office365-password-reset-check.com | block | credential_harvest_risk | SaaS credential lure
+TC-PHISH-019 | https://secure-account-warning-payment.com | block | suspicious_keywords_combo | High-risk keyword stack
+TC-PHISH-020 | https://paypa1-login-security-check.com | block | domain_character_substitution | Number 1 in place of l
+
+Edge / ambiguity cases
+TC-EDGE-021 | https://bit.ly/example-safe | inform | shortener_unresolved | Expand before final decision
+TC-EDGE-022 | https://tinyurl.com/example-risk | inform | shortener_unresolved | Expand before final decision
+TC-EDGE-023 | http://198.51.100.10/login | warn | url_has_ip_address | Raw IP host
+TC-EDGE-024 | https://login.secure.account.verify.example.com | warn | long_subdomain_chain | Suspicious structure
+TC-EDGE-025 | https://xn--pple-43d.com | warn | domain_punycode | IDN / punycode risk
+TC-EDGE-026 | https://example-paypal-support.com | warn | possible_brand_reference | Brand mention in domain
+TC-EDGE-027 | https://example.com:8080/login | warn | unusual_port | Unusual port in user-facing link
+TC-EDGE-028 | https://safe.example/redirect?target=https://fake-login.example | warn | open_redirect_risk | Redirect parameter present
+TC-EDGE-029 | https://new-bank-check.help | warn | suspicious_domain | Likely new domain + risky wording
+TC-EDGE-030 | https://mijn-bank-melding.info | warn | suspicious_domain | Consumer-facing Dutch lure pattern
+
+Failure / privacy cases
+TC-FAIL-031 | reputation lookup timeout on benign domain | inform | external_lookup_failed | Controlled fail-safe behavior
+TC-FAIL-032 | no network available for unknown domain | inform | network_unavailable | Do not silently allow
+TC-FAIL-033 | malformed URL input | warn | parse_failed | Invalid input must be handled safely
+TC-FAIL-034 | redirect chain exceeds threshold | warn | redirect_chain_exceeds_threshold | Limit redirect chasing
+TC-FAIL-035 | fetched page contains login form but storage policy forbids raw HTML retention | warn | privacy_constrained_analysis | Respect privacy-safe logging and storage

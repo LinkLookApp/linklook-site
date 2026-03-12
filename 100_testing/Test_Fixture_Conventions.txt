@@ -1,0 +1,67 @@
+LinkLook Test Fixture Conventions
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Define the conventions for canonical LinkLook automated fixtures.
+
+Core principle
+Each important test case should exist in two aligned forms:
+- a human-readable description
+- a machine-runnable structured fixture
+
+Fixture design goals
+- deterministic
+- privacy-safe
+- stable across runs
+- independent from live web volatility where possible
+- expressive enough for decision, UX, and logging assertions
+
+Recommended fixture fields
+- id
+- title
+- category
+- source
+- input.url
+- input.context
+- expected.decision
+- expected.reason_code
+- expected.confidence
+- expected.ux_message_key or UX outcome
+- expected.logging_fields
+- expected.fallback_behavior
+- traceability references
+
+Dependency rule
+Early and default automated fixtures must not depend on:
+- live websites
+- changing threat-intelligence responses
+- unstable external APIs
+- uncontrolled redirect behavior
+
+Use mocks for:
+- reputation providers
+- redirect resolution
+- safe page fetcher results
+- DNS or hosting metadata
+
+Fixture classes
+- safe controls
+- known phishing
+- suspicious but uncertain
+- redirect and shortener cases
+- universal-link / routing cases
+- privacy and failure-mode cases
+- regression cases
+
+Naming rule
+Fixture IDs should be stable and structured, for example:
+- TC-SAFE-001
+- TC-PHISH-014
+- TC-EDGE-007
+- TC-FAIL-003
+- TC-REG-012
+
+Canon rule
+If prose documentation and machine fixture differ, the fixture and its explicit expected fields are the source of truth for automated execution, but the prose record must be updated promptly to match.

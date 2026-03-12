@@ -1,0 +1,29 @@
+Typosquatting Detection
+Generated: 2026-03-08
+
+Purpose
+Detect domains designed to exploit common typing or reading mistakes.
+
+Patterns
+- omission: paypl
+- insertion: paypaal
+- substitution: paypai
+- transposition: pyapal
+- TLD abuse: trustedbrand.co instead of trustedbrand.com
+
+Inputs
+- candidate domain
+- protected brand dataset
+- top-level domain policy
+- historical risk observations
+
+Detection features
+- edit distance
+- token order changes
+- vowel or consonant repetition
+- TLD mismatch severity
+- user-targeted keywords such as auth, verify, billing, support
+
+Recommended decisioning
+- score and enrich
+- combine with domain age, hosting reputation, and page classification

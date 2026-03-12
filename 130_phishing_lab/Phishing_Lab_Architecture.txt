@@ -1,0 +1,52 @@
+LinkLook Phishing Test Lab Architecture
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+The phishing lab is a controlled, safe environment for testing LinkLook against realistic scam patterns without depending on live malicious infrastructure.
+
+Suggested structure
+/phishing-lab
+  /datasets
+    /phishing_known
+    /phishing_lookalike
+    /phishing_redirect
+    /phishing_shorteners
+    /suspicious_new_domains
+    /benign_control
+  /pages
+    /fake_bank_login
+    /fake_crypto_wallet
+    /fake_delivery_service
+  /fixtures
+    /test_cases.yaml
+  /runner
+    /run_lab_tests
+
+Dataset categories
+- known phishing patterns
+- lookalike domains
+- newly registered domains
+- redirect chains
+- shortened links
+- fake login pages
+- benign control dataset
+
+Important safety rule
+Never rely on live malicious infrastructure for the core lab.
+Use local replicas, mocks, and controlled redirects.
+
+Growth rule
+Every important real-world scam discovered should become a permanent lab test case.
+
+Expanded lab purpose
+The phishing lab is not only for decision accuracy.
+It should also support:
+- regression preservation
+- realistic redirect and shortener simulation
+- safe fake-login-page testing
+- UX validation for selected warning flows
+
+Growth rule
+Every important real-world scam pattern or major misclassification should be transformed into a safe lab fixture and retained permanently.

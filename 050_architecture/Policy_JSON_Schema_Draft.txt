@@ -1,0 +1,503 @@
+LinkLook — Policy JSON Schema Draft
+Version: v1.0
+Date: 2026-03-11
+Origin: Cowork session, derived from Backend_Policy_Specification.txt v2.0
+References: Backend_Policy_Specification.txt, Decision_Policy_Rule_Engine.txt,
+            Policy_Evaluation_Precedence.txt
+Related: MDL-027, MDL-111
+
+================================================================================
+PURPOSE
+================================================================================
+
+This document defines the concrete JSON shape of a LinkLook policy document.
+It is the data contract between the backend (policy publisher) and the app
+(policy consumer). The engine never interprets anything beyond what is defined
+here.
+
+For design rationale, see Backend_Policy_Specification.txt.
+For runtime evaluation rules, see Policy_Evaluation_Precedence.txt.
+
+================================================================================
+1. TOP-LEVEL STRUCTURE
+================================================================================
+
+  {
+    "schema_version":   1,
+    "policy_version":   "2026-03-11.1",
+    "issued_at":        "2026-03-11T12:00:00Z",
+    "valid_until":      "2026-03-18T12:00:00Z",
+    "min_app_version":  "1.0.0",
+    "signature":        "<HMAC or signature string>",
+    "default_action":   "inform",
+    "signal_weights":   { ... },
+    "warn_threshold":   40,
+    "block_threshold":  80,
+    "overrides":        [ ... ],
+    "rules":            [ ... ]
+  }
+
+Field definitions:
+
+  schema_version    integer   Schema format version. The app rejects any
+                              policy with a schema_version it does not
+                              understand.
+
+  policy_version    string    Unique identifier for this policy revision.
+                              Format: "YYYY-MM-DD.N" (date + sequence).
+                              Used for caching (304 Not Modified) and
+                              decision trace logging.
+
+  issued_at         ISO 8601  When this policy was published by the backend.
+
+  valid_until       ISO 8601  After this timestamp the app must attempt a
+                              fresh fetch. If fetch fails, the cached policy
+                              remains valid for 7 days (grace period).
+                              After grace period, fall back to hardcoded
+                              baseline policy.
+
+  min_app_version   string    Semantic version. If the running app version
+                              is older than this, the app must ignore this
+                              policy and keep using its last compatible version.
+
+  signature         string    HMAC or cryptographic signature. The app
+                              rejects any policy that fails verification.
+                              Verification algorithm defined by the app,
+                              not by the policy.
+
+  default_action    enum      "allow" | "inform" | "warn" | "block"
+                              Applied when no override, rule, or score-based
+                              path produces a result. For LinkLook the
+                              cautious default is "inform".
+
+  signal_weights    object    See section 2.
+
+  warn_threshold    integer   Score at or above this triggers warn.
+  block_threshold   integer   Score at or above this triggers block.
+
+  overrides         array     See section 3.
+  rules             array     See section 4.
+
+================================================================================
+2. SIGNAL WEIGHTS
+================================================================================
+
+Maps signal identifiers (from Signal_Taxonomy.txt) to integer weights.
+The engine sums matched weights and compares against thresholds.
+
+  "signal_weights": {
+    "very_young_domain":        35,
+    "url_shortener":            20,
+    "ip_literal_url":           80,
+    "punycode_risk":            30,
+    "brand_impersonation":      45,
+    "sensitive_path_keywords":  25,
+    "redirect_chain_risk":      40,
+    "suspicious_tld":           15,
+    "domain_impersonation":     50,
+    "malformed_url":            60,
+    "domain_character_sub":     55,
+    "credential_keywords":      50,
+    "long_subdomain_chain":     20,
+    "unusual_port":             25,
+    "open_redirect":            35,
+    "excessive_encoding":       15,
+    "excessive_url_length":     10,
+    "crypto_keywords":          40
+  }
+
+Score interpretation:
+  score >= block_threshold  →  block
+  score >= warn_threshold   →  warn
+  score > 0                 →  inform
+  score = 0                 →  default_action
+
+Signal weight keys must match identifiers in Signal_Taxonomy.txt.
+Unknown keys are ignored by the engine (forward compatibility).
+
+V1 note: signal_weights, warn_threshold, and block_threshold are defined in
+this schema but not yet used by V1 code. V1 uses rule matching only. The
+scoring path is a V2 code task.
+
+================================================================================
+3. OVERRIDE SCHEMA
+================================================================================
+
+Each override is a JSON object. Overrides are evaluated before rules and
+scoring. A matching override short-circuits the pipeline.
+
+  {
+    "id":                 "SAFE-GOV-001",
+    "enabled":            true,
+    "priority":           1000,
+    "match": {
+      "type":             "domain",
+      "value":            "belastingdienst.nl",
+      "include_subdomains": true
+    },
+    "decision": {
+      "action":           "allow",
+      "reason_code":      "manual_allow",
+      "confidence":       0.99
+    },
+    "allow_user_bypass":  false,
+    "sticky":             true,
+    "validity": {
+      "not_before":       null,
+      "expires_at":       null
+    },
+    "source": {
+      "type":             "manual_review",
+      "ref":              "gov-allow-nl-001"
+    },
+    "notes":              "Dutch tax authority, verified."
+  }
+
+Override-specific fields:
+
+  allow_user_bypass  boolean  Whether the UI may let the user proceed despite
+                              the decision. Default: false.
+                              false = hard decision (no bypass button).
+                              true  = user sees the decision but may continue.
+
+  sticky             boolean  When true, this override is not displaced by a
+                              later override at the same priority. Default: false.
+                              Used for emergency blocks that must hold.
+
+All other fields follow the rule schema (section 4).
+
+================================================================================
+4. RULE SCHEMA
+================================================================================
+
+Each rule is a JSON object:
+
+  {
+    "id":           "RULE-IMP-001",
+    "enabled":      true,
+    "priority":     300,
+    "match": {
+      "type":       "domain",
+      "value":      "example-security-check.com",
+      "include_subdomains": true
+    },
+    "decision": {
+      "action":     "warn",
+      "reason_code": "suspicious_pattern",
+      "confidence": 0.72
+    },
+    "validity": {
+      "not_before": null,
+      "expires_at": "2026-06-01T00:00:00Z"
+    },
+    "source": {
+      "type":       "partner_feed",
+      "ref":        "feed-item-7781"
+    },
+    "notes":        "Flagged by partner, review in June."
+  }
+
+--------------------------------------------------------------------------------
+4.1 REQUIRED FIELDS
+--------------------------------------------------------------------------------
+
+  id              string    Stable unique identifier. Format: "RULE-XXX-NNN"
+                            or "SAFE-XXX-NNN" for allow-overrides.
+
+  enabled         boolean   false = rule is skipped during evaluation.
+                            Allows disabling without deletion.
+
+  priority        integer   Higher number = higher priority. Used for conflict
+                            resolution when multiple rules match.
+
+                            Numbering guidance:
+                              1000  Emergency (immediate threat)
+                               500  Exact URL match
+                               300  Domain + path prefix match
+                               100  Domain-level match
+                                50  Signal-based match
+                                10  Low-confidence / informational
+
+  match           object    See section 4.2.
+
+  decision        object    See section 4.3.
+
+--------------------------------------------------------------------------------
+4.2 MATCH OBJECT
+--------------------------------------------------------------------------------
+
+  type              string    Match type. V1 values:
+                              "exact_url"           Full normalized URL match
+                              "domain"              Registered domain match
+                              "domain_path_prefix"  Domain + path starts-with
+                              "subdomain"           Specific subdomain match
+                              "signal"              Named signal identifier
+
+  value             string    The URL, domain, path prefix, or signal name
+                              to match against.
+
+  include_subdomains boolean  For "domain" type: also match subdomains.
+                              Default: true.
+                              Ignored for other match types.
+
+Match type specificity (most specific first):
+  exact_url > domain_path_prefix > subdomain > domain > signal
+
+V1 constraints:
+- No regex. All matches are exact string comparison or starts-with
+  (for domain_path_prefix).
+- URLs are compared after normalization (see URL_Reuse_Data_Model.txt).
+
+--------------------------------------------------------------------------------
+4.3 DECISION OBJECT
+--------------------------------------------------------------------------------
+
+  action          enum      "allow" | "inform" | "warn" | "block"
+
+  reason_code     string    Stable identifier from Reason_Code_Catalog.txt.
+                            Used by the app to generate localized user-facing
+                            text via Reason_Code_To_Message_Mapping.txt.
+
+  confidence      float     Optional. Range 0.0–1.0. Used for analytics,
+                            logging, and future ML training. Not shown to
+                            the user directly.
+
+The decision object does NOT contain a user-facing message. The policy is
+language-neutral. The app maps reason_code to localized text.
+
+--------------------------------------------------------------------------------
+4.4 OPTIONAL FIELDS
+--------------------------------------------------------------------------------
+
+  validity        object    Time window for the rule.
+    not_before    ISO 8601  Rule ignored before this time. null = immediate.
+    expires_at    ISO 8601  Rule ignored after this time. null = no expiry.
+
+                            Expired approvals fall back to the next matching
+                            rule or default_action. They do NOT silently
+                            become allow.
+
+  source          object    Provenance for audit and policy management.
+    type          string    "manual_review" | "backend_dataset" |
+                            "partner_feed" | "temporary_override" |
+                            "crowdsourced"
+    ref           string    External reference (case ID, feed item, etc.)
+
+                            Source is metadata. The engine does not use it
+                            for evaluation.
+
+  notes           string    Operator note. Not used by the client.
+
+================================================================================
+5. COMPLETE EXAMPLE POLICY
+================================================================================
+
+  {
+    "schema_version": 1,
+    "policy_version": "2026-03-11.1",
+    "issued_at": "2026-03-11T12:00:00Z",
+    "valid_until": "2026-03-18T12:00:00Z",
+    "min_app_version": "1.0.0",
+    "signature": "hmac-sha256:abc123...",
+    "default_action": "inform",
+
+    "signal_weights": {
+      "very_young_domain": 35,
+      "url_shortener": 20,
+      "ip_literal_url": 80,
+      "punycode_risk": 30,
+      "brand_impersonation": 45,
+      "sensitive_path_keywords": 25,
+      "redirect_chain_risk": 40,
+      "suspicious_tld": 15,
+      "domain_impersonation": 50,
+      "malformed_url": 60
+    },
+    "warn_threshold": 40,
+    "block_threshold": 80,
+
+    "overrides": [
+      {
+        "id": "SAFE-GOV-001",
+        "enabled": true,
+        "priority": 1000,
+        "match": {
+          "type": "domain",
+          "value": "belastingdienst.nl",
+          "include_subdomains": true
+        },
+        "decision": {
+          "action": "allow",
+          "reason_code": "manual_allow",
+          "confidence": 0.99
+        },
+        "allow_user_bypass": false,
+        "sticky": false,
+        "validity": {
+          "not_before": null,
+          "expires_at": null
+        },
+        "source": {
+          "type": "manual_review",
+          "ref": "gov-allow-nl-001"
+        },
+        "notes": "Dutch tax authority."
+      },
+      {
+        "id": "BLOCK-EMRG-001",
+        "enabled": true,
+        "priority": 1000,
+        "match": {
+          "type": "domain",
+          "value": "phish-example-2026.net",
+          "include_subdomains": true
+        },
+        "decision": {
+          "action": "block",
+          "reason_code": "known_phishing",
+          "confidence": 1.0
+        },
+        "allow_user_bypass": false,
+        "sticky": true,
+        "validity": {
+          "not_before": null,
+          "expires_at": null
+        },
+        "source": {
+          "type": "backend_dataset",
+          "ref": "incident-2026-118"
+        },
+        "notes": "Active phishing campaign."
+      }
+    ],
+
+    "rules": [
+      {
+        "id": "RULE-BRAND-001",
+        "enabled": true,
+        "priority": 300,
+        "match": {
+          "type": "signal",
+          "value": "brand_impersonation"
+        },
+        "decision": {
+          "action": "block",
+          "reason_code": "brand_impersonation",
+          "confidence": 0.85
+        },
+        "validity": {
+          "not_before": null,
+          "expires_at": null
+        },
+        "source": {
+          "type": "backend_dataset",
+          "ref": "ruleset-v1"
+        },
+        "notes": null
+      },
+      {
+        "id": "RULE-IP-001",
+        "enabled": true,
+        "priority": 100,
+        "match": {
+          "type": "signal",
+          "value": "ip_literal_url"
+        },
+        "decision": {
+          "action": "warn",
+          "reason_code": "raw_ip_link",
+          "confidence": 0.75
+        },
+        "validity": {
+          "not_before": null,
+          "expires_at": null
+        },
+        "source": {
+          "type": "backend_dataset",
+          "ref": "ruleset-v1"
+        },
+        "notes": null
+      },
+      {
+        "id": "RULE-EXACT-001",
+        "enabled": true,
+        "priority": 500,
+        "match": {
+          "type": "exact_url",
+          "value": "https://my-test-invoice-2026.xyz/pay/123",
+          "include_subdomains": false
+        },
+        "decision": {
+          "action": "allow",
+          "reason_code": "trusted_exact_url",
+          "confidence": 0.99
+        },
+        "validity": {
+          "not_before": null,
+          "expires_at": "2026-04-01T00:00:00Z"
+        },
+        "source": {
+          "type": "manual_review",
+          "ref": "approval-9912"
+        },
+        "notes": "Time-limited exact URL approval."
+      }
+    ]
+  }
+
+================================================================================
+6. V1 CODE MAPPING
+================================================================================
+
+This JSON schema is the target format for V2 backend policy. In V1, the
+equivalent data is hardcoded in Swift:
+
+  JSON field                   V1 Swift equivalent
+  ───────────────────────────────────────────────────────────────────────
+  schema_version               not present (V2)
+  policy_version               not present (V2)
+  issued_at / valid_until      not present (V2)
+  min_app_version              not present (V2)
+  signature                    not present (V2)
+  default_action               PolicyEngine fallback: .inform
+  signal_weights               not present (V2, rule matching only)
+  warn_threshold               not present (V2)
+  block_threshold              not present (V2)
+  overrides                    not present as separate layer (V2)
+  rules[].id                   Rule.id (e.g. "RULE-PARCEL-001")
+  rules[].enabled              all rules enabled in RuleSet.v1
+  rules[].priority             Rule.priority (.critical/.high/.medium/.low)
+  rules[].match                Rule.conditions (array of SignalName)
+  rules[].decision.action      Rule.decision (.block/.warn/.inform)
+  rules[].decision.reason_code Rule.reasonCode (ReasonCode enum)
+  rules[].decision.confidence  Rule.confidence (Float)
+  rules[].validity             not present (V2)
+  rules[].source               not present (V2)
+  rules[].notes                Rule.description (compile-time only)
+
+The V1 → V2 migration path: replace RuleSet.v1 with a JSON decoder that
+loads this schema, either from a bundled file or from the backend endpoint.
+
+================================================================================
+7. VALIDATION RULES
+================================================================================
+
+The app must validate every policy document before applying it:
+
+  1. schema_version must be a known value (currently: 1)
+  2. signature must pass verification
+  3. min_app_version must be <= running app version
+  4. All rules and overrides must have a non-empty id
+  5. All match.type values must be known
+  6. All decision.action values must be one of: allow, inform, warn, block
+  7. All reason_code values should exist in Reason_Code_Catalog.txt
+     (unknown codes are logged but not rejected — forward compatibility)
+  8. priority must be a positive integer
+  9. If valid_until is in the past and beyond grace period, reject
+
+A policy that fails validation is rejected. The previous valid policy
+remains in effect.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

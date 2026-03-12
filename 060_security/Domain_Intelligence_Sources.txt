@@ -1,0 +1,16 @@
+LinkLook — Domain Intelligence Sources
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Primary sources
+- domain registration age and registrar metadata
+- DNS and resolver signals
+- certificate transparency observations
+- known threat feeds / phishing feeds
+- redirect infrastructure patterns
+- AASA discovery results
+
+Use
+These sources feed risk scoring, escalation, explanation, and cache policy.
+No single weak signal should dominate unless it is from a strong malicious
+intelligence source.

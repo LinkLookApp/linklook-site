@@ -1,0 +1,69 @@
+LinkLook — AASA Crawling Architecture
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+AASA crawling gives LinkLook a structured map of iOS universal-link routing.
+That matters because universal links can bypass the default safe-link routing and
+open an installed app directly.
+
+What is crawled
+LinkLook checks both Apple-supported locations:
+- https://<domain>/.well-known/apple-app-site-association
+- https://<domain>/apple-app-site-association
+
+Why it exists
+- Discover domain → app relationships.
+- Discover path scopes used for universal links.
+- Detect routes that may bypass LinkLook’s browser-based interception path.
+- Enrich risk scoring when suspicious domains claim app relationships.
+- Build a long-term ecosystem graph for product intelligence.
+
+Data extracted
+- domain
+- fetch timestamp
+- HTTP status
+- content-type
+- appID / teamID / bundle identifier (when derivable)
+- declared paths or components
+- crawl hash / document hash
+- parse status
+
+Use inside LinkLook
+1. Universal-link awareness
+   LinkLook can recognize that a tapped URL may open an app instead of a web page.
+2. Bypass analysis
+   If a domain frequently routes through universal links, LinkLook can treat it as
+   a special handling case in the threat model.
+3. App-domain graph
+   Over time this becomes: domain → appID → paths.
+4. Phishing intelligence
+   Suspicious or newly registered domains with unusual AASA behavior can be
+   escalated earlier.
+
+Crawler rules
+- Respect tight timeouts.
+- Limit response size.
+- Parse only JSON / JSON-like AASA payloads.
+- Do not execute any active content.
+- Rate limit per domain.
+- Store fetch metadata separately from user events.
+
+Security considerations
+- AASA presence is not proof of legitimacy.
+- Missing AASA is not suspicious by itself.
+- Large or malformed files are ignored and flagged as parse failures.
+- AASA data is an intelligence input, not a standalone verdict.
+
+Core output model
+- domain
+- app_claims[]
+- path_rules[]
+- last_seen_at
+- last_changed_at
+- source_hash
+- confidence
+
+Decision use
+AASA signals should affect escalation and explanation, not silently overrule
+stronger evidence from deterministic checks, threat feeds, or sandbox results.

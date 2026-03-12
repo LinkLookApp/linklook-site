@@ -1,0 +1,71 @@
+Safe Page Docking Sandbox
+Generated: 2026-03-08
+
+Purpose
+Define how LinkLook can fetch and inspect pages without exposing the user or LinkLook infrastructure to active content risk.
+
+Goals
+- Analyze destination pages safely
+- Prevent malware execution during inspection
+- Prevent credential submission during inspection
+- Keep inspection fast enough for user-facing decisions
+- Produce repeatable evidence for classification and future model training
+
+Threats addressed
+- Active JavaScript payloads
+- Browser exploit kits
+- Forced downloads
+- Cookie / session contamination
+- Redirect traps
+- Fingerprinting of the inspection environment
+
+Core design
+1. Receive URL from the decision pipeline
+2. Perform lightweight pre-checks before any fetch
+3. Resolve redirects in a controlled environment
+4. Fetch HTML and headers in an isolated container or VM
+5. Extract metadata, forms, titles, links, and page features
+6. Classify page risk
+7. Destroy the sandbox instance
+
+Mandatory controls
+- JavaScript disabled by default
+- No persistent cookies
+- No saved credentials
+- No local storage persistence
+- Download execution disabled
+- Strict wall-clock timeout
+- Strict redirect limit
+- Strict memory and CPU limits
+- Separate egress controls
+- Full sandbox teardown after each analysis
+
+Rendering strategy
+Tier 1: Head / header / DNS / certificate checks only
+Tier 2: HTML fetch without script execution
+Tier 3: Controlled higher-fidelity render only when required by policy
+
+Data captured
+- Final URL after redirects
+- HTTP status chain
+- Page title
+- Form presence and count
+- Password field presence
+- External resource domains
+- Text / structural features needed for classification
+- Classification result and confidence
+
+Data not captured by default
+- User credentials
+- User cookies
+- User browsing history
+- Arbitrary page screenshots unless explicitly required by policy
+
+Failure handling
+- Timeout -> suspicious
+- Redirect loop -> suspicious or block depending on signal combination
+- Download attempt -> block
+- Unsupported content type -> classify on metadata only
+
+Operational note
+This document complements Safe_Page_Fetching_Architecture.txt and should be treated as the containment layer for deep inspection.

@@ -1,0 +1,47 @@
+LinkLook Test Case Schema
+Version: v2.0
+Date: 2026-03-11
+Origin: ChatGPT, updated to align with minimal browser model
+
+Goal
+Use a human-readable and machine-runnable schema from the start.
+
+Example YAML fixture
+id: TC-PHISH-001
+title: Known phishing domain is blocked
+input:
+  url: https://paypaI-login-example.com
+  source: messages
+expected:
+  decision: block
+  reason_code: domain_impersonation
+  confidence: high
+
+Recommended fields
+- id
+- title
+- input
+- expected
+- notes
+- tags
+
+Typical input fields
+- url
+- source
+- redirect_chain
+- network_available
+- page_metadata
+
+Typical expected fields
+- decision
+- reason_code
+- confidence
+- triggered_rule
+- user_message_key
+- page_load_state (not_loaded | loaded_after_verdict)
+- browser_chrome_visible (true | false)
+- open_elsewhere_available (true | false)
+
+Core rule reminder
+No web content may load before LinkLook has reached the allowed state for that specific URL.
+Test fixtures for warn, inform, and block verdicts must assert page_load_state: not_loaded.

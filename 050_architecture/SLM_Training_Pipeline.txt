@@ -1,0 +1,33 @@
+LinkLook — SLM Training Pipeline
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Prepare v1 data collection so LinkLook can train or fine-tune a smaller local
+or server-side model later without redesigning the system.
+
+Pipeline
+1. Evaluation event produced by the detection engine.
+2. Structured features saved.
+3. Label quality improved by rules, analyst review, and outcome feedback.
+4. Training dataset versioned.
+5. Candidate SLM trained and validated.
+6. Model compared against baseline rules and existing API-assisted path.
+
+Minimum record fields
+- canonical URL hash
+- domain
+- timestamp
+- feature vector / triggered signals
+- redirect summary
+- final verdict
+- confidence
+- source of verdict (rules / sandbox / model / analyst)
+
+Privacy rule
+No dataset row should require user identity to be useful.
+Training data must be architected around security features, not personal usage.
+
+Evaluation rule
+An SLM is an enhancement layer. It cannot weaken deterministic protections
+already accepted in the threat model.

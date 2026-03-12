@@ -1,0 +1,7 @@
+LINKLOOK — DEFAULT BROWSER ENTITLEMENT
+Version: 1.0
+Date: 2026-03-07
+
+LinkLook registers as the default browser so it can receive URLs opened from other apps
+and evaluate them for phishing and scam risks before navigation occurs.
+If safe, the URL is forwarded to the user's preferred browser.

@@ -1,0 +1,25 @@
+First 24 Hours Domain Risk Model
+Generated: 2026-03-08
+
+Purpose
+Capture the elevated risk associated with domains that are extremely new, especially in the first 24 hours after registration or first observation.
+
+Why this matters
+Many phishing campaigns rely on newly created domains before blocklists catch up.
+
+Key signals
+- registration age under 24 hours
+- certificate first seen very recently
+- no historical reputation
+- disposable or cheap hosting patterns
+- login or payment page behavior
+- brand similarity
+
+Decision guidance
+Newness alone is not enough to block.
+Newness combined with impersonation or credential harvesting signals should sharply increase risk.
+
+Output
+- new_domain_score
+- age_bucket
+- supporting evidence

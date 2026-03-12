@@ -1,0 +1,95 @@
+
+Detection Engine Scoring Model
+Generated: 2026-03-08
+
+Purpose
+Define how LinkLook combines multiple detection signals into a final security decision.
+
+Core Principle
+No single signal should normally trigger a block decision unless it matches
+known malicious infrastructure. The engine relies on signal combination.
+
+Primary Signal Groups
+
+1. Domain Intelligence
+- domain_age
+- domain_reputation
+- certificate_age
+- hosting_risk
+
+2. Brand & Similarity
+- brand_similarity_score
+- typosquatting_score
+
+3. URL Structure
+- url_entropy_score
+- suspicious_keywords
+- path_length
+
+4. Redirect Intelligence
+- redirect_count
+- suspicious_hops
+- final_domain_risk
+
+5. Page Inspection Signals
+- login_form_present
+- password_field_present
+- suspicious_text_patterns
+
+6. Infrastructure Signals
+- dns_risk
+- tls_certificate_signals
+- network_extension_signals
+
+Example Risk Model
+
+risk_score =
+    domain_age_score
+  + brand_similarity_score
+  + redirect_chain_score
+  + url_entropy_score
+  + page_signal_score
+  + infrastructure_score
+
+Example thresholds
+
+SAFE:
+risk_score < 30
+
+SUSPICIOUS:
+30 <= risk_score < 70
+
+BLOCK:
+risk_score >= 70
+
+Important Rule
+
+Block decisions should normally require at least two independent
+risk categories (for example domain similarity + login form).
+
+Model Evolution
+
+The scoring model should evolve over time using:
+
+- observed phishing datasets
+- test case library results
+- feedback loops
+- future SLM classification results
+
+Relationship to Other Documents
+
+See also:
+- Domain_Similarity_Detection.txt
+- Typosquatting_Detection.txt
+- Redirect_Chain_Intelligence_Model.txt
+- URL_Entropy_Detection.txt
+- Threat_Intelligence_Pipeline.txt
+v6 enrichments
+Protected-brand intelligence should come from:
+- Brand_Impersonation_Detection_Dataset_Design.txt
+
+Campaign-level enrichment should come from:
+- Phishing_Campaign_Early_Detection_System.txt
+
+Universal Link graph enrichment should come from:
+- Global_AASA_Domain_App_Graph_Model.txt

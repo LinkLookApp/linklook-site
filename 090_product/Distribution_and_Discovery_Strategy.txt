@@ -1,0 +1,65 @@
+LINKLOOK — DISTRIBUTION AND DISCOVERY STRATEGY
+Version: 2026-03-08
+Origin: ChatGPT
+
+OBJECTIVE
+Ensure LinkLook is easy to find when someone searches for protection after a
+near-scam event.
+
+CHANNELS
+
+1. App Store search
+Most important discovery surface for motivated iPhone users.
+
+Recommended keyword focus:
+- phishing protection
+- scam protection
+- link checker
+- phishing detector
+- safe links
+
+Suggested positioning line:
+LinkLook checks links before they open and warns if the destination looks
+suspicious.
+
+2. Website search capture
+Create simple plain-language pages for high-intent searches:
+- how to check if a link is safe on iPhone
+- SMS scam link iPhone
+- what happens if you click a phishing link
+- protect parents from scams
+- phishing protection iPhone
+
+3. Editorial / PR
+Aim for stories around:
+- protecting elderly relatives from scam links
+- reducing smishing risk on iPhone
+- privacy-safe alternative to heavy mobile security products
+
+4. Word-of-mouth
+Support near-miss storytelling with credible warning screens and optional,
+subtle sharing prompts.
+
+IMPORTANT COPY RULE
+The product should always be discoverable through problem language, not only
+through technical security language.
+
+
+NETHERLANDS-FIRST EXECUTION
+Use the Netherlands as the first concentrated launch market.
+Reasons:
+- manageable national market for early trust-building
+- strong local media amplification
+- clear consumer scam problem already recognised
+- English-friendly environment reduces launch friction
+
+Priority Dutch discovery / credibility surfaces:
+- Tweakers and adjacent tech communities
+- Dutch scam-awareness media and consumer-protection coverage
+- family / elderly protection narratives
+
+PRESS HEADLINE DIRECTION
+Prefer practical headlines such as:
+- Dutch app warns before scam links open
+- New app helps protect elderly people from scam links
+- This app checks links before they open

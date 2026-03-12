@@ -1,0 +1,44 @@
+LinkLook Five Security UX Failure Patterns
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Capture the five UX mistakes that commonly cause otherwise strong security tools to fail in practice.
+
+1. Warning fatigue
+If users see warnings too often, they stop reading them.
+Implication for LinkLook:
+- warnings must be rare and meaningful
+- mild uncertainty should not always use high-friction warning treatment
+- warning frequency and override rate must be monitored
+
+2. Technical language
+Users do not think in terms of TLS mismatch, reputation score, or suspicious TLD.
+Implication for LinkLook:
+- explain the human risk, not the raw technical signal
+- use plain-language messages such as pretending to be another company
+
+3. Wrong default action
+Users often choose the visually dominant button.
+Implication for LinkLook:
+- go back or safe action must be primary for warn and block states
+- continue-anyway must never be the default visual action for danger flows
+
+4. Excessive alarm styling
+Overly dramatic warnings can create panic, distrust, or habituation.
+Implication for LinkLook:
+- use calm but clear severity design
+- aim for informed reassurance rather than fear amplification
+
+5. Breaking the user's flow too often
+If every link feels slow or interruptive, users will disable or ignore the product.
+Implication for LinkLook:
+- safe links must feel lightweight
+- measured speed, trust, and friction are core UX success criteria
+
+Testing consequences
+Each failure pattern should be represented in:
+- automated UX tests where possible
+- human usability testing
+- release review for warning quality and warning frequency

@@ -1,0 +1,74 @@
+LinkLook Human Usability Test Plan
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Define how LinkLook validates whether real users understand and follow its warnings.
+
+Why human testing is essential
+Automated UI tests can verify that screens appear and buttons work.
+They cannot verify whether users actually understand the warning, trust the app, or behave safely under pressure.
+
+Primary research questions
+- Do users understand what LinkLook is telling them?
+- Do users obey strong warnings?
+- Do users feel protected rather than confused or blocked?
+- Do safe-link checks feel fast and low-friction?
+- How much warning frequency can users tolerate before fatigue appears?
+
+Priority user groups
+- general smartphone users
+- lower-confidence digital users
+- elderly users or users with limited technical vocabulary
+
+Core usability scenarios
+1. Safe link
+Observe whether the check feels fast and reassuring.
+
+2. Known phishing warning
+Observe whether the user understands the danger and chooses the safe action.
+
+3. Suspicious but uncertain warning
+Observe whether the user understands uncertainty and avoids overtrusting or undertrusting the system.
+
+4. Network failure
+Observe whether the user understands that the link could not be verified.
+
+5. False positive style case
+Observe trust retention when LinkLook is cautious but the user expected a safe site.
+
+6. Shortened link expansion
+Observe whether transparency about the real destination improves understanding.
+
+Metrics
+- warning comprehension
+- warning adherence / obedience rate
+- override rate
+- decision time
+- trust rating
+- frustration rating
+- false positive tolerance
+
+Suggested observation prompts
+Ask users after each scenario:
+- What do you think LinkLook is telling you?
+- What would you do next?
+- Why?
+- How certain do you feel?
+- Did the app feel helpful or annoying?
+
+Success indicators
+- users can explain the warning in their own words
+- high obedience for strong warnings
+- safe links feel lightweight
+- users do not feel trapped during uncertain cases
+- users can distinguish confirmed risk from incomplete analysis
+
+Design implications
+Findings from usability sessions should directly update:
+- warning copy
+- button hierarchy
+- severity thresholds
+- educational microcopy
+- warning frequency policies

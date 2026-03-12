@@ -1,0 +1,1783 @@
+LinkLook Master Decision Log
+Date: 2026-03-10
+
+CANONICAL GOVERNANCE NOTE
+This decision log is governed by the LinkLook Canonical Master Decision Log
+dated 2026-03-10. When an older decision entry conflicts with that master log,
+the canonical master decision log takes precedence until a newer canonical
+master log explicitly replaces it.
+
+Source: Consolidated from prior LinkLook chats, comparison with uploaded
+repo v21, and follow-up status decisions made in the reconciliation chat.
+Updated 2026-03-10 to align with the three-part canonical master decision log.
+
+Status legend
+- Decided: active canonical project direction
+- Proposed: serious candidate direction, not yet canonical
+- Open Question: not resolved yet
+- Superseded: replaced by a later decision
+- Partial: direction exists, but wording/scope still needs refinement
+
+================================================================
+SECTION 1 — CANONICAL HIGH-LEVEL PROJECT DIRECTIONS
+================================================================
+
+MDL-001
+Subject: Product Scope / Purpose
+Status: Decided
+Title: LinkLook is an iOS consumer security app against phishing and smishing via links
+Decision:
+LinkLook is an iOS consumer security app focused on protecting users from phishing and smishing attacks delivered through tapped links.
+Main source chats:
+- LinkLook iOS Security Description
+- Browser entitlement request
+Date(s):
+- 2026-03-06
+
+MDL-002
+Subject: Product Scope / Purpose
+Status: Decided
+Title: LinkLook is a security gateway, not a traditional browser-first product
+Decision:
+LinkLook is primarily a security gateway that evaluates links before navigation, rather than a traditional consumer browser product.
+Main source chats:
+- Default Browser Entitlement Guidance
+- LinkLook iOS Security Description
+Date(s):
+- 2026-03-06
+
+MDL-003
+Subject: Product Scope / Purpose
+Status: Superseded
+Title: Safe links should be handed off to the user’s preferred browser
+Note: Superseded by MDL-075. LinkLook is now a straightforward, security-driven
+browser. Safe links continue transparently within LinkLook. Redirect to another
+browser is an explicit user action via the redirect option/button (MDL-077).
+Decision:
+When a link is considered safe, LinkLook should hand off navigation to the user’s preferred browser.
+Main source chats:
+- LinkLook iOS Security Description
+- Default Browser Entitlement Guidance
+Date(s):
+- 2026-03-06
+
+MDL-004
+Subject: Product Scope / Purpose
+Status: Decided
+Title: QR-related links are in scope
+Decision:
+QR-related link handling is part of LinkLook’s problem space and should be represented in product design, threat modeling, and testing.
+Main source chats:
+- LinkLook QR Interception
+Date(s):
+- 2026-03-04
+
+MDL-005
+Subject: Platform / Apple Strategy
+Status: Superseded
+Title: Default browser entitlement is strategically important
+Note: Superseded by MDL-075 (straightforward, security-driven browser positioning).
+Decision:
+The default browser entitlement is strategically important because it is a major way for LinkLook to receive URLs opened from other apps before the destination loads.
+Main source chats:
+- Default Browser Entitlement Guidance
+- Browser entitlement request
+- LinkLook iOS Security Description
+Date(s):
+- 2026-03-06
+
+MDL-006
+Subject: Architecture
+Status: Decided
+Title: Browser-first with Network Extension optional for first launch
+Decision:
+LinkLook is browser-first for first public validation. Network Extension is an important planned protection layer, but it is not a launch blocker for v1. The architecture should remain ready to add Network Extension without major redesign.
+Rationale:
+This best fits KISS, First Things First, Plan Do Check Act, low-friction delivery, and one source of truth.
+Source:
+- Decision resolved in reconciliation chat (2026-03-10) after comparing repo conflicts
+Date:
+- 2026-03-10
+
+MDL-007
+Subject: Platform / Apple Strategy
+Status: Superseded
+Title: Minimal browser fallback if entitlement is refused
+Note: Superseded — minimal-browser fallback is no longer an active product direction.
+Decision:
+If the default browser entitlement is refused, LinkLook may pivot to a minimal browser fallback mode. This was a contingency path, not the active primary product direction.
+Rationale:
+This kept a fallback ready without overcommitting too early.
+Main source chats:
+- LinkLook Browser Feasibility
+- ADR_Minimal_Browser_Fallback_if_Entitlement_Refused.txt
+Date(s):
+- 2026-03-08
+- 2026-03-10
+
+================================================================
+SECTION 2 — ARCHITECTURE AND ENGINE PRINCIPLES
+================================================================
+
+MDL-008
+Subject: Architecture
+Status: Decided
+Title: Core must not depend on iOS app code, UI code, or Apple frameworks
+Decision:
+The core decision logic must remain independent from UI code, iOS app code, and Apple-specific frameworks.
+Main source chats:
+- Testcases en repo-analyse
+Supporting repo docs:
+- 050_architecture/Development_Architecture.txt
+Date(s):
+- 2026-03-08
+
+MDL-009
+Subject: Architecture
+Status: Decided
+Title: Build core models and decision logic first
+Decision:
+Development should begin with core models and core decision logic before broader UI complexity.
+Main source chats:
+- Beginner Swift Guidance
+- Milestone Plan for Development
+- Eerste stap LinkLook bouwen
+Date(s):
+- 2026-03-08
+
+MDL-010
+Subject: Architecture
+Status: Decided
+Title: Layered defense is required
+Decision:
+LinkLook should use multiple complementary protection layers rather than relying on one single signal or mechanism.
+Main source basis:
+- Repo architecture and principles
+- iPhone Link Scams
+- LinkLook Browser Feasibility
+Date(s):
+- 2026-03-03
+- 2026-03-08
+
+MDL-011
+Subject: Architecture
+Status: Decided
+Title: Gate then escalate
+Decision:
+LinkLook should start with cheaper and simpler checks first, and only escalate to more expensive or deeper analysis when needed.
+Main source:
+- Existing repo decision log DL-001
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-012
+Subject: Architecture
+Status: Decided
+Title: Detection engine scoring model is part of the architecture
+Decision:
+The detection engine should use an explicit scoring approach rather than purely ad hoc judgments.
+Main source:
+- Existing repo decision log DL-008
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-013
+Subject: Architecture
+Status: Decided
+Title: Dedicated Safe Page Docking Sandbox specification exists
+Decision:
+A dedicated safe page docking or sandboxed page handling concept is part of the product’s deeper security design.
+Main source:
+- Existing repo decision log DL-005
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-014
+Subject: Architecture
+Status: Decided
+Title: Dedicated detection-logic supporting documents should exist
+Decision:
+The detection model should be supported by explicit architecture and specification documents instead of remaining implicit.
+Main source:
+- Existing repo decision log DL-006
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+================================================================
+SECTION 3 — UNIVERSAL LINKS, AASA, AND PARTNER API
+================================================================
+
+MDL-015
+Subject: Universal Links / Partner API
+Status: Decided
+Title: Universal links are a core design and security risk
+Decision:
+Universal links are a major design and threat-model concern because they can bypass browser interception and shift security responsibility toward the destination app’s internal handling.
+Main source chats:
+- Branch · Browser entitlement request
+- LinkLook API Flow
+- Certified LinkLook API Review
+Date(s):
+- 2026-03-06
+- 2026-03-07
+
+MDL-016
+Subject: Universal Links / Partner API
+Status: Decided
+Title: LinkLook cannot assume visibility into installed apps on iPhone
+Decision:
+LinkLook must not depend on knowledge of which apps are installed on the user’s iPhone.
+Main source chats:
+- Branch · Browser entitlement request
+Date(s):
+- 2026-03-06
+
+MDL-017
+Subject: Universal Links / Partner API
+Status: Decided
+Title: AASA crawling is a distinct concern
+Decision:
+AASA crawling and related universal-link intelligence should be treated as a separate documented concern rather than left implicit.
+Main source chats:
+- LinkLook User Adoption Risks
+- Branch · Browser entitlement request
+Date(s):
+- 2026-03-06
+- 2026-03-08
+
+MDL-018
+Subject: Universal Links / Partner API
+Status: Decided
+Title: Certified or registered LinkLook API model for apps and domains
+Decision:
+LinkLook should support a certified or registered API model for apps or domains that want to use LinkLook verification, especially around universal-link handling.
+Main source chats:
+- Branch · Browser entitlement request
+- Certified LinkLook API Review
+- LinkLook API Flow
+Date(s):
+- 2026-03-06
+- 2026-03-07
+
+MDL-019
+Subject: Universal Links / Partner API
+Status: Decided
+Title: Certified API users should go through review
+Decision:
+Apps or domains that want to become certified LinkLook API users should go through a review mechanism.
+Main source chats:
+- Certified LinkLook API Review
+Date(s):
+- 2026-03-07
+
+MDL-020
+Subject: Universal Links / Partner API
+Status: Decided
+Title: No extra reverse app API is needed in v1
+Decision:
+An extra app-side callback or reverse API requirement is not needed in v1.
+Main source chats:
+- Certified LinkLook API Review
+Date(s):
+- 2026-03-07
+
+MDL-021
+Subject: Universal Links / Partner API
+Status: Partial
+Title: Mismatch monitoring between certified flow and API usage is a useful abuse signal
+Decision:
+Mismatch monitoring between certified universal-link flow patterns and related API usage is a useful abuse signal and should be considered at backend/control level.
+Main source chats:
+- Certified LinkLook API Review
+Date(s):
+- 2026-03-07
+
+MDL-022
+Subject: Universal Links / Partner API
+Status: Decided
+Title: Global AASA domain-app graph model
+Decision:
+A global graph model connecting domains, apps, and AASA relationships is a valid intelligence direction for LinkLook.
+Main source:
+- Existing repo decision log DL-011
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-023
+Subject: Universal Links / Partner API
+Status: Open Question
+Title: Exact certification criteria and review checklist for LinkLook API partners
+Question:
+What exact criteria, checklist, evidence, and process should define certified LinkLook API status?
+Main source chats:
+- Certified LinkLook API Review
+Date(s):
+- 2026-03-07
+
+MDL-024
+Subject: Universal Links / Partner API
+Status: Open Question
+Title: Exact abuse-detection thresholds and enforcement model for API misuse
+Question:
+What thresholds and responses should apply when certified-flow expectations and API usage diverge?
+Main source chats:
+- Certified LinkLook API Review
+Date(s):
+- 2026-03-07
+
+================================================================
+SECTION 4 — POLICY, OPERATIONS, AND DATA
+================================================================
+
+MDL-025
+Subject: Policy / Operations
+Status: Decided
+Title: Behavior should be adjustable by policy or config without code changes
+Decision:
+LinkLook behavior should be adjustable through a policy or configuration mechanism without requiring app code changes.
+Main source chats:
+- LinkLook Browser Feasibility
+- Code Review Feedback
+Date(s):
+- 2026-03-08
+- 2026-03-09
+
+MDL-026
+Subject: Policy / Operations
+Status: Lean Decided
+Title: Verified or allowed knowledge belongs mainly on the backend
+Decision:
+Reusable verified or allowed knowledge should primarily live on the backend rather than as a growing client-side recent-allowed list.
+Main source chats:
+- Code Review Feedback
+Date(s):
+- 2026-03-09
+
+MDL-027
+Subject: Policy / Operations
+Status: Decided
+Title: Exact backend-client split for policy fetch and cached-policy behavior
+Decision:
+The backend publishes a versioned, data-only JSON policy document. The app
+downloads and caches it locally. The policy contains five sections: metadata
+(version, validity, signature, min app version), defaults (defaultAction for
+unmatched URLs), signal weights and thresholds (numeric scoring), explicit
+rules (match condition → action + reasonCode), and overrides (force-applied
+decisions that always win). Evaluation order: cache lookup → overrides →
+rules → score-based evaluation → defaultAction. Policy is fetched on app
+launch, every foreground transition (304 or new version), and via background
+refresh. Grace period: 7 days past validUntil before falling back to a
+hardcoded baseline policy bundled with the app binary. Policy must sync to
+the shared App Group container (MDL-105) for future Network Extension access.
+The core principle: code = engine, policy = behavior. The policy is a decision
+table, not executable logic. The app maps reasonCode to UX — the policy never
+contains UI text or platform-specific behavior.
+Full specification: 050_architecture/Backend_Policy_Specification.txt
+Main source chats:
+- Code Review Feedback
+- LinkLook Browser Feasibility
+- ChatGPT policy design conversation (2026-03-11)
+Date(s):
+- 2026-03-08
+- 2026-03-09
+- 2026-03-11 (resolved)
+
+MDL-028
+Subject: Data / ML
+Status: Decided
+Title: v1 should generate structured data for future SLM or ML training
+Decision:
+v1 should be designed to generate structured records that can later support SLM or ML training.
+Main source chats:
+- SLM vs LLM for LinkLook
+Date(s):
+- 2026-03-03
+
+MDL-029
+Subject: Data / ML
+Status: Decided
+Title: Do not build the SLM first; prepare the foundation now
+Decision:
+The SLM itself does not need to be built in v1. The data foundation should be prepared now.
+Main source chats:
+- SLM vs LLM for LinkLook
+Date(s):
+- 2026-03-03
+
+MDL-030
+Subject: Data / ML
+Status: Decided
+Title: Brand impersonation dataset design belongs in the system
+Decision:
+A brand impersonation dataset is part of the detection and analysis design.
+Main source:
+- Existing repo decision log DL-009
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-031
+Subject: Data / ML
+Status: Decided
+Title: Early phishing campaign detection system is part of the roadmap
+Decision:
+An early phishing campaign detection system is a legitimate direction within the LinkLook detection ecosystem.
+Main source:
+- Existing repo decision log DL-010
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+================================================================
+SECTION 5 — PRIVACY, SECURITY, AND TRUST
+================================================================
+
+MDL-032
+Subject: Privacy / Security
+Status: Decided
+Title: Privacy-minimizing design is important and should be explainable
+Decision:
+LinkLook should minimize collection of private user data and make this explainable through architecture and documentation.
+Main source chats:
+- iPhone Link Scams
+Date(s):
+- 2026-03-03
+
+MDL-033
+Subject: Privacy / Security
+Status: Decided
+Title: Threat model, security blueprint, and security control mapping should be explicit
+Decision:
+Threat model, security blueprint, and security control mapping should exist as explicit documentation artifacts.
+Main source chats:
+- iPhone Link Scams
+Date(s):
+- 2026-03-03
+
+MDL-034
+Subject: Privacy / Security
+Status: Open Question
+Title: Exact privacy-proof mechanism
+Question:
+Should privacy proof rely on audit, open source, third-party review, or a mix?
+Main source chats:
+- iPhone Link Scams
+Date(s):
+- 2026-03-03
+
+MDL-035
+Subject: Business / Trust
+Status: Decided
+Title: Honest positioning
+Decision:
+LinkLook must not claim perfect safety and should be transparent about limits and uncertainty.
+Main source:
+- Existing repo decision log DL-014
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+================================================================
+SECTION 6 — TESTING, EXECUTION, AND PLANNING
+================================================================
+
+MDL-036
+Subject: Testing
+Status: Decided
+Title: Development should be test-first in spirit
+Decision:
+LinkLook should be built test-first in spirit: define critical scenarios first, then build against them.
+Main source chats:
+- LinkLook Browser Feasibility
+- Testcases en repo-analyse
+- Eerste stap LinkLook bouwen
+Date(s):
+- 2026-03-08
+
+MDL-037
+Subject: Testing
+Status: Decided
+Title: Automated testing should be present from the start
+Decision:
+Automation should be present from the start of development.
+Main source chats:
+- LinkLook Browser Feasibility
+Date(s):
+- 2026-03-08
+
+MDL-038
+Subject: Testing
+Status: Decided
+Title: UX testing matters too
+Decision:
+Testing must cover UX behavior and user trust flows, not only technical detection logic.
+Main source chats:
+- LinkLook Browser Feasibility
+Date(s):
+- 2026-03-08
+
+MDL-039
+Subject: Testing
+Status: Decided
+Title: Manual testing should support easy URL-set testing
+Decision:
+Manual testing should make it easy to run sets of URLs through controlled scenarios.
+Main source chats:
+- Code Review Feedback
+Date(s):
+- 2026-03-09
+
+MDL-040
+Subject: Testing / Planning
+Status: Decided
+Title: Start simple, avoid overengineering, and use concrete milestone planning
+Decision:
+The early milestone plan should favor a simple, concrete build sequence over broad upfront complexity.
+Main source chats:
+- Milestone Plan for Development
+- Beginner Swift Guidance
+Date(s):
+- 2026-03-08
+
+MDL-041
+Subject: Testing / Planning
+Status: Decided
+Title: Test-driven development is mandatory
+Decision:
+Test-driven development is a core execution rule for LinkLook.
+Main source:
+- Existing repo decision log DL-019
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-042
+Subject: Testing / Planning
+Status: Decided
+Title: UX flows require automated acceptance coverage
+Decision:
+Critical UX flows should be covered by automated acceptance testing.
+Main source:
+- Existing repo decision log DL-021
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-043
+Subject: Execution Principles
+Status: Decided
+Title: First Things First
+Decision:
+Always prioritize urgent and important matters, especially incidents and active risks. At the same time, preserve a healthy balance between curative work and preventive work so short-term urgency does not crowd out long-term safety.
+Source:
+- Decided in reconciliation chat (2026-03-10) as explicit principle
+Date:
+- 2026-03-10
+
+MDL-044
+Subject: Execution Principles
+Status: Decided
+Title: Plan Do Check Act
+Decision:
+Work in a disciplined cycle of planning, execution, verification, and improvement. Planning deserves special weight because thinking before starting often saves large amounts of time, rework, and confusion later.
+Source:
+- Decided in reconciliation chat (2026-03-10) as explicit principle
+Date:
+- 2026-03-10
+
+MDL-045
+Subject: Execution Principles
+Status: Decided
+Title: KISS
+Decision:
+Keep LinkLook simple in product promise, UX, architecture, and operations. Add complexity only when it clearly improves user safety, reliability, or delivery speed.
+Source:
+- Decided in reconciliation chat (2026-03-10) as explicit principle after repo review
+Date:
+- 2026-03-10
+
+================================================================
+SECTION 7 — DOCS, REPO GOVERNANCE, AND PROJECT MEMORY
+================================================================
+
+MDL-046
+Subject: Docs / Repo Governance
+Status: Decided
+Title: Rebuild the full canonical repo whenever docs change
+Decision:
+Whenever documents change, the full canonical repo should be rebuilt so the set stays consistent.
+Main source chats:
+- Highest Priority Tasks
+- repeated in later repo-update chats
+Date(s):
+- 2026-03-08
+
+MDL-047
+Subject: Docs / Repo Governance
+Status: Decided
+Title: Canonical set should contain only the latest version of each document
+Decision:
+The canonical set should contain only the most current version of each document, without duplicates or outdated parallel copies.
+Main source chats:
+- Israeli Network Extension Company
+- LinkLook User Adoption Risks
+Date(s):
+- 2026-03-07
+- 2026-03-08
+
+MDL-048
+Subject: Docs / Repo Governance
+Status: Decided
+Title: Canonical structure should be clean and uniform
+Decision:
+The active canonical structure should have a single main folder level, no unnecessary nested canonical-set folder, no archive folder, and consistent three-digit numbering.
+Main source chats:
+- Project Files Update Plan
+- LinkLook User Adoption Risks
+- Israeli Network Extension Company
+Date(s):
+- 2026-03-07
+- 2026-03-08
+
+MDL-049
+Subject: Docs / Repo Governance
+Status: Decided
+Title: Prefer text files where possible
+Decision:
+Use text files where possible for project documentation.
+Main source chats:
+- LinkLook Browser Feasibility
+- Testcases en repo-analyse
+Date(s):
+- 2026-03-08
+
+MDL-050
+Subject: Docs / Repo Governance
+Status: Decided
+Title: Use a lightweight ADR system plus decision log
+Decision:
+A lightweight ADR system should exist alongside the broader decision log.
+Main source chats:
+- Project Files Update Plan
+Date(s):
+- 2026-03-07
+
+MDL-051
+Subject: Docs / Repo Governance
+Status: Decided
+Title: Avoid redundant risk content across docs
+Decision:
+Risk content should not be duplicated heavily across the business plan and other docs.
+Main source chats:
+- Highest Priority Tasks
+Date(s):
+- 2026-03-08
+
+MDL-052
+Subject: Docs / Repo Governance
+Status: Decided
+Title: Maintain a dedicated risk log
+Decision:
+A separate risk log should exist as the main maintainable risk artifact.
+Main source chats:
+- Highest Priority Tasks
+Date(s):
+- 2026-03-08
+
+MDL-053
+Subject: Docs / Repo Governance
+Status: Decided
+Title: One source of truth principle
+Decision:
+Important decisions, principles, and scope choices should be recorded clearly and maintained consistently so the project does not drift across documents.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+================================================================
+SECTION 8 — BUSINESS, POSITIONING, AND GROWTH
+================================================================
+
+MDL-054
+Subject: Business / Growth
+Status: Decided
+Title: Good product but no users is a major risk
+Decision:
+A major business risk is building a good product that still fails to gain users.
+Main source chats:
+- Highest Priority Tasks
+- LinkLook User Adoption Risks
+- LinkLook Interceptor Impact
+Date(s):
+- 2026-03-08
+
+MDL-055
+Subject: Business / Growth
+Status: Decided
+Title: Preferred outreach sequence
+Decision:
+Preferred sequence:
+1. finish v1 product
+2. prepare short explanation and demo
+3. get a small user group
+4. contact Fraudehelpdesk with an informational message
+5. offer demo or conversation
+Main source chats:
+- LinkLook Interceptor Impact
+Date(s):
+- 2026-03-08
+
+MDL-056
+Subject: Business / Growth
+Status: Decided
+Title: Fraudehelpdesk outreach may be useful, but not first
+Decision:
+Fraudehelpdesk outreach may be useful, but it should not come before product and demo readiness.
+Main source chats:
+- LinkLook Interceptor Impact
+Date(s):
+- 2026-03-08
+
+MDL-057
+Subject: Business / Growth
+Status: Open Question
+Title: Exact tactics for getting the first small user group
+Question:
+What concrete tactics should be used to get the first small group of real users?
+Main source chats:
+- LinkLook Interceptor Impact
+Date(s):
+- 2026-03-08
+
+MDL-058
+Subject: Business / Growth
+Status: Decided
+Title: Free v1 is an intentional growth mechanism
+Decision:
+A free v1 is an intentional growth mechanism.
+Main source:
+- Existing repo decision log DL-013
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-059
+Subject: Business / Growth
+Status: Decided
+Title: Family and elderly protection is a primary GTM wedge
+Decision:
+Family and elderly protection is a primary go-to-market wedge.
+Main source:
+- Existing repo decision log DL-015
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-060
+Subject: Business / Growth
+Status: Decided
+Title: Discovery should target post-scare searches
+Decision:
+Discovery should target users who are already concerned after scam-like or suspicious experiences.
+Main source:
+- Existing repo decision log DL-016
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-061
+Subject: Business / Growth
+Status: Decided
+Title: Netherlands-first launch focus
+Decision:
+The initial launch focus should be the Netherlands.
+Main source:
+- Existing repo decision log DL-017
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+MDL-062
+Subject: Platform / App Review
+Status: Decided
+Title: Prepare explicit App Review notes
+Decision:
+Explicit App Review notes should be prepared as part of the product delivery and Apple-facing strategy.
+Main source:
+- Existing repo decision log DL-018
+Date:
+- Present in repo v21 reviewed on 2026-03-10
+
+================================================================
+SECTION 9 — LINKLOOK PRINCIPLES
+================================================================
+
+MDL-063
+Subject: Principles
+Status: Decided
+Title: Protect before harm
+Decision:
+LinkLook exists to reduce the chance that a user reaches a malicious destination in the first place. Prevention before navigation is the core value.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-064
+Subject: Principles
+Status: Decided
+Title: Security before convenience before performance
+Decision:
+When these goals conflict, user safety comes first. Convenience matters and speed matters, but neither may quietly overrule security.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-065
+Subject: Principles
+Status: Decided
+Title: Intercept, analyze, decide, explain, learn
+Decision:
+LinkLook should work as a disciplined flow: receive the link, analyze risk, make a decision, explain that decision clearly, and improve over time from what is learned.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-066
+Subject: Principles
+Status: Decided
+Title: Warn on uncertainty; never silently allow
+Decision:
+When certainty is too low, LinkLook should prefer a safe and transparent response over silently passing a risky destination.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-067
+Subject: Principles
+Status: Decided
+Title: Low-friction safety
+Decision:
+Safe links should feel fast and smooth. Protection that creates too much friction will be bypassed, ignored, or distrusted.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-068
+Subject: Principles
+Status: Decided
+Title: Calm, clear, human communication
+Decision:
+LinkLook should explain risk in plain language. Warnings must be understandable, meaningful, and calm, not technical, vague, or alarmist.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-069
+Subject: Principles
+Status: Decided
+Title: Reproducible decisions
+Decision:
+Where feasible, LinkLook decisions should be traceable and explainable. The system should make it possible to understand later why a link was allowed, warned on, or blocked.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-070
+Subject: Principles
+Status: Decided
+Title: Build for learning
+Decision:
+Structure data and outputs so LinkLook can improve over time. Prepare the foundation for better policy tuning, analysis, and future model support without overbuilding too early.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-071
+Subject: Principles
+Status: Decided
+Title: Honest positioning
+Decision:
+LinkLook should make strong safety claims only where they can be supported. It should never present itself as perfect and should be transparent about limits and uncertainty.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-072
+Subject: Principles
+Status: Decided
+Title: Accessibility and trust
+Decision:
+The product should be understandable and usable for ordinary people, including users who are vulnerable, stressed, older, or less technical. Trust is part of the product.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-073
+Subject: Principles
+Status: Decided
+Title: Keep the promise simple
+Decision:
+The public promise should stay easy to understand: LinkLook checks links before they open and helps users avoid malicious destinations.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+MDL-074
+Subject: Principles
+Status: Decided
+Title: Prevention matters as much as response
+Decision:
+Incidents require immediate attention, but preventive improvements are essential. The product should steadily reduce future risk, not only react to current problems.
+Source:
+- LinkLook Principles drafted in reconciliation chat (2026-03-10)
+Date:
+- 2026-03-10
+
+================================================================
+SECTION 10 — BROWSER POSITIONING AND UX SAFETY FLOW
+================================================================
+
+MDL-075
+Subject: Browser Positioning
+Status: Decided
+Title: LinkLook is a straightforward, security-driven browser with a redirect option
+Decision:
+LinkLook is positioned as a straightforward, security-driven browser for iOS. It is not
+positioned as a default-browser interceptor and not as a minimal-browser fallback concept.
+Source: LinkLook Browser Requirements; user clarification
+Date: 2026-03-10
+
+MDL-076
+Subject: Product Positioning
+Status: Decided
+Title: Keep browser concept straightforward and security-driven
+Decision:
+The browser concept should stay simple and security-focused. Avoid complexity or feature
+creep that dilutes the core safety promise.
+Source: LinkLook Browser Requirements; user clarification
+Date: 2026-03-10
+
+MDL-077
+Subject: Browser UX Safety Flow
+Status: Decided
+Title: Redirect option/button is part of the browser flow
+Decision:
+The redirect option/button is part of the browser flow, not a separate product mode.
+Source: Apple Entitlement Feedback / LinkLook Browser Requirements; user clarification
+Date: 2026-03-10
+
+MDL-078
+Subject: Product Simplicity Principle
+Status: Decided
+Title: Down-to-earth and safety-first product communication
+Decision:
+Product communication should be down-to-earth and safety-first. Avoid hype, overclaiming,
+or technical jargon in user-facing messaging.
+Source: LinkLook Browser Requirements
+Date: 2026-03-10
+
+MDL-079
+Subject: Product Strategy Risk
+Status: Accepted Risk
+Title: Browser entitlement approval risk is an accepted showstopper risk
+Decision:
+Browser entitlement approval risk is an accepted showstopper risk. The project proceeds
+with this risk acknowledged.
+Source: LinkLook Browser Requirements; reconciliation chat (2026-03-10)
+Date: 2026-03-10
+
+MDL-080
+Subject: Secondary Entry Points
+Status: Decided
+Title: Action extension via share sheet is postponed to V2
+Decision:
+Action extension via share sheet is planned for V2, not the MVP.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-081
+Subject: Platform Roadmap
+Status: Decided
+Title: Network Extension is planned for V3 after Action extension
+Decision:
+Network Extension is planned for V3. The roadmap order is: V1 browser, V2 Action
+extension, V3 Network Extension.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-082
+Subject: Terminology
+Status: Decided
+Title: Use Action extension wording instead of Share Extension wording
+Decision:
+Use "Action extension" where this specific iOS concept is meant. "Share Extension"
+wording should be replaced.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-083
+Subject: Product Outcome Model
+Status: Decided
+Title: MVP uses allow (transparent) / inform / warn / block
+Decision:
+The canonical MVP outcome model is: allow (transparent), inform, warn, and block.
+Inform, warn, and block must include an explanation. Allow should remain low-friction
+and transparent.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-084
+Subject: Privacy Direction
+Status: Partial
+Title: Privacy-first is the base principle
+Decision:
+LinkLook follows a privacy-first approach by default. It should use only the minimum
+data necessary for link-safety, avoid hidden behavioral profiling, and remain clear and
+transparent about what data is processed and why. Where user-specific trust or preference
+data exists, it should remain on-device where possible.
+Source: Decision Log Reconciliation Chat; older decision register; current master log
+Date: 2026-03-10
+
+MDL-085
+Subject: Privacy Model
+Status: Partial
+Title: Past discussions point to on-device trust data and minimal backend data
+Decision:
+Privacy-impacting exceptions are only allowed when clearly necessary for security,
+proportionate, protected, and transparent.
+Source: Older decision register; current master log
+Date: 2026-03-10
+
+MDL-086
+Subject: Product Risk
+Status: Decided
+Title: User confusion and misuse risk must be treated explicitly
+Decision:
+User confusion and misuse risk, including redirect-button misinterpretation and bypass
+risk, must be treated explicitly through careful wording, placement, and explanation.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-087
+Subject: Product Risk
+Status: Decided
+Title: Redirect-button misinterpretation and bypass risk must be treated explicitly
+Decision:
+The redirect option/button must be presented carefully so it is not mistaken for a safety
+approval. Its wording, placement, and explanation should make clear that redirecting
+sends the link elsewhere and does not automatically mean the destination is considered
+safe by LinkLook.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-088
+Subject: AI Roadmap
+Status: Decided
+Title: AI comes before Network Extension in the roadmap
+Decision:
+AI capabilities are prioritized before Network Extension in the development roadmap.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-089
+Subject: Architecture
+Status: Decided
+Title: MVP must be AI-ready from the start to avoid rework later
+Decision:
+The architecture should be AI-ready from the start. Signals, evidence, scores, outcomes,
+and explanations should use structured interfaces and stable schemas. Deterministic logic
+remains the MVP base, but the design should allow later insertion of client-side and
+backend AI components with limited rework.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-090
+Subject: Client-side AI
+Status: Decided
+Title: Client-side AI is part of the planned direction
+Decision:
+Client-side AI is part of the planned direction for LinkLook.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-091
+Subject: AI Roadmap
+Status: Decided
+Title: MVP does not depend on advanced AI, but prepares for it
+Decision:
+MVP does not depend on advanced AI layers, but it should prepare clean interfaces,
+structured evidence, and modular outputs.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-092
+Subject: Client-side AI
+Status: Partial
+Title: Foundation Models are an optional later layer, not a universal base dependency
+Decision:
+Apple Foundation Models are optional and device-dependent. They are not a universal
+base dependency for the product.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-093
+Subject: AI Roadmap
+Status: Decided
+Title: V2 AI should combine classification, explanation, and detection support
+Decision:
+V2 AI should combine classification, explanation, and detection support capabilities.
+Source: Decision Log Reconciliation Chat
+Date: 2026-03-10
+
+MDL-094
+Subject: Client-side AI
+Status: Decided
+Title: Core ML remains an active planned client-side AI path
+Decision:
+Core ML remains the active planned path for client-side AI.
+Source: Decision Log Reconciliation Chat; older decisions register
+Date: 2026-03-10
+
+MDL-095
+Subject: Client-side AI
+Status: Deferred
+Title: Apple Foundation Models remain optional and device-dependent
+Decision:
+Apple Foundation Models are deferred-optional. They remain a possible future layer
+but are not part of the current build plan.
+Source: Decision Log Reconciliation Chat; older decisions register
+Date: 2026-03-10
+
+MDL-096
+Subject: AI Roadmap
+Status: Deferred
+Title: Custom retrained LinkLook SLM is a future option, not a current build dependency
+Decision:
+Custom retrained SLM work is deferred. It is a future option, not a current build
+dependency.
+Source: Decision Log Reconciliation Chat; older decisions register
+Date: 2026-03-10
+
+MDL-097
+Subject: Backend AI
+Status: Superseded
+Title: Claude backend is not architecturally necessary for the current roadmap
+Decision:
+Backend AI may become useful later, but Claude backend is not an architectural
+requirement for the current roadmap. The "Claude-required" wording is superseded.
+Source: Decision Log Reconciliation Chat; older decisions register
+Date: 2026-03-10
+
+MDL-098
+Subject: Business / Moat
+Status: Deferred
+Title: Open-base versus closed-retrained SLM moat strategy is deferred
+Decision:
+The strategic question of open-base versus closed-retrained SLM as a competitive moat
+is deferred until the data foundation and product are more mature.
+Source: Decision Log Reconciliation Chat; older decisions register
+Date: 2026-03-10
+
+================================================================
+SECTION 11 — EARLY ARCHITECTURE DECISIONS (FEB 23–24 CHATS)
+================================================================
+
+MDL-099
+Subject: Trust / Whitelist Architecture
+Status: Decided
+Title: Smart Whitelist with re-validation, not a static allow list
+Target version: V2
+V1 note: V1 uses a basic LRU whitelist cache. The smart re-validation layer
+(risk-tiered frequency, anomaly detection, certificate/DNS monitoring,
+quarantine-not-delete, automatic reinstatement) requires backend infrastructure
+and real traffic volume. Designed in V1, built in V2.
+Decision:
+The LinkLook whitelist (allow list) must not be a static, fire-and-forget list.
+It must use risk-tiered re-validation frequency: high-risk domains are re-checked
+more often, low-risk domains less often. It must include behavioural anomaly
+detection on previously approved domains, certificate and DNS monitoring for
+whitelisted domains, quarantine-not-delete logic when a previously safe domain
+becomes suspicious (the entry is quarantined and re-evaluated, not silently
+removed), and automatic reinstatement with a log entry if re-validation clears
+the domain. This was originally designed under the SafeBrowser name.
+Source chats:
+- Smart Whitelist architecture (Feb 23)
+  https://claude.ai/chat/37d3e74a-eb2c-437c-a74d-0991856a4d6b
+Date: 2026-02-23
+
+MDL-100
+Subject: Privacy / Crowdsourced Threat Intelligence
+Status: Decided
+Title: Two-data-flow separation — personal trust on-device, threat signals anonymous
+Target version: V1 (on-device constraint) + V2 (crowdsourced aggregation)
+V1 note: V1 must respect the on-device constraint from the start — personal trust
+data never leaves the device. The crowdsourced half (anonymous aggregation,
+differential privacy, k-anonymity, 1,000+ threshold) requires a real user base
+and is built in V2.
+Decision:
+LinkLook uses a clean separation of two data flows. Personal trust data (user
+preferences, personal allow/block choices) stays on-device and never leaves.
+Threat signal data (domain-level observations, not user-level data) is submitted
+anonymously, aggregated centrally, and fed back into a shared blocklist.
+Differential privacy and k-anonymity are specified as the privacy mechanisms.
+A domain only enters the global shared list after a threshold of 1,000+ distinct
+user reports. This is the foundational privacy architecture for any future
+crowdsourced intelligence feature.
+Source chats:
+- Differential privacy / two data flows (Feb 23–24)
+  https://claude.ai/chat/92de6330-57e3-49d4-81a4-aeb2a270a908
+Date: 2026-02-23
+
+MDL-101
+Subject: Trust / Honesty Principle
+Status: Decided
+Title: Proactive notification when previously cleared links are later reclassified
+Target version: V2
+V1 note: V1 does not have reclassification infrastructure. Requires a backend
+that re-evaluates previously cleared domains over time and a notification
+delivery mechanism. Built in V2 when real users and traffic exist.
+Decision:
+If a link that LinkLook previously cleared as safe is later identified as
+malicious, affected users must receive a proactive plain-English notification
+with actionable steps. This must not be a buried log entry. This is a direct
+expression of the honesty principle (MDL-035, MDL-071): if LinkLook was wrong,
+it must say so clearly and help the user respond.
+Source chats:
+- Proactive notification / honesty principle (Feb 24, strategy discussion)
+Date: 2026-02-24
+
+MDL-102
+Subject: Business / Data Platform
+Status: Decided
+Title: API exposure of the domain reputation database as a data platform
+Target version: V3 or later
+V1 note: V1 and V2 generate structured data that builds the reputation database.
+The public API exposure only becomes valuable once that database has meaningful
+volume and quality. Strategic, not near-term.
+Decision:
+The domain reputation database should be exposed via a public API, transforming
+LinkLook from a consumer app into a data platform. The model includes tiered B2B
+pricing and positions the database itself as the defensible acquisition asset.
+This is distinct from the Certified API Program (MDL-018/019) which covers
+universal-link verification for partner apps. MDL-102 covers the broader
+strategic direction of opening the reputation intelligence as a service.
+Source chats:
+- API exposure discussion (Feb 23)
+  https://claude.ai/chat/8ff7ea48-60b6-4d6b-86db-cdb9b34c29c7
+Date: 2026-02-23
+
+MDL-103
+Subject: Architecture / Localization
+Status: Decided
+Title: Localization-ready from V1 — reason codes stay language-neutral, UI uses
+       Swift localized strings
+Target version: V1 (architecture constraint)
+Decision:
+The decision engine must return reason codes and structured data only — never a
+pre-composed user-facing string. The UI layer maps reason codes to localized
+display strings. Reason codes (e.g. domain_impersonation, known_malicious_domain)
+stay language-neutral forever. User-facing strings must use String(localized:) or
+equivalent from day one so adding a language is just adding a .lproj folder.
+The reason-code-to-message mapping should live in a localizable resource file
+(.strings or .xcstrings), not in code. Netherlands-first launch (MDL-061)
+already implies Dutch + English from V1.
+Source: Cowork session 2026-03-10
+Date: 2026-03-10
+
+MDL-104
+Subject: UX / Settings
+Status: Decided
+Title: User-configurable browser preference for safe-link redirect
+Target version: V1
+Decision:
+LinkLook is a safety-driven browser that the user sets as their default. When a
+link passes LinkLook's safety checks, it opens in the user's preferred browsing
+app. Safari is the default redirect browser out of the box. The user can change
+this preference in a Settings screen accessible from the main screen. Only
+browsers that are installed on the device are shown. LinkLook itself is never
+listed as a redirect target. If the chosen browser is later removed from the
+device, LinkLook falls back to Safari. The preference is stored on-device using
+UserDefaults, consistent with the privacy-first two-data-flow separation
+(MDL-100). All redirect paths — result screen actions and the in-app browser
+toolbar — route through this preference. Supported browsers at launch: Safari,
+Chrome, Firefox, Edge, Opera, Brave, DuckDuckGo. Browser availability is
+detected via LSApplicationQueriesSchemes and canOpenURL.
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+MDL-105
+Subject: Architecture / Preferences
+Status: Decided
+Title: Split preference storage between iOS Settings bundle and in-app settings
+Target version: V1 (architecture), V3 (Network Extension sync)
+Decision:
+Preference storage is split across two locations based on the nature of the
+setting.
+
+iOS Settings bundle (Settings.bundle, values via UserDefaults.standard):
+- Profile type (PROTECTED / STANDARD)
+- Response mode (block / warn)
+Rationale: these are device-level configurations, not user-experience
+preferences. Profile 1 (adult child installer) expects Settings-level controls.
+PROTECTED profile's locked block mode belongs at device configuration level.
+
+In-app settings screen:
+- Default handoff browser (MDL-104, Safari default)
+- Whitelist management
+- Notification preferences
+- Foundation donation tier display (read-only)
+Rationale: decisions made in context by active users, not during device setup.
+Safety net for elderly STANDARD profile users who may not navigate to iOS
+Settings reliably — confirmed or adjusted based on TestFlight behavioural data.
+
+Architectural constraint (hard):
+The Network Extension runs as a separate process and cannot read UserDefaults
+from the main app directly. All preference values must be synchronised into the
+shared App Group container (UserDefaults(suiteName: "group.app.linklook.LinkLook"))
+on every foreground transition. The extension always reads from the shared
+container. Stale configuration is a real failure mode — must be confirmed on
+physical hardware before any TestFlight build proceeds.
+
+Open item: Verify Settings bundle to App Group sync timing on iPhone 11 /
+iOS 26.2 beta before finalising preference architecture. Timing behaviour on
+this OS version must be confirmed on physical hardware, not assumed from
+Simulator results.
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+MDL-106
+Subject: UX / Privacy / History
+Status: Decided
+Title: Recent checks history — on by default, local only, clearable
+Target version: V1
+Decision:
+LinkLook keeps a local history of recent link checks on-device. History is
+enabled by default so users can see what LinkLook has checked and what verdicts
+were given. This directly supports the Proof of Activity requirement (PRD 5.5)
+and helps users build trust in the product.
+
+Privacy constraints:
+- History is stored on-device only and never leaves the device.
+- History is part of personal trust data under the two-data-flow separation
+  (MDL-100) — it never enters the anonymous threat signal flow.
+- The user can clear history at any time from the in-app settings screen.
+- The user can disable history entirely from the in-app settings screen.
+- When disabled, no new entries are recorded. Existing entries are preserved
+  until explicitly cleared.
+
+History entries contain:
+- URL checked
+- Verdict (allow / inform / warn / block)
+- Reason code
+- Timestamp
+- No page content, no screenshots, no cookies
+
+This supersedes the "could have" classification in PRD 12.3.1 — history is now
+a V1 must-have.
+
+The privacy doc line "do not store personal browsing history by default" is
+updated to reflect this decision: LinkLook stores a local check history by
+default (not a general browsing history), clearable and disableable by the user.
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+MDL-107
+Subject: Architecture / Data Model
+Status: Decided
+Title: Three-tier URL reuse model — exact URL, pattern, domain
+Target version: V1 (schema and lookup order), V2 (pattern table, smart whitelist)
+Decision:
+URL reuse for verdict caching and the whitelist must use a three-tier lookup
+model. Each tier has a different reuse strength:
+
+Tier 1 — Exact URL (strongest reuse):
+Store the full normalized URL. Normalization includes: lowercase scheme and host,
+remove default port, strip tracking parameters, strip fragments (#), normalize
+query parameter order. Equivalent URLs must resolve to the same record. An exact
+URL match means "this specific link was already evaluated."
+
+Tier 2 — URL pattern (medium reuse):
+Store rules per domain with path patterns and query rules. Example: domain
+amazon.com + path /gp/help/* → likely safe. domain example.com + path /redirect
++ query contains target= → inspect or block. Avoids storing millions of
+near-identical URLs individually. V2 feature — schema designed in V1.
+
+Tier 3 — Domain reputation (weakest reuse):
+Store the registered domain with a general reputation status (unknown / trusted /
+suspicious / blocked). A trusted domain does NOT automatically approve all URLs
+on that domain. This is critical — trusted.com/home being safe does not mean
+trusted.com/redirect?target=evil.com is safe.
+
+Redirect target table:
+Redirect chains must be tracked separately. A safe-looking first URL that
+redirects to an unsafe final destination must be caught. Store: source URL hash,
+final URL hash, redirect chain, and verdict status.
+
+Decision log (traceability):
+Every decision must be reproducible. The decision record includes: input URL,
+normalized URL, matched domain, matched pattern (if any), matched exact URL
+(if any), final verdict, and why.
+
+Lookup order:
+1. Normalize URL
+2. Check exact URL match (tier 1)
+3. Check known patterns (tier 2)
+4. Check domain reputation (tier 3)
+5. Check redirect behaviour
+6. Return final verdict
+
+V1 KISS scope: domains, urls, and decisions tables only. This keeps the first
+release simple while establishing the schema and lookup order. V2 adds
+url_patterns and redirects tables.
+
+Full schema with field definitions and examples is in
+050_architecture/URL_Reuse_Data_Model.txt.
+
+This model aligns with the existing Data Architecture tables (domain_verdict_cache,
+url_verdict_cache, inspection_job) and extends them with the pattern tier and the
+explicit lookup priority order. The key safety principle: domain trust alone never
+approves a URL.
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+MDL-108
+Subject: Privacy / Crowdsourced Contribution Opt-In
+Status: Decided
+Title: Explicit user opt-in toggle for anonymous threat signal submission
+Target version: V2 (toggle UI and backend). V1 must respect the architectural
+separation so the toggle can be wired without refactoring.
+Decision:
+The crowdsourced threat intelligence flow described in MDL-100 requires an
+explicit user opt-in because it sends data off-device. The toggle is placed
+in the in-app settings screen (not the iOS Settings bundle) because it is a
+user-experience choice made by an active user, consistent with the preferences
+architecture split (MDL-105).
+
+Requirements:
+- Toggle label: plain-language, e.g. "Help improve safety for everyone"
+- Default state: OFF — no outbound signal data leaves the device until the
+  user explicitly enables this
+- When enabled: anonymous domain-level threat observations may be submitted
+  to the central aggregation service
+- What is submitted: domain-level observations only. No personal trust data,
+  no browsing history, no full URLs, no user identity
+- Privacy mechanisms: differential privacy and k-anonymity (MDL-100).
+  A domain enters the global shared blocklist only after 1,000+ distinct
+  user reports
+- The toggle state itself is personal trust data (MDL-100) and stays on-device
+- V1 ships without the crowdsource backend but the two-data-flow separation
+  must already be clean in the data layer and settings architecture
+- Rationale: crossing the "nothing leaves your phone" boundary requires
+  explicit consent. This aligns with the privacy-first principle (PRD 6)
+  and anticipates App Review questions about data transmission
+
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+MDL-109
+Subject: UX / Preferences
+Status: Decided
+Title: Safe-link display preference — auto-open vs always show result
+Target version: V1
+Decision:
+When the engine verdict is "allow" (safe link), users can choose between two
+display modes via an in-app settings toggle:
+
+1. "Always show result" (DEFAULT): the safe result screen is displayed briefly
+   so the user sees that LinkLook checked the link and confirmed it is safe.
+   The page then loads in the minimal browser. This provides reassurance and
+   is critical for the primary audience (elderly users, PROTECTED profile).
+
+2. "Auto-open safe links": safe links skip the result screen and load directly
+   in the minimal browser without any interstitial. Intended for power users
+   on STANDARD profile who trust LinkLook and want less friction.
+
+Constraints:
+- Default is "always show result" — reassurance is a core trust-building feature
+- PROTECTED profile: "always show result" is enforced and cannot be changed.
+  The adult child installer set up LinkLook for reassurance; removing it would
+  undermine the purpose of the protected setup.
+- STANDARD profile: user can choose either mode
+- Only the allow path is affected. Inform, warn, and block verdicts ALWAYS show
+  their respective screens regardless of this setting.
+- The core rule is preserved: no web content may load before LinkLook has
+  reached the allowed state for that specific URL. In "auto-open" mode the
+  verdict is still computed first — the page just loads without showing the
+  safe result screen.
+- Preference is stored on-device (personal trust data, MDL-100)
+- Preference is placed in the in-app settings screen (MDL-105), not the iOS
+  Settings bundle, because it is a friction-level UX choice made by active users.
+
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+MDL-110
+Subject: Security / Entry Path Visibility
+Status: Decided
+Title: Entry path visibility analysis — which URL paths reach LinkLook and
+which do not
+Target version: V1 (documentation and honesty), V2 (Action Extension mitigates
+in-app browser blind spot), V3 (Network Extension closes most remaining gaps)
+Decision:
+LinkLook receives a URL only when iOS delivers it as a standard web-link
+handoff to the system default browser. The following paths bypass LinkLook:
+
+Not a browser case:
+- Universal links (domain has AASA, matching app installed → app opens directly)
+- Custom URL schemes (bankapp://..., maps://... → target app opens directly)
+- App Clips (App Clip URL → iOS launches App Clip experience)
+- Non-web QR content (Wi-Fi config, vCard, plain text → no browser involved)
+
+Still a web URL, but another app keeps control:
+- In-app browser (WKWebView / SFSafariViewController → scanning or messaging
+  app shows the page internally, URL never reaches the default browser)
+- Notification hardcodes a specific browser (opens via browser-specific scheme)
+
+The most common and highest-risk case for the primary audience — a plain
+https:// URL tapped in Messages or scanned with the native Camera — reaches
+LinkLook. The blind spots are named limitations, documented honestly in
+onboarding, the App Store description, and the founding story.
+
+The product promise is: "LinkLook checks every web link that reaches it as
+your default browser." Not: "LinkLook checks every link on your phone."
+
+Full analysis: 060_security/Entry_Path_Visibility.txt
+Source: Cowork session 2026-03-11 (based on Apple documentation analysis)
+Date: 2026-03-11
+
+MDL-111
+Subject: Architecture / Policy Schema
+Status: Decided
+Title: Enriched policy rule schema — per-rule validity, source, override
+controls, and deterministic matching order
+Target version: V2 (implemented when backend policy fetch is built)
+Decision:
+The policy rule schema (Backend_Policy_Specification.txt sections 2.4–2.6) is
+enriched with per-rule fields that make the policy auditable, time-bounded, and
+operationally controllable:
+
+Per-rule additions:
+1. validity (not_before / expires_at) — rules have a time window. Expired
+   approvals fall back to the next matching rule or defaultAction, never to
+   silent allow.
+2. source (type + ref) — provenance tracking for audit. Values: manual_review,
+   backend_dataset, partner_feed, temporary_override, crowdsourced.
+3. Per-override allow_user_bypass — controls whether the UI may let the user
+   continue despite the override decision.
+4. Per-override sticky — prevents displacement by a later lower-confidence rule
+   at the same priority.
+5. notes — operator note, not used by the client engine.
+
+Matching order (section 2.6):
+Disabled and out-of-window rules are filtered first. Remaining matches are
+sorted by priority descending, then by specificity (exact URL > domain + path
+prefix > domain > signal), then by severity. The order is deterministic.
+
+Priority numbering guidance: 1000 (emergency) → 500 (exact URL) → 300 (path
+prefix) → 100 (domain) → 50 (signal) → 10 (informational).
+
+Scope principle: an approved exact URL does NOT automatically approve the
+entire domain. Domain-level approval requires an explicit domain-level rule.
+
+V1 constraints: no regex, no user-specific rules, no A/B testing.
+decision.message is excluded — user-facing text comes from reason code mapping,
+keeping the policy language-neutral.
+
+Source: Cowork session 2026-03-11 (merged from ChatGPT policy schema draft)
+Date: 2026-03-11
+
+MDL-112
+Subject: Architecture / Policy Documentation Split
+Status: Decided
+Title: Separate policy JSON schema from evaluation precedence rules
+Target version: V2 (schema and evaluation implemented together with backend)
+Decision:
+The policy specification is split into two focused documents:
+
+1. Policy_JSON_Schema_Draft.txt — defines the concrete JSON shape of a policy
+   document. Top-level structure, signal weights, override schema, rule schema,
+   match types, decision object, validity, source, validation rules, and a
+   complete example policy. Includes V1 code mapping table showing Swift
+   equivalents for each JSON field.
+
+2. Policy_Evaluation_Precedence.txt — defines how the engine processes the
+   policy at runtime. Full 8-step pipeline (normalize → cache → override →
+   rule → score → combine → default → trace), matching order within rules
+   and overrides, conflict resolution at three levels, five fail-safe
+   scenarios, decision trace fields, determinism requirements, and scope
+   rules (exact URL does not approve domain).
+
+Backend_Policy_Specification.txt (v2.0) remains the canonical design
+rationale document. The two new docs are the implementable specs derived
+from it.
+
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+MDL-113
+Subject: Security / Assessment
+Status: Decided
+Title: Security assessment — current-state evaluation with hardening
+requirements
+Target version: V1 (documentation, blind spot honesty), V2 (hardening
+controls HR-01 through HR-09)
+Decision:
+LinkLook is rated "security-promising, not yet security-proven."
+
+Strengths: minimal scope, deterministic decision flow, policy-driven
+behavior, exact URL vs domain separation, fail-safe defaults, no web
+content before verdict, privacy-first data separation.
+
+Five trust boundaries identified: iOS URL handoff, backend policy
+delivery (highest-risk), open-elsewhere handoff, user bypass, on-device
+storage.
+
+Ten threats cataloged, highest impact first: policy backend compromise,
+weak policy update trust model, overbroad allow rules, iOS entry path
+blind spots, user bypass fatigue, dangerous open-elsewhere handoff,
+privacy/logging mistakes, cache poisoning, signal detector evasion,
+app binary tampering.
+
+Ten hardening requirements (HR-01 through HR-10): signed policy files,
+certificate pinning, anti-rollback protection, strict rule precedence,
+exact URL ≠ domain approval, fail-safe on policy failure, minimal
+sensitive logging, strong test coverage, tamper-aware cache, clear
+blind spot documentation.
+
+To move to "security-proven": external code review, penetration test,
+formal test coverage report, incident response plan, bug bounty program,
+compliance audit trail.
+
+Product positioning: "LinkLook checks every web link that reaches it as
+your default browser." Never claim device-wide or 100% protection.
+
+Full document: 060_security/Security_Assessment.txt
+Source: Cowork session 2026-03-11
+Date: 2026-03-11
+
+================================================================
+SECTION 12 — REPO ALIGNMENT ACTIONS
+================================================================
+
+A-001 | Status: Done (this sync pass)
+Action: Treat canonical master decision log as the governing source. Add canonical
+governance header to this repo decision log.
+
+A-002 | Status: Done (this sync pass)
+Action: Remove wording that presents LinkLook as a default-browser interceptor or as
+browser plus Network Extension for v1. Replaced in Product Requirements and Architecture.
+
+A-003 | Status: Done (this sync pass)
+Action: Set the canonical v1 wording to: straightforward, security-driven browser with
+redirect option/button. Applied in Product Requirements and Architecture docs.
+
+A-003b | Status: Done (this sync pass)
+Action: Replace older three-state wording with the canonical four-state outcome model
+(allow transparent / inform / warn / block). Applied in Product Requirements.
+
+A-004 | Status: Done (this sync pass)
+Action: Remove minimal-browser fallback wording from canonical docs. MDL-007 marked
+Superseded.
+
+A-005 | Status: Done (this sync pass)
+Action: Add missing major decisions from master log into the repo decision system.
+MDL-075 through MDL-098 added.
+
+A-008 | Status: Open (deferred)
+Action: Mark older AI stack wording in repo docs as active, deferred, or superseded.
+
+A-009 | Status: Done (this sync pass)
+Action: Treat the canonical master decision log as the master source for repo decision
+reconciliation.
+
+A-010 | Status: Open (deferred)
+Action: Update remaining repo decision and ADR documents to match reconciled canonical
+decisions. Deferred to a later cleanup pass.
+
+================================================================
+SECTION 13 — SHORT CANONICAL SUMMARY
+================================================================
+
+The current canonical direction is:
+
+1. LinkLook is a straightforward, security-driven browser for iOS focused on phishing
+   and smishing prevention.
+2. It is a security gateway, not a general-purpose browser product.
+3. V1 is a browser-first release. Action extension is V2. Network Extension is V3.
+4. The canonical outcome model is: allow (transparent) / inform / warn / block.
+5. Privacy-first by default. Minimal data, no hidden profiling, transparent processing.
+6. Two-data-flow separation: personal trust on-device, threat signals anonymous with
+   differential privacy and k-anonymity (1,000+ threshold for global list).
+7. Smart whitelist with risk-tiered re-validation, not a static allow list.
+8. The core must remain independent from iOS/UI/Apple frameworks.
+9. Behavior should be policy-driven where possible.
+10. AI-ready from the start: structured interfaces, stable schemas, deterministic MVP
+    base with clean insertion points for later AI.
+11. AI comes before Network Extension in the roadmap. Core ML active-planned.
+    Foundation Models optional. Custom SLM deferred. Claude backend not required.
+12. Structured data should be captured so learning and future ML remain possible.
+13. Development should stay test-first, simple, and disciplined.
+14. The repo should have one source of truth for decisions — this log, governed by the
+    canonical master decision log.
+15. App Store rejection risk and browser entitlement risk are accepted showstopper risks.
+16. User confusion, misuse risk, and redirect-button misinterpretation must be managed
+    explicitly.
+17. Proactive notification when previously cleared links are later reclassified as
+    malicious — honesty principle in action.
+18. Domain reputation database as a future data platform with public API and tiered
+    B2B pricing.
+19. Localization-ready from V1: reason codes language-neutral, UI uses Swift
+    localized strings, Dutch + English from launch.
+20. User-configurable browser preference: safe links open in the user's chosen
+    browsing app. Safari is the default. LinkLook is never a redirect target.
+    Preference stored on-device.
+21. Preferences split: device-level settings (profile type, response mode) in
+    iOS Settings bundle; user-experience settings (handoff browser, whitelist,
+    notifications, donation tier) in the in-app settings screen. All preferences
+    sync to shared App Group container for Network Extension access.
+22. Recent checks history on by default, local only, clearable and disableable.
+    Stores URL, verdict, reason code, timestamp — no page content. Supports
+    Proof of Activity (PRD 5.5). Part of personal trust data (MDL-100).
+23. Three-tier URL reuse model: exact normalized URL (strongest), URL pattern
+    (medium, V2), domain reputation (weakest). Domain trust alone never approves
+    a URL. Redirect chains tracked separately. Lookup order: exact URL → pattern
+    → domain → redirect check → verdict.
+24. Crowdsourced threat contribution requires explicit user opt-in (off by
+    default). Anonymous domain-level signals only. Toggle in in-app settings.
+    V2 backend; V1 must keep the two-data-flow separation clean.
+25. Backend policy is a versioned JSON decision table with five sections:
+    metadata, defaults, signal weights/thresholds, rules, and overrides.
+    Code = engine, policy = behavior. Fetched on launch and foreground, cached
+    locally with 7-day grace period. Resolves MDL-027.
+26. Safe-link display preference: "always show result" (default, enforced for
+    PROTECTED) vs "auto-open safe links" (optional for STANDARD). Only the
+    allow path is affected. Core rule preserved — verdict computed first.
+27. Entry path visibility: LinkLook receives URLs only via standard default-
+    browser handoff. Universal links, custom schemes, App Clips, in-app
+    browsers, and non-web content bypass LinkLook. Named limitations,
+    documented honestly. V2 Action Extension and V3 Network Extension close
+    progressively more gaps.
+28. Enriched policy rule schema: per-rule validity windows, source provenance,
+    override controls (allow_user_bypass, sticky), deterministic matching order
+    (priority → specificity → severity), priority numbering guidance. An
+    approved exact URL does not automatically approve the domain. No regex,
+    no user-specific rules in V1. Messages excluded from policy — reason code
+    mapping handles localization.
+29. Policy spec split into two implementable docs: Policy_JSON_Schema_Draft.txt
+    (data contract — JSON shape, field definitions, validation rules, V1 code
+    mapping table, complete example policy) and Policy_Evaluation_Precedence.txt
+    (runtime behavior — 8-step pipeline, matching order, conflict resolution,
+    five fail-safe scenarios, determinism requirements, scope rules).
+    Backend_Policy_Specification.txt remains the design rationale.
+30. Security assessment: LinkLook is "security-promising, not yet security-
+    proven." Five trust boundaries (iOS handoff, policy delivery, open-
+    elsewhere, user bypass, on-device storage). Ten threats (policy backend
+    compromise highest). Ten hardening requirements (HR-01–HR-10). To reach
+    "security-proven": external review, pentest, formal coverage, incident
+    response plan, bug bounty. Product positioning: never claim device-wide
+    or 100% protection.
+
+End of document.

@@ -1,0 +1,19 @@
+LinkLook Core Test Fixture Set
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Recommended first fixture mix
+- 10 safe-path cases
+- 10 obvious malicious cases
+- 10 edge / ambiguity cases
+- 5 privacy / failure-mode cases
+
+Examples
+1. Safe HTTPS link from Messages -> allow
+2. Known phishing domain -> block
+3. Lookalike domain -> warn or block
+4. Shortened URL -> expand then evaluate
+5. Network unavailable -> fail safely
+6. Redirect chain to malicious host -> block
+7. Benign well-known domain -> allow

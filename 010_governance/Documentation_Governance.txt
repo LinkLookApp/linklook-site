@@ -1,0 +1,12 @@
+LINKLOOK — DOCUMENTATION GOVERNANCE
+Version: 1.0
+Date: 2026-03-07
+
+Rule
+----
+One subject = one canonical document.
+
+Working rule
+------------
+Keep only the latest active version of each document in this tree.
+Do not keep parallel variants of the same document here.

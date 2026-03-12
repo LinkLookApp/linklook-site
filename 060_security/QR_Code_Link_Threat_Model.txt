@@ -1,0 +1,45 @@
+QR Code Link Threat Model
+Version: v2.0
+Date: 2026-03-11
+Origin: ChatGPT, updated with entry path visibility analysis
+
+Purpose
+Describe risks introduced by QR-driven links and how LinkLook should reason
+about them. For which QR paths reach LinkLook and which do not, see
+Entry_Path_Visibility.txt.
+
+Threats
+- QR phishing leading to fake login pages
+- QR codes that open app deep links directly
+- QR codes for malicious Wi-Fi configuration or misleading onboarding
+- QR codes used in posters, invoices, or parcel delivery scams
+
+Security implications
+QR workflows remove the user's normal ability to inspect a visible destination
+before opening it.
+
+Required protections
+- extract and normalize embedded URL
+- run the same detection pipeline used for other links
+- flag shortened or obfuscated destinations
+- apply Universal Link / AASA intelligence when app deep links are involved
+
+Entry path visibility (MDL-110)
+Not all QR codes reach LinkLook. A plain https:// QR code scanned with the
+iPhone Camera or Code Scanner normally reaches LinkLook as default browser.
+But LinkLook does NOT receive the URL when:
+- the domain has a universal link claim and the matching app is installed
+- the QR encodes a custom URL scheme (bankapp://...) or App Clip URL
+- the QR scanner app opens the link in its own in-app browser (WKWebView)
+- the QR content is not a web URL at all (Wi-Fi config, vCard, etc.)
+
+For the primary audience (elderly users scanning QR codes from letters, parcels,
+or posters), the most common and highest-risk case — plain https:// URL scanned
+with the native Camera — is covered.
+
+See Entry_Path_Visibility.txt for the full visibility table and mitigation
+strategy across V1/V2/V3.
+
+UX note
+The warning experience for QR-based links should emphasize that the code itself
+may be the lure.

@@ -1,0 +1,75 @@
+LinkLook Initial Signal Detector List
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+This is the first practical detector set for implementing the early decision engine.
+
+Detector groups
+
+1. URL normalization detectors
+- parse_url
+- extract_scheme_host_path
+- normalize_hostname_case
+- normalize_punycode
+- detect_malformed_url
+
+2. URL structure detectors
+- detect_ip_address_host
+- detect_long_subdomain_chain
+- detect_suspicious_keywords
+- detect_username_in_url
+- detect_unusual_port
+- detect_excessive_url_length
+- detect_encoded_characters
+
+3. Domain impersonation detectors
+- detect_brand_lookalike
+- detect_character_substitution
+- detect_homoglyph_pattern
+- detect_typo_pattern
+- detect_brand_reference_in_domain
+
+4. Redirect detectors
+- detect_shortener_domain
+- detect_open_redirect_pattern
+- detect_cross_domain_redirect_chain
+- detect_redirect_threshold_exceeded
+
+5. Domain / reputation detectors
+- detect_known_phishing_domain
+- detect_known_malware_domain
+- detect_low_reputation_domain
+- detect_recently_registered_domain
+- detect_unusual_tld
+- detect_first_seen_domain
+
+6. Page content detectors
+- detect_login_form
+- detect_password_field
+- detect_crypto_wallet_prompt
+- detect_payment_request
+- detect_brand_mismatch
+
+7. Infrastructure detectors
+- detect_suspicious_ip_range
+- detect_known_abuse_host
+- detect_fast_flux_pattern
+
+8. Failure / privacy detectors
+- detect_external_lookup_failure
+- detect_network_unavailable
+- detect_privacy_constrained_analysis
+
+Recommended implementation order
+1. parse_url
+2. detect_malformed_url
+3. detect_ip_address_host
+4. detect_suspicious_keywords
+5. detect_long_subdomain_chain
+6. detect_shortener_domain
+7. detect_brand_lookalike
+8. detect_character_substitution
+9. detect_recently_registered_domain
+10. detect_unusual_tld

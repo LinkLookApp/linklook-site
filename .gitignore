@@ -1,0 +1,23 @@
+# ===== macOS =====
+.DS_Store
+._*
+*.swp
+*~
+
+# ===== Node / npm (if used for build tools) =====
+node_modules/
+dist/
+.cache/
+
+# ===== Logs =====
+*.log
+
+# ===== Secrets =====
+.env
+*.pem
+*.key
+credentials.json
+
+# ===== IDE =====
+.idea/
+.vscode/

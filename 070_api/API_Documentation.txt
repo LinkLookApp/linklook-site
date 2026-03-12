@@ -1,0 +1,15 @@
+LINKLOOK — API DOCUMENTATION
+Version: 1.0
+Date: 2026-03-07
+
+Endpoint
+--------
+POST /check_link
+
+Request
+-------
+{ "url": "https://example.com" }
+
+Response
+--------
+{ "verdict": "SAFE | WARNING | BLOCK" }

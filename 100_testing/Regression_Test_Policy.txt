@@ -1,0 +1,45 @@
+LinkLook Regression Test Policy
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Ensure LinkLook gets stronger over time by permanently encoding important failures and newly observed scam patterns into the automated test corpus.
+
+Core rule
+Every important misclassification, production bug, or newly observed scam pattern must become a permanent regression test.
+
+Why this matters
+Security systems do not become robust by fixing code alone.
+They become robust when each important failure is converted into a stable automated example that can never silently regress.
+
+Events that must trigger a new regression case
+- false negative on a phishing or scam case
+- false positive on a legitimate destination
+- incorrect fail-safe behavior
+- incorrect reason code
+- incorrect user-facing warning text for a stable reason code
+- privacy or logging-policy violation
+- newly observed attacker pattern not represented in the lab
+
+Required workflow
+1. capture the case
+2. reduce it to a safe reproducible fixture
+3. define expected decision and UX outcome
+4. add it to the permanent automated suite
+5. only close the issue after the regression test passes
+
+Fixture safety rule
+Regression fixtures must not depend on live malicious infrastructure.
+Use sanitized local mirrors, mocked responses, and safe metadata representations where needed.
+
+Labeling rule
+Regression cases should be tagged by origin, for example:
+- bug_report
+- user_report
+- phishing_feed
+- internal_red_team
+- usability_issue
+
+Release gate rule
+A release candidate must not ship if a known critical regression case fails.

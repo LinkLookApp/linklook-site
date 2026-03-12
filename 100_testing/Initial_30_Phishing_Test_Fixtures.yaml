@@ -1,0 +1,270 @@
+fixtures:
+  - id: TC-SAFE-001
+    title: Apple homepage benign
+    input:
+      url: https://www.apple.com
+      source: browser
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-002
+    title: Wikipedia phishing article benign
+    input:
+      url: https://www.wikipedia.org/wiki/Phishing
+      source: browser
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-003
+    title: GitHub login benign
+    input:
+      url: https://github.com/login
+      source: browser
+    expected:
+      decision: allow
+      reason_code: benign_login_page
+
+  - id: TC-SAFE-004
+    title: Rabobank benign
+    input:
+      url: https://www.rabobank.nl
+      source: messages
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-005
+    title: ING benign
+    input:
+      url: https://www.ing.nl
+      source: mail
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-006
+    title: Bol benign
+    input:
+      url: https://www.bol.com
+      source: messages
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-007
+    title: PostNL benign
+    input:
+      url: https://www.postnl.nl
+      source: mail
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-008
+    title: Microsoft benign
+    input:
+      url: https://www.microsoft.com
+      source: browser
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-009
+    title: Apple support benign
+    input:
+      url: https://support.apple.com
+      source: browser
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-SAFE-010
+    title: KVK benign
+    input:
+      url: https://www.kvk.nl
+      source: browser
+    expected:
+      decision: allow
+      reason_code: trusted_benign
+
+  - id: TC-PHISH-011
+    title: PayPal lookalike capital I
+    input:
+      url: https://paypaI-login-check.com
+      source: messages
+    expected:
+      decision: block
+      reason_code: domain_impersonation
+
+  - id: TC-PHISH-012
+    title: Apple ID security lure
+    input:
+      url: https://appleid-security-update.net
+      source: mail
+    expected:
+      decision: block
+      reason_code: brand_impersonation
+
+  - id: TC-PHISH-013
+    title: Microsoft auth verify lure
+    input:
+      url: https://microsoft-auth-verify-login.xyz
+      source: mail
+    expected:
+      decision: block
+      reason_code: brand_impersonation
+
+  - id: TC-PHISH-014
+    title: Rabobank impersonation
+    input:
+      url: https://rabobank-secure-check-login.com
+      source: sms
+    expected:
+      decision: block
+      reason_code: brand_impersonation
+
+  - id: TC-PHISH-015
+    title: ING verificatie lure
+    input:
+      url: https://ing-verificatie-alert.com
+      source: sms
+    expected:
+      decision: block
+      reason_code: brand_impersonation
+
+  - id: TC-PHISH-016
+    title: DHL lure
+    input:
+      url: https://dhl-track-confirm-login.com
+      source: sms
+    expected:
+      decision: block
+      reason_code: parcel_impersonation
+
+  - id: TC-PHISH-017
+    title: Crypto wallet lure
+    input:
+      url: https://crypto-wallet-restore-now.biz
+      source: messages
+    expected:
+      decision: block
+      reason_code: crypto_wallet_phishing
+
+  - id: TC-PHISH-018
+    title: Office365 password lure
+    input:
+      url: https://office365-password-reset-check.com
+      source: mail
+    expected:
+      decision: block
+      reason_code: credential_harvest_risk
+
+  - id: TC-PHISH-019
+    title: Generic account warning payment lure
+    input:
+      url: https://secure-account-warning-payment.com
+      source: mail
+    expected:
+      decision: block
+      reason_code: suspicious_keywords_combo
+
+  - id: TC-PHISH-020
+    title: PayPal with numeric substitution
+    input:
+      url: https://paypa1-login-security-check.com
+      source: messages
+    expected:
+      decision: block
+      reason_code: domain_character_substitution
+
+  - id: TC-EDGE-021
+    title: Shortener unresolved bitly
+    input:
+      url: https://bit.ly/example-safe
+      source: messages
+    expected:
+      decision: inform
+      reason_code: shortener_unresolved
+
+  - id: TC-EDGE-022
+    title: Shortener unresolved tinyurl
+    input:
+      url: https://tinyurl.com/example-risk
+      source: mail
+    expected:
+      decision: inform
+      reason_code: shortener_unresolved
+
+  - id: TC-EDGE-023
+    title: Raw IP login
+    input:
+      url: http://198.51.100.10/login
+      source: messages
+    expected:
+      decision: warn
+      reason_code: raw_ip_link
+
+  - id: TC-EDGE-024
+    title: Long subdomain chain
+    input:
+      url: https://login.secure.account.verify.example.com
+      source: browser
+    expected:
+      decision: warn
+      reason_code: suspicious_url_structure
+
+  - id: TC-EDGE-025
+    title: Punycode risk
+    input:
+      url: https://xn--pple-43d.com
+      source: mail
+    expected:
+      decision: warn
+      reason_code: idn_spoofing_risk
+
+  - id: TC-EDGE-026
+    title: Brand reference ambiguous
+    input:
+      url: https://example-paypal-support.com
+      source: browser
+    expected:
+      decision: warn
+      reason_code: possible_brand_reference
+
+  - id: TC-EDGE-027
+    title: Unusual port
+    input:
+      url: https://example.com:8080/login
+      source: browser
+    expected:
+      decision: warn
+      reason_code: unusual_port
+
+  - id: TC-EDGE-028
+    title: Redirect parameter risk
+    input:
+      url: https://safe.example/redirect?target=https://fake-login.example
+      source: browser
+    expected:
+      decision: warn
+      reason_code: open_redirect_risk
+
+  - id: TC-EDGE-029
+    title: New bank check help domain
+    input:
+      url: https://new-bank-check.help
+      source: sms
+    expected:
+      decision: warn
+      reason_code: suspicious_domain
+
+  - id: TC-EDGE-030
+    title: Dutch warning lure pattern
+    input:
+      url: https://mijn-bank-melding.info
+      source: sms
+    expected:
+      decision: warn
+      reason_code: suspicious_domain

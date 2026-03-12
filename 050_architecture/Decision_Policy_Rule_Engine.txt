@@ -1,0 +1,210 @@
+LinkLook Decision Policy / Rule Engine
+Version: v3.0
+Date: 2026-03-11
+Origin: ChatGPT. Rewritten to focus on engine contract; policy shape and
+delivery moved to Backend_Policy_Specification.txt (MDL-027).
+
+================================================================================
+1. ROLE
+================================================================================
+
+The decision engine is the component that converts signal sets into final
+decisions. It lives in LinkLookCore and must not depend on UI or Apple
+frameworks.
+
+The engine applies a policy. It does not define the policy.
+
+  engine = code (ships with the app, changes require app update)
+  policy = data (downloaded from backend, changes without app update)
+
+For the full policy shape, delivery, caching, JSON structure, per-rule
+validity/source/override fields, and matching order, see
+Backend_Policy_Specification.txt (v2.0).
+
+================================================================================
+2. DECISION LEVELS
+================================================================================
+
+The engine produces one of four outcomes:
+
+  allow   — destination appears safe, proceed transparently
+  inform  — incomplete or low-confidence risk, explain and let user decide
+  warn    — concerning signals, explain clearly, safe action is primary
+  block   — high-confidence threat, prevent access
+
+================================================================================
+3. EVALUATION ORDER
+================================================================================
+
+When a URL arrives, the engine applies the cached backend policy in this order:
+
+  1. Stage 0 cache lookup (MDL-107: exact URL → pattern → domain → redirect)
+  2. Overrides from policy (always win, short-circuit)
+  3. Explicit rules from policy (all matching rules collected)
+  4. Score-based evaluation (sum signal weights, compare against thresholds)
+  5. defaultAction from policy (safety net when nothing matched)
+  6. Most severe result wins (block > warn > inform > allow)
+
+See Backend_Policy_Specification.txt section 4 for the detailed flow and
+section 2.6 for the matching order within rules and overrides (priority,
+specificity, validity filtering).
+
+================================================================================
+4. CONFLICT RESOLUTION
+================================================================================
+
+When multiple rules or evaluation paths produce different outcomes, the most
+severe decision wins:
+
+  block > warn > inform > allow
+
+Within the same severity level, the highest-priority rule determines the
+reason code. An explicit policy override always wins over rules and scoring.
+
+================================================================================
+5. SCORE-BASED EVALUATION
+================================================================================
+
+When no override or explicit rule matches, the engine computes a risk score:
+
+  1. For each detected signal, look up its weight in the policy signalWeights
+  2. Sum all matched weights
+  3. Compare against policy thresholds:
+     - score >= blockThreshold → block
+     - score >= warnThreshold  → warn
+     - score > 0               → inform
+     - score = 0               → defaultAction (inform in V1)
+
+Signal weights and thresholds are part of the backend policy and can be tuned
+without an app update. See Backend_Policy_Specification.txt section 2.3.
+
+================================================================================
+6. DECISION TRACE
+================================================================================
+
+Every final decision must retain enough information to explain and reproduce
+the outcome. The trace is used for:
+
+  - automated test assertions
+  - structured logging and audit
+  - future ML training data
+  - user-facing explanation generation
+  - claims verification
+
+Required trace fields:
+  - input_url              original URL as received
+  - normalized_url         URL after normalization
+  - triggered_rules[]      list of rule IDs that matched
+  - matched_signals[]      list of signal identifiers that fired
+  - signal_score           computed total score
+  - decision               allow | inform | warn | block
+  - reason_code            primary reason code (from Reason_Code_Catalog.txt)
+  - confidence             high | medium | low
+  - cache_hit              none | exact_url | pattern | domain | redirect
+  - engine_version         version of the engine code
+  - policy_version         version of the applied policy (from policy metadata)
+
+================================================================================
+7. FAIL-SAFE RULES
+================================================================================
+
+The engine must never silently allow when it cannot determine safety.
+
+  7.1 Analysis failure (timeout, fetch error, sandbox crash):
+      Return inform or warn according to policy. Never return allow.
+
+  7.2 Insufficient signal (no rules match, score is zero, no cache hit):
+      Return the policy defaultAction. In V1 this is inform.
+
+  7.3 Policy unavailable (cache expired, fetch failed, beyond grace period):
+      Fall back to the hardcoded baseline policy bundled with the app binary.
+      The baseline policy uses defaultAction = warn (more conservative than
+      the normal inform default).
+
+  7.4 Stale policy (past validUntil but within 7-day grace period):
+      Use the cached policy but log a warning. Attempt background refresh.
+
+================================================================================
+8. CONFIDENCE DERIVATION
+================================================================================
+
+Confidence reflects how certain the engine is about the decision:
+
+  high    — strong deterministic evidence (blocklist hit, exact URL match,
+            multiple converging high-weight signals)
+  medium  — moderate evidence (single rule match, score near threshold,
+            pattern-based match)
+  low     — weak evidence (score barely above threshold, domain-level match
+            only, insufficient signal with fail-safe applied)
+
+Confidence is derived from:
+  - whether the match was exact, rule-based, or score-based
+  - how far the score exceeds the threshold
+  - whether multiple independent signals converge
+  - whether the match was a cache hit vs fresh evaluation
+
+================================================================================
+9. V1 CODE REALITY
+================================================================================
+
+The engine contract described above is partially implemented in V1 code.
+
+What V1 code implements:
+  - PolicyEngine.swift: rule-based evaluation with priority and severity-based
+    conflict resolution. Returns decision + reasonCode + confidence +
+    triggeredRules. Fallback to inform when no rules match.
+  - RuleSet.swift (RuleSet.v1): static rule set with 18 rules. Each rule has
+    id, description, conditions (signal names), decision, reasonCode, priority,
+    confidence. This is the V1 policy data.
+  - DecisionEngine.swift: orchestrates signal extraction → policy evaluation →
+    result construction.
+
+What V1 code returns in the trace:
+  - decision, reasonCode, confidence, triggeredRules (rule IDs)
+  V1 does not yet return: signal_score, cache_hit, policy_version.
+  These fields are added when score-based evaluation and backend policy fetch
+  are implemented (V2).
+
+What V1 code does not yet implement:
+  - Score-based evaluation (section 5): V1 uses rule matching (all conditions
+    present → rule fires). No numeric signal weights or threshold comparison.
+    The scoring path is a V2 code task.
+  - Separate override layer (section 3, step 2): V1 mixes force-safe entries
+    into the same rule array. Overrides as a short-circuit layer are V2.
+  - Policy fetch: V1 bundles the rule set as compiled Swift. Backend fetch,
+    caching, grace period, and signature verification are V2 code tasks.
+  - Confidence derivation (section 8): V1 stores a fixed confidence per rule.
+    Dynamic confidence based on score distance and signal convergence is V2.
+  - Fail-safe 7.3 and 7.4 (stale/unavailable policy): only relevant once the
+    policy is fetched from the backend (V2).
+
+The V1 code is structurally compatible with this contract. The engine/policy
+separation already exists. The V2 evolution replaces the static RuleSet.v1
+with a downloaded JSON policy and adds the scoring layer on top.
+
+================================================================================
+10. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+Backend_Policy_Specification.txt   Policy shape, delivery, caching, JSON
+                                   structure, override and rule format,
+                                   signal weights, V1 KISS scope.
+
+Detection_Engine_Specification.txt Pipeline stages (normalize → fast checks
+                                   → domain intelligence → deep inspection
+                                   → model-assisted). The engine applies the
+                                   policy at the decision point after signals
+                                   are collected.
+
+Reason_Code_Catalog.txt            Stable reason codes returned in decisions.
+
+Signal_Taxonomy.txt                Signal identifiers used as keys in policy
+                                   signalWeights.
+
+URL_Reuse_Data_Model.txt           Stage 0 cache schema and lookup order.
+
+Architecture.txt (section 5)       Browser flow showing where the engine sits.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

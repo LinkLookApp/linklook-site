@@ -1,0 +1,340 @@
+LinkLook — Policy Evaluation and Precedence
+Version: v1.0
+Date: 2026-03-11
+Origin: Cowork session, derived from Backend_Policy_Specification.txt v2.0
+         and Decision_Policy_Rule_Engine.txt v3.0
+References: Policy_JSON_Schema_Draft.txt, Backend_Policy_Specification.txt,
+            Decision_Policy_Rule_Engine.txt, URL_Reuse_Data_Model.txt
+Related: MDL-027, MDL-107, MDL-111
+
+================================================================================
+PURPOSE
+================================================================================
+
+This document defines how the engine evaluates a URL against the policy at
+runtime. It covers the full pipeline from URL arrival to final verdict,
+including caching, conflict resolution, fail-safe behavior, and determinism
+requirements.
+
+For the JSON data shape, see Policy_JSON_Schema_Draft.txt.
+For design rationale, see Backend_Policy_Specification.txt.
+
+================================================================================
+1. FULL EVALUATION PIPELINE
+================================================================================
+
+When a URL arrives, the engine executes these steps in order. Each step either
+produces a final verdict (and stops) or passes control to the next step.
+
+  Step 1 — Normalize URL
+  ──────────────────────
+  Normalize the input URL using the rules in URL_Reuse_Data_Model.txt:
+  strip tracking parameters, lowercase scheme and host, resolve percent
+  encoding, remove default ports. The normalized URL is used for all
+  subsequent matching.
+
+  Step 2 — Stage 0 cache lookup
+  ─────────────────────────────
+  Check the on-device cache (MDL-107) in this order:
+    a. exact normalized URL
+    b. URL pattern (domain + path prefix)
+    c. registered domain
+    d. redirect target (if URL was a shortener)
+
+  If a cache entry exists and its TTL has not expired, return the cached
+  verdict. Done.
+
+  If the cache entry is expired, discard it and continue. An expired cache
+  entry is never used — stale approvals do not persist.
+
+  Step 3 — Override evaluation
+  ────────────────────────────
+  Evaluate the overrides array from the policy. Apply the matching order
+  defined in section 2 below. If an override matches, return its decision.
+  Done (short-circuit).
+
+  Step 4 — Rule evaluation
+  ────────────────────────
+  Evaluate the rules array from the policy. Apply the matching order
+  defined in section 2 below. Collect all matching rules. Apply conflict
+  resolution (section 3). The winning rule produces a candidate verdict.
+
+  Step 5 — Score-based evaluation
+  ───────────────────────────────
+  For each detected signal, look up its weight in the policy signal_weights.
+  Sum all matched weights.
+
+    sum >= block_threshold  →  block candidate
+    sum >= warn_threshold   →  warn candidate
+    sum > 0                 →  inform candidate
+    sum = 0                 →  no candidate
+
+  Step 6 — Combine candidates
+  ────────────────────────────
+  If both step 4 (rule) and step 5 (score) produced a candidate, the more
+  severe verdict wins:
+
+    block > warn > inform > allow
+
+  If only one step produced a candidate, use that one.
+
+  Step 7 — Default action
+  ───────────────────────
+  If no override, rule, or score produced a result, apply the policy
+  default_action. For LinkLook, the cautious default is "inform".
+
+  Step 8 — Build decision trace
+  ─────────────────────────────
+  Assemble the full trace (see section 5) and return the final verdict.
+
+================================================================================
+2. MATCHING ORDER (WITHIN OVERRIDES AND RULES)
+================================================================================
+
+Both overrides and rules follow the same matching order. This order is
+deterministic: given the same URL and the same policy, the engine must always
+select the same winning entry.
+
+  2.1 FILTER
+  ──────────
+  Before matching, remove entries that cannot apply:
+    a. enabled = false                    → skip
+    b. current time < validity.not_before → skip
+    c. current time > validity.expires_at → skip
+
+  2.2 MATCH
+  ─────────
+  For each remaining entry, test the match condition:
+
+  Match type            Matching logic
+  ───────────────────────────────────────────────────────────────────
+  exact_url             Normalized URL equals match.value exactly
+  domain_path_prefix    Host matches match.value domain AND path
+                        starts with the prefix portion of match.value
+  subdomain             Full host (including subdomain) equals match.value
+  domain                Registered domain of the URL equals match.value.
+                        If include_subdomains = true, any subdomain also
+                        matches. If false, only the bare domain matches.
+  signal                Signal identified by match.value is present in
+                        the detected signal set for this URL.
+
+  2.3 SELECT WINNER
+  ─────────────────
+  From the set of matching entries:
+
+  a. Sort by priority descending (highest number first)
+
+  b. If priorities are equal, prefer the more specific match type:
+       exact_url > domain_path_prefix > subdomain > domain > signal
+
+  c. If still tied, prefer the more severe action:
+       block > warn > inform > allow
+
+  d. If still tied after all three criteria, pick the first one in array
+     order (stable sort). This should not happen in practice — policy
+     authors should assign distinct priorities.
+
+  The selected entry is the winner. Its decision is applied.
+
+================================================================================
+3. CONFLICT RESOLUTION
+================================================================================
+
+Conflict resolution applies in two contexts:
+
+  3.1 WITHIN A SINGLE LAYER (overrides or rules)
+  Handled by section 2.3 above. The matching order produces exactly one
+  winner per layer.
+
+  3.2 BETWEEN LAYERS (rule candidate vs score candidate)
+  When step 4 (rules) and step 5 (scoring) both produce a verdict, the
+  more severe action wins:
+
+    block > warn > inform > allow
+
+  The winning action's associated reason_code and confidence come from
+  whichever layer produced that action. If both layers agree on the action,
+  the rule layer's reason_code takes precedence (rules are more specific
+  than aggregate scoring).
+
+  3.3 OVERRIDES VS EVERYTHING
+  Overrides always win. An override match short-circuits steps 4–7.
+  No rule or score can override an override.
+
+================================================================================
+4. FAIL-SAFE RULES
+================================================================================
+
+The engine must never silently allow when it cannot determine safety.
+
+  4.1 Analysis failure
+  ────────────────────
+  If signal extraction throws an error, times out, or crashes:
+  → Return "inform" or "warn" according to policy. Never return "allow".
+  → The reason_code is "analysis_failure".
+  → Log the error for diagnostics.
+
+  4.2 Insufficient signal
+  ───────────────────────
+  No overrides match, no rules match, score is zero, no cache hit:
+  → Return the policy default_action (normally "inform").
+  → The reason_code is "insufficient_signal".
+
+  4.3 Policy unavailable
+  ──────────────────────
+  Cached policy has expired beyond the 7-day grace period and fetch failed:
+  → Fall back to the hardcoded baseline policy bundled with the app binary.
+  → The baseline default_action is "warn" (more conservative than "inform").
+  → Log that the app is running on baseline policy.
+
+  4.4 Stale policy
+  ────────────────
+  Policy is past valid_until but within the 7-day grace period:
+  → Use the cached policy normally.
+  → Log a warning and attempt background refresh.
+
+  4.5 Expired rule approval
+  ─────────────────────────
+  A previously matching allow rule has passed its expires_at:
+  → The rule is filtered out in step 2.1. It does NOT produce an allow.
+  → Evaluation continues to the next matching rule, scoring, or
+    default_action. This prevents stale approvals from persisting.
+
+================================================================================
+5. DECISION TRACE
+================================================================================
+
+Every verdict must include a trace that is sufficient to reproduce and
+explain the outcome. The trace is used for:
+  - automated test assertions
+  - structured logging and audit
+  - future ML training data
+  - user-facing explanation generation (via reason_code mapping)
+
+Required trace fields:
+
+  Field               Type       Description
+  ───────────────────────────────────────────────────────────────────
+  input_url           string     Original URL as received
+  normalized_url      string     URL after normalization
+  cache_hit           enum       none | exact_url | pattern | domain |
+                                 redirect
+  evaluation_path     enum       cache | override | rule | score |
+                                 combined | default | fail_safe
+  triggered_rules     [string]   List of rule/override IDs that matched
+  matched_signals     [string]   Signal identifiers that fired
+  signal_score        integer    Computed score (0 if scoring not used)
+  decision            enum       allow | inform | warn | block
+  reason_code         string     Primary reason code
+  confidence          enum       high | medium | low
+  policy_version      string     Policy version used for this evaluation
+  engine_version      string     Engine code version
+
+V1 code returns: decision, reason_code, confidence, triggered_rules.
+V1 does NOT yet return: signal_score, cache_hit, policy_version,
+evaluation_path. These are added in V2.
+
+================================================================================
+6. DETERMINISM REQUIREMENTS
+================================================================================
+
+The evaluation must be deterministic:
+
+  6.1 Same input, same result
+  Given the same normalized URL, the same policy version, and the same
+  detected signals, the engine must produce the same decision every time.
+  No randomness, no system-time dependencies beyond validity filtering.
+
+  6.2 Time is the only external variable
+  The only external input that affects the result is the current timestamp
+  (used for validity filtering and cache TTL checks). All other inputs
+  come from the URL and the policy.
+
+  6.3 Testable in isolation
+  The engine must be testable without network access, without iOS
+  frameworks, and without a real backend. Tests provide a policy JSON,
+  a URL, a set of detected signals, and a fixed timestamp. The engine
+  returns a deterministic result.
+
+  6.4 Reproducible trace
+  Given the trace fields from section 5, it must be possible to replay
+  the evaluation and arrive at the same verdict. This is the foundation
+  for regression testing and claims verification.
+
+================================================================================
+7. SCOPE RULES
+================================================================================
+
+These rules constrain how URL approvals propagate:
+
+  7.1 Exact URL approval does not approve the domain
+  A rule matching "https://example.com/page-a" does NOT make
+  "https://example.com/page-b" safe. Each URL is independent unless a
+  domain-level rule explicitly exists.
+
+  7.2 Domain approval scope
+  A domain-level allow rule covers all URLs on that domain (and
+  subdomains if include_subdomains = true). This is appropriate only
+  for fully trusted domains (e.g. government sites).
+
+  7.3 Path prefix scope
+  A domain_path_prefix rule covers all URLs on the domain whose path
+  starts with the specified prefix. This is a middle ground between
+  exact URL and full domain.
+
+  7.4 Override scope follows the same rules
+  Overrides have the same scope behavior as rules. A domain-level
+  override applies to the full domain. An exact_url override applies
+  only to that URL.
+
+================================================================================
+8. V1 CODE REALITY
+================================================================================
+
+V1 implements a subset of this evaluation:
+
+  What V1 does:
+  - Steps 1, 4, 7, 8 (normalize, rule evaluation, default, trace)
+  - Matching: signal-based only (Rule.conditions = [SignalName])
+  - Conflict resolution: severity wins, then priority wins
+  - Fail-safe: fallback to inform (RULE-FALLBACK-999 in RuleSet.v1)
+  - Trace: decision, reason_code, confidence, triggered_rules
+
+  What V1 does not do:
+  - Step 2 (cache lookup — cache layer not built yet)
+  - Step 3 (separate override layer — overrides mixed into rules)
+  - Step 5 (score-based evaluation — no signal weights)
+  - Step 6 (combining rule + score candidates)
+  - Validity filtering (no not_before / expires_at in V1 rules)
+  - Match types: exact_url, domain, domain_path_prefix, subdomain
+    (V1 only matches by signal name via Rule.conditions)
+
+  V2 adds: cache, overrides, scoring, validity, all match types,
+  policy fetch, full trace.
+
+================================================================================
+9. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Policy_JSON_Schema_Draft.txt    The data shape. This doc defines how
+                                  the engine processes that data.
+
+  Backend_Policy_Specification.txt Design rationale, delivery, caching,
+                                  and the five-section policy structure.
+
+  Decision_Policy_Rule_Engine.txt  Engine contract: role, decision levels,
+                                  fail-safe, confidence derivation.
+
+  URL_Reuse_Data_Model.txt        URL normalization and Stage 0 cache.
+
+  Signal_Taxonomy.txt             Signal identifiers used in signal_weights
+                                  and signal-type match conditions.
+
+  Reason_Code_Catalog.txt         Stable reason codes returned in decisions.
+
+  Reason_Code_To_Message_Mapping.txt  App-side mapping from reason_code to
+                                      localized user-facing text.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

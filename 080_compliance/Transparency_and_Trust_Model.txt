@@ -1,0 +1,23 @@
+Transparency and Trust Model
+Generated: 2026-03-08
+
+Purpose
+Define how LinkLook can credibly demonstrate that it protects users without becoming a privacy risk.
+
+Trust pillars
+- minimal data collection
+- documented architecture
+- independent review or audit where feasible
+- clear user-facing explanations
+- strict retention policy
+- separation between security metadata and personal content
+
+Proof mechanisms to pursue
+- publish data flow summaries
+- document what is never collected
+- maintain audit-ready logging of system decisions
+- consider third-party security and privacy review
+- open selected non-sensitive components or specifications where strategically useful
+
+Important boundary
+Openness should increase trust without exposing secrets that materially weaken defensive effectiveness.

@@ -1,0 +1,186 @@
+LINKLOOK — FOUNDER EXECUTION GUIDE
+Version: 2026-03-08
+Origin: ChatGPT
+
+================================================================================
+PURPOSE
+================================================================================
+
+This guide turns the March 8, 2026 strategy discussion into founder operating
+instructions. It is intentionally practical.
+
+================================================================================
+1. THE CURRENT STRATEGIC TRUTH
+================================================================================
+
+LinkLook's biggest near-term risk is not technical inferiority.
+It is a cold-start adoption problem.
+
+Therefore the first objective is:
+Get a trustworthy, understandable, easy-to-try product into the market fast
+enough to learn, without creating reputational damage through overclaiming.
+
+================================================================================
+2. WHAT TO DO NOW
+================================================================================
+
+1. Keep v1 free.
+2. Keep the public promise simple: “checks links before they open.”
+3. Avoid absolute claims.
+4. Build visible but calm proof-of-work into the product.
+5. Design discovery around the post-scare search moment.
+6. Treat elderly-protection and family-protection as a primary GTM wedge.
+7. Keep Network Extension valuable but not sacred.
+
+================================================================================
+3. RECOMMENDED PRODUCT DECISION
+================================================================================
+
+Default recommendation:
+Ship v1 as a straightforward, security-driven browser. Action extension is V2.
+Network Extension is V3. Do not let later-version complexity delay first launch.
+
+Reason:
+A delayed perfect product is more dangerous than an imperfect but trustworthy
+product that starts learning from real usage.
+
+================================================================================
+4. WHAT MUST BE TRUE AT LAUNCH
+================================================================================
+
+- The app must feel privacy-safe.
+- The app must not look like spyware.
+- The app must not aggressively block legitimate links at a noticeable rate.
+- The app must show some evidence that it is active.
+- The App Store page must explain the product in one sentence.
+- The website must capture post-scare search intent.
+- The product language must be plain English, not security jargon.
+
+================================================================================
+5. GROWTH MESSAGES TO USE
+================================================================================
+
+Primary messages:
+- Checks links before they open
+- Protect yourself from scam links
+- Protect your parents from scam links
+- Reduces the risk of phishing and smishing on iPhone
+
+Messages to avoid:
+- Prevents scams
+- Total protection
+- Full safety guarantee
+- Military-grade AI protection
+
+================================================================================
+6. FIRST 1000 USERS: WHERE THEY COME FROM
+================================================================================
+
+Expected early user sources:
+- your network
+- security-curious users
+- near-scam searchers
+- adult children installing for parents
+- word-of-mouth after blocked links
+
+The launch plan should be built for these users, not for the mass market.
+
+================================================================================
+7. DISCOVERY EXECUTION
+================================================================================
+
+Minimum discovery stack:
+
+A. App Store listing
+- Name / subtitle must match search intent
+- Screenshots must immediately show suspicious-link warning behaviour
+- Privacy explanation must be plain and reassuring
+
+B. Website pages
+Create simple pages for these search intents:
+- how to check if a link is safe on iPhone
+- what to do if you tapped a scam link
+- SMS scam link iPhone
+- protect parents from scams
+- phishing protection iPhone
+
+C. Story assets
+Have one-page explanations ready for:
+- elderly protection
+- near-miss stories
+- how LinkLook is different from VPN-style products
+
+================================================================================
+8. KEY METRICS FOR THE FIRST YEAR
+================================================================================
+
+Trust / retention:
+- uninstall rate in first 7 days
+- first-week active usage
+- percentage of users who keep default-browser setting enabled
+
+Product quality:
+- false positive rate
+- detection quality on known malicious tests
+- time to verdict
+
+Growth / learning:
+- App Store conversion rate
+- organic installs as percentage of total installs
+- share of installs tied to family-protection use case
+- number of real near-miss stories captured
+
+================================================================================
+9. THE THREE REPUTATIONAL DISASTERS TO AVOID
+================================================================================
+
+1. Looking like spyware
+2. Blocking legitimate sites too often
+3. Looking inactive after installation
+
+Every launch decision should be checked against these three risks.
+
+================================================================================
+10. WHAT SUCCESS LOOKS LIKE IN THE NEXT 6–12 MONTHS
+================================================================================
+
+Not revenue first.
+Not perfect protection first.
+
+Success means:
+- users understand the product instantly
+- users keep it installed
+- users tell at least one other person about it
+- some installs come from search and word-of-mouth rather than only from you
+- the first real interception stories arrive
+
+================================================================================
+11. FOUNDER RULE
+================================================================================
+
+When forced to choose between additional technical depth and earlier trustworthy
+market learning, prefer earlier trustworthy market learning — unless the added
+technical depth clearly prevents a material safety failure.
+
+
+================================================================================
+12. MARKET FOCUS RULE
+================================================================================
+
+Primary launch market remains the Netherlands.
+
+Operating implication:
+- local PR first
+- Dutch trust narrative first
+- Dutch family-protection use case first
+- keep product and website internationally portable
+
+Useful Dutch launch surfaces:
+- Tweakers and adjacent Dutch tech communities
+- Dutch scam-news and consumer-protection coverage
+- local stories about protecting elderly relatives from scam links
+
+Press outreach timing to prepare for:
+1. first public launch
+2. first credible real-world interception story
+3. scam-wave moments already in the news

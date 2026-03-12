@@ -1,0 +1,56 @@
+LinkLook Test-Driven Development Policy
+Version: v2.0
+Date: 2026-03-11
+Origin: ChatGPT, updated to align with minimal browser model and Canonical Master Decision Log 2026-03-10
+
+Purpose
+Define LinkLook’s mandatory test-driven development policy for core logic, UX-critical flows, and regression control.
+
+Core rule
+No web content may load before LinkLook has reached the allowed state for that specific URL.
+This rule must be tested and preserved across every change.
+
+Policy statement
+LinkLook is built test-first wherever deterministic behavior is expected.
+For core security logic, a change is not complete unless an automated test exists first or is added as part of the same change.
+
+Mandatory rules
+1. Red -> Green -> Refactor
+- first write a failing automated test
+- then implement the smallest change that makes the test pass
+- then refactor while keeping the test suite green
+
+2. Bugfix rule
+- every important bug must first be reproduced as an automated failing regression test
+- the code fix is only complete when that regression test passes
+
+3. Rule and detector rule
+- every new rule, detector, or scoring change must be accompanied by fixture coverage
+- a rule without fixtures is incomplete
+
+4. UX-critical flow rule
+- every core user flow must have automated acceptance coverage where practical
+- warning-copy mapping, primary actions, safe defaults, and override behavior must be testable
+
+5. Merge gate rule
+- no merge to the main branch unless the required automated test suite passes
+
+6. Definition of Done
+A change is done only if:
+- intended behavior is covered by automated tests
+- regression risk is covered where relevant
+- documentation is updated if architecture or policy changed
+- CI passes
+
+Scope
+This policy applies especially to:
+- URL normalization
+- signal detection
+- decision policy / rule engine
+- decision-to-UX mapping
+- warning / continue / back flows
+- minimal browser gate behavior (no web content before allowed state)
+- open elsewhere handoff behavior
+
+Non-goals
+This policy does not require test-first for disposable experiments, but any code that graduates into production scope must be brought under this policy.

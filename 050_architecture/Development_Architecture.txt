@@ -1,0 +1,149 @@
+LinkLook Development Architecture
+Version: v2.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+This document defines the development architecture for LinkLook so the product can be built test-first, with clear separation between platform code, detection logic, UX logic, and external integrations.
+
+Core design principle
+Input Adapters
+↓
+Core Analysis
+↓
+Decision Policy
+↓
+UX Mapping
+↓
+Presentation / App Flow
+
+Repository-oriented code structure
+/apps
+  /ios-app
+  /network-extension
+/core
+  /models
+  /normalization
+  /signals
+  /analysis
+  /policy
+  /engine
+  /logging
+/ux
+  /mapping
+  /messages
+  /viewmodels
+/adapters
+  /reputation
+  /fetcher
+  /redirect-resolver
+  /dns
+  /storage
+/tests
+  /fixtures
+  /unit
+  /integration
+  /e2e
+  /ux
+/phishing-lab
+  /datasets
+  /pages
+  /runner
+
+Layer responsibilities
+1. apps
+- iOS shell, screens, button handling, accessibility support
+- Network Extension integration where applicable
+- no phishing decision logic in this layer
+
+2. core
+- platform-independent decision engine
+- models such as InputContext, Signal, DecisionResult
+- URL normalization and signal extraction
+- decision policy / rule engine
+- privacy-safe structured logging
+
+3. ux
+- maps DecisionResult to UX copy, screen type, button layout
+- centralizes warning text so it can be tested and maintained
+
+4. adapters
+- reputation services, safe fetcher, redirect resolver, DNS, storage
+- replaceable and mockable
+- failures should return structured errors, not uncontrolled exceptions
+
+5. tests
+- fixture-driven tests from the start
+- unit, integration, e2e, and UX tests
+
+Key dependency rule
+Core detection logic must not depend on iOS frameworks or UI code.
+
+Stable public interface
+evaluate(InputContext) -> DecisionResult
+
+Recommended build order
+1. shared models
+2. URL normalization tests
+3. first detector tests
+4. first rule tests
+5. first deterministic engine implementation
+6. first UX mapping tests
+7. first safe-link routing tests
+8. first end-to-end flow tests
+
+Recommended first milestone
+Build a deterministic offline decision engine first:
+- shared models
+- URL normalization
+- first signal detectors
+- first rule set
+- first 30 fixtures
+- DecisionResult generation
+- basic UX mapping tests
+
+Development discipline
+- implement core behavior through failing tests first
+- keep platform-specific code thin
+- keep security decisions in deterministic, testable core modules
+- do not bury routing logic inside UI controllers
+
+Platform-risk resilience
+The development architecture should preserve maximum reuse if the preferred browser-entitlement route changes.
+Decision logic, UX mapping, fixtures, and routing tests must remain reusable across:
+- browser interception mode
+- Network Extension-assisted mode
+- minimal in-app browser fallback mode
+
+Extended architectural rules
+Structured model set
+The core architecture should establish these shared model types early:
+- InputContext
+- Signal
+- DecisionResult
+- ReasonCode
+- DecisionTrace
+- UXModel
+
+Recommended interface boundaries
+- SignalExtractor: extract(InputContext) -> [Signal]
+- RuleEvaluator: apply([Signal]) -> PolicyOutcome
+- UXMapper: map(DecisionResult) -> UXModel
+- ReputationAdapter: lookup(domain) -> ReputationData
+- FetcherAdapter: fetch(url) -> FetchResult
+
+Dependency direction
+Dependencies should flow inward.
+Apps and UX may depend on the core; the core must not depend on iOS frameworks, screen code, or Apple-specific lifecycle logic.
+
+Failure-handling rule
+Adapters should return structured failures such as timeout, fetch_blocked, parse_failed, or lookup_unavailable.
+The policy layer then determines controlled fail-safe behavior.
+
+UX architecture rule
+Screens should render from a UXModel rather than assembling warning text ad hoc from raw engine outputs.
+This preserves consistency, localization readiness, and testability.
+
+Phishing-lab integration rule
+The phishing lab should call the same stable evaluate(InputContext) interface as the real app path.
+There should not be a separate special detection path just for testing.

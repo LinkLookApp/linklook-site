@@ -1,0 +1,476 @@
+LinkLook — Minimal Browser Test Specification
+Version: 1.0
+Date: 2026-03-11
+Origin: ChatGPT design session, documented in Cowork
+
+================================================================================
+PURPOSE
+================================================================================
+
+This specification covers the test cases required when the empty browser shell
+is replaced by a real minimal browser. The key change: we are no longer only
+testing "decision + screen" — we are now testing "decision + controlled page
+load + basic browser behavior."
+
+================================================================================
+CORE RULE
+================================================================================
+
+No web content may load before LinkLook has reached the allowed state for that
+specific URL.
+
+This rule must be tested everywhere because it is the core difference between
+the old empty browser and the new minimal browser.
+
+================================================================================
+TEST LAYERS
+================================================================================
+
+Layer 1: Core decision tests
+  Pure logic, no Apple/UI dependencies. Already covered by LinkLookCore tests.
+
+Layer 2: Integration tests
+  Decision screen <-> browser handoff <-> URL loading.
+
+Layer 3: UI tests
+  Real tap flows, button labels, navigation, accessibility.
+
+================================================================================
+AUTOMATE FIRST (TOP 10)
+================================================================================
+
+These cover the most important product risk:
+
+ 1. Safe URL → load only after safe verdict
+ 2. Warn URL → no auto-load
+ 3. Inform URL → no auto-load
+ 4. Block URL → never loads
+ 5. Continue from warn → opens in minimal browser
+ 6. Open elsewhere → correct handoff to preferred browser
+ 7. Back / forward / reload
+ 8. Redirect to unsafe destination
+ 9. Timeout / backend unavailable
+10. App background/foreground recovery
+
+================================================================================
+GROUP 1: CORE GATE BEHAVIOR BEFORE ANY PAGE LOAD
+================================================================================
+Priority: P0
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G1-01 | Safe URL loads only after safe verdict
+         | Given a safe URL, when user opens it, then LinkLook first
+         | evaluates it and only after safe verdict the page starts
+         | loading in the browser.
+         |
+MB-G1-02 | Warn URL does not auto-load
+         | Given a warn URL, when user opens it, then page is not loaded
+         | yet and user sees warning screen first.
+         |
+MB-G1-03 | Inform URL does not auto-load
+         | Given an inform URL, when user opens it, then page is not
+         | loaded yet and user sees inform screen first.
+         |
+MB-G1-04 | Block URL never loads
+         | Given a blocked URL, when user opens it, then no web content
+         | is loaded at all.
+         |
+MB-G1-05 | Timeout in policy/check service
+         | Given backend/policy timeout, when user opens URL, then app
+         | shows fallback decision and page is not silently loaded.
+         |
+MB-G1-06 | Malformed URL
+         | Given invalid URL input, when app receives it, then app shows
+         | error state and browser does not open broken content.
+         |
+MB-G1-07 | Redirect chain checked correctly
+         | Given URL A redirects to B, when A is opened, then redirect
+         | target handling matches policy and unsafe destination is not
+         | silently shown.
+         |
+MB-G1-08 | Same-domain redirect to unsafe path
+         | Given trusted domain with risky path/redirect, then full URL
+         | logic is applied, not domain-only logic. (Aligns with MDL-107
+         | safety principle: domain trust alone never approves a URL.)
+
+================================================================================
+GROUP 2: HANDOFF FROM DECISION SCREEN TO MINIMAL BROWSER
+================================================================================
+Priority: P0
+
+This is the new part caused by replacing the empty browser.
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G2-01 | Continue from warn opens inside LinkLook browser
+         | After user explicitly continues, correct URL opens in the
+         | in-app browser.
+         |
+MB-G2-02 | Continue from inform opens inside LinkLook browser
+         | Same as above for inform verdict.
+         |
+MB-G2-03 | Open elsewhere works
+         | User chooses external browser. Correct URL is handed off to
+         | the user's preferred browser (MDL-104). No corrupted or
+         | truncated URL.
+         |
+MB-G2-04 | Back from decision screen works
+         | User can leave safely without accidental page load.
+         |
+MB-G2-05 | No double-open
+         | Tapping continue once does not open two browser
+         | instances/tabs/views.
+         |
+MB-G2-06 | Decision screen state survives slow interaction
+         | If user waits on warn/inform screen, app state stays correct.
+         |
+MB-G2-07 | Repeated tap protection
+         | Fast double-tap on continue/open elsewhere does not cause
+         | race conditions.
+
+================================================================================
+GROUP 3: MINIMAL BROWSER FUNCTIONALITY
+================================================================================
+
+Apple will expect this to behave like a real browser.
+
+P0:
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G3-01 | Page renders successfully
+         | Standard HTTPS site loads and displays content.
+         |
+MB-G3-02 | Back button works
+         | After navigating to second page, back returns correctly.
+         |
+MB-G3-03 | Forward button works
+         | After back, forward restores page.
+         |
+MB-G3-04 | Reload works
+         | Current page reloads without breaking state.
+         |
+MB-G3-05 | Address/URL display is correct
+         | Browser shows actual loaded URL, not old one.
+         |
+MB-G3-06 | Page title updates
+         | Title reflects current page.
+         |
+MB-G3-07 | In-page navigation stays in browser
+         | Normal in-page link navigation remains inside LinkLook browser.
+         |
+MB-G3-08 | HTTPS error handling
+         | Invalid certificate / TLS issue gives proper error state.
+         |
+MB-G3-09 | No blank screen after successful load
+         | Page content becomes visible and interactive.
+
+P1:
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G3-10 | Basic cookies/session behavior
+         | Login/session survives normal navigation if intended.
+         |
+MB-G3-11 | target=_blank behavior
+         | Define expected behavior (same view, new view, or blocked),
+         | then test that exact behavior.
+         |
+MB-G3-12 | Downloads behavior
+         | If unsupported, show clear message. If supported later, test
+         | handoff/handling.
+         |
+MB-G3-13 | JavaScript-heavy pages
+         | Modern pages still load acceptably.
+         |
+MB-G3-14 | Viewport/mobile rendering
+         | Mobile websites render as mobile, not broken desktop layout.
+
+================================================================================
+GROUP 4: SECURITY-SENSITIVE BROWSER CASES
+================================================================================
+Priority: P0
+
+These are critical for LinkLook's security promise.
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G4-01 | No content before verdict (race condition)
+         | Even under slow UI or fast network, content stays blocked
+         | until allowed.
+         |
+MB-G4-02 | Unsafe redirect after initial safe URL
+         | Browser handles post-load redirect safely according to the
+         | decision model.
+         |
+MB-G4-03 | Open elsewhere preserves user intent
+         | Only the approved URL is handed off. No hidden rewritten URL.
+         |
+MB-G4-04 | Phishing-like domain display
+         | Browser UI shows enough of the URL/domain for user
+         | understanding.
+         |
+MB-G4-05 | Pop-up / window.open behavior
+         | Define expected behavior and test it. Especially important
+         | for scam flows.
+         |
+MB-G4-06 | Deep link / app-store / tel / sms / mailto links
+         | Browser handles these safely and predictably.
+         |
+MB-G4-07 | Clipboard or auto-download tricks
+         | No silent dangerous action after open. No clipboard
+         | hijacking.
+         |
+MB-G4-08 | Refresh after warn/inform does not bypass consent
+         | User choice must remain explicit. Refreshing must not
+         | silently load blocked content.
+
+================================================================================
+GROUP 5: FAILURE AND RECOVERY CASES
+================================================================================
+Priority: P0
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G5-01 | No network
+         | App shows clear error, not endless spinner.
+         |
+MB-G5-02 | DNS failure
+         | Proper error state.
+         |
+MB-G5-03 | Backend unavailable
+         | Decision service failure handled safely (fail-safe, not
+         | fail-open).
+         |
+MB-G5-04 | Web page load failure after safe verdict
+         | User sees browser/network error, not decision error.
+         |
+MB-G5-05 | App goes to background during decision
+         | Returning to app restores correct state.
+         |
+MB-G5-06 | App goes to background during page load
+         | Returning does not break or restart incorrectly.
+         |
+MB-G5-07 | Crash/relaunch recovery
+         | App does not reopen into inconsistent browser state.
+         |
+MB-G5-08 | Memory pressure / low-end device
+         | Browser view still recovers or restarts cleanly.
+
+================================================================================
+GROUP 6: UX AND ACCESSIBILITY TESTS
+================================================================================
+Priority: P0
+
+For LinkLook, these are not optional.
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G6-01 | Buttons are understandable
+         | Continue, Back, Open elsewhere are clear.
+         |
+MB-G6-02 | No ambiguous dual continue buttons
+         | Warn/inform screens must not confuse user.
+         |
+MB-G6-03 | Large text accessibility
+         | UI remains usable with larger text settings.
+         |
+MB-G6-04 | VoiceOver labels
+         | Buttons and URL info are announced correctly.
+         |
+MB-G6-05 | Color contrast
+         | Safe/warn/block states remain readable.
+         |
+MB-G6-06 | Loading state is understandable
+         | User can tell whether app is checking or loading page.
+         |
+MB-G6-07 | Elderly-user comprehension test
+         | User understands whether page is already opened or not.
+         |
+MB-G6-08 | Actual destination visibility
+         | User can inspect where they are before trusting the page.
+
+================================================================================
+GROUP 7: START PAGE AND NAVIGATION SHELL
+================================================================================
+Priority: P1
+
+These tests verify the start page layout, tab bar, navigation, and the
+states described in Start_Page_Design.txt. The start page is what the user
+sees when opening LinkLook directly (not via a link handoff).
+
+--- 7A: Start page elements ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-01 | Start page shows all expected elements
+         | When app launches (no pending URL), the start page shows:
+         | top bar (address field, back/forward arrows, gear icon),
+         | app identity ("LinkLook" heading + tagline), primary action
+         | card ("Safe browsing starts here" + paste button), and tab bar
+         | (Home, Recent, Settings).
+         |
+MB-G7-02 | First launch hides recent sites
+         | When app launches for the first time (no history), the recent
+         | sites section is not visible. Only top bar, app identity,
+         | primary action card, and tab bar are shown.
+         |
+MB-G7-03 | Returning user sees recent sites
+         | Given previous checks exist in history, when app shows start
+         | page, then recent sites section is visible with correct domain
+         | names and status labels ("Previously checked" / "Not opened yet").
+         |
+MB-G7-04 | History disabled hides recent sites
+         | Given history recording is disabled (MDL-106), when app shows
+         | start page, then recent sites section is not visible.
+         |
+MB-G7-05 | App identity not visible when browsing
+         | Given a page is loaded in the minimal browser, then the
+         | "LinkLook" heading and tagline are not visible. They only
+         | appear on the start page.
+
+--- 7B: Address field ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-06 | Address field shows placeholder on start page
+         | Start page address field shows "Enter website or paste link"
+         | as placeholder text.
+         |
+MB-G7-07 | Tapping address field opens keyboard
+         | When user taps the address field, the keyboard appears and
+         | the field is focused for text input.
+         |
+MB-G7-08 | Submitting URL from address field triggers check
+         | When user types a URL in the address field and taps Go/Return,
+         | LinkLook starts the check flow (same as pasting a URL).
+         |
+MB-G7-09 | Address field shows current URL when browsing
+         | Given a page is loaded, the address field shows the current
+         | URL instead of the placeholder text.
+
+--- 7C: Navigation arrows ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-10 | Back and forward arrows disabled on start page
+         | When the start page is shown (no browsing history), both
+         | back and forward arrows are visually disabled (reduced
+         | opacity) and not tappable.
+         |
+MB-G7-11 | Back arrow enabled after navigating away from start page
+         | Given the user has checked a URL and a page loaded, the back
+         | arrow becomes enabled. Tapping it returns to the start page
+         | or previous page.
+         |
+MB-G7-12 | Forward arrow enabled after going back
+         | Given the user went back, the forward arrow becomes enabled.
+         | Tapping it goes forward in browsing history.
+
+--- 7D: Tab bar ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-13 | Tab bar shows three items
+         | Tab bar displays exactly three items: Home, Recent, Settings.
+         |
+MB-G7-14 | Home tab returns to start page
+         | From any screen, tapping the Home tab returns to the start
+         | page.
+         |
+MB-G7-15 | Recent tab shows history screen
+         | Tapping the Recent tab shows the full history list. If history
+         | is empty, shows "No recent checks" message. If history is
+         | disabled, shows "History is disabled" message.
+         |
+MB-G7-16 | Settings tab opens settings
+         | Tapping the Settings tab opens the in-app settings screen.
+         |
+MB-G7-17 | Active tab is visually highlighted
+         | The currently active tab uses the primary green color
+         | (#4CAF76). Inactive tabs use grey (#9E9E9E).
+         |
+MB-G7-18 | Tab bar persists across all screens
+         | Tab bar remains visible on start page, result screens, history
+         | screen, settings screen, and while browsing.
+
+--- 7E: Paste and clipboard ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-19 | Paste button visible on start page
+         | The "Paste from clipboard" button is visible in the primary
+         | action card on the start page.
+         |
+MB-G7-20 | Paste button triggers check when clipboard has URL
+         | Given the clipboard contains a URL, tapping "Paste from
+         | clipboard" immediately starts the check flow for that URL.
+         |
+MB-G7-21 | Paste button behavior when clipboard has no URL
+         | Given the clipboard is empty or contains non-URL text,
+         | tapping the paste button either does nothing or shows a
+         | brief message. It does not crash or start a check.
+
+--- 7F: Recent sites interaction ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-22 | Tapping a recent site re-checks the URL
+         | When user taps a domain in the recent sites list, LinkLook
+         | starts a fresh check for that URL.
+         |
+MB-G7-23 | Recent sites show correct status
+         | Each recent site row shows the correct status label based
+         | on whether the user proceeded to the page or not.
+         |
+MB-G7-24 | Recent sites limited to 3-5 items
+         | The start page recent sites section shows a maximum of 3-5
+         | entries. A "See all" or equivalent leads to the full history.
+
+--- 7G: Gear icon ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-25 | Gear icon opens settings
+         | Tapping the gear icon (⚙) in the top bar opens the in-app
+         | settings screen. Same destination as the Settings tab.
+
+--- 7H: Accessibility ---
+
+ID       | Title
+---------|--------------------------------------------------------------
+MB-G7-26 | VoiceOver labels on all interactive elements
+         | All interactive elements have correct VoiceOver labels:
+         | "Back", "Forward", "Settings", "Enter website or paste link",
+         | "Paste link from clipboard", "Home", "Recent sites",
+         | "Settings", "{domain}, {status}" for recent site rows.
+         |
+MB-G7-27 | Touch targets meet minimum size
+         | All tappable elements (arrows, gear, paste button, tab items,
+         | recent site rows) meet the 44pt minimum touch target
+         | (Apple HIG).
+         |
+MB-G7-28 | Dynamic Type scales text and icons
+         | When the user increases text size in iOS Accessibility
+         | settings, all text and SF Symbols on the start page scale
+         | correctly without clipping or overlapping.
+
+================================================================================
+ALIGNMENT
+================================================================================
+
+- Existing decision-engine tests (LinkLookCore) remain unchanged.
+  This specification adds test cases on top of those.
+- Group 1 extends the existing Decision_UX_Test_Specification.txt with
+  page-load gating checks.
+- Group 4 (MB-G4-01) is the test expression of the core rule: no web
+  content before verdict.
+- MB-G1-08 aligns with MDL-107: domain trust alone never approves a URL.
+- MB-G2-03 aligns with MDL-104: open elsewhere uses the user's preferred
+  browser setting.
+- Group 7 covers Start_Page_Design.txt layout and states, tab bar
+  navigation, address field interaction, nav arrow states, clipboard
+  paste, recent sites, and accessibility.
+- All test IDs use the MB- prefix (Minimal Browser) to distinguish from
+  existing TC- prefixed decision-engine tests.

@@ -1,0 +1,17 @@
+LinkLook — Universal Link Bypass Mitigation
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Problem
+Universal links may open an installed app directly, reducing visibility for a
+browser-only interception design.
+
+Mitigation model
+- discover universal-link claims via AASA crawling
+- treat universal-link capable domains as a special intelligence class
+- rely on Network Extension as the protection backstop
+- explain limitations honestly where app-internal content cannot be inspected
+
+Key principle
+The goal is not to pretend universal links disappear; the goal is to narrow the
+blind spot and keep protection honest.

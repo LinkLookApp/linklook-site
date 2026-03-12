@@ -1,0 +1,95 @@
+LinkLook – Security and Threat Model (Updated)
+
+2026-03-04
+
+Security and Threat Model (Updated)
+Updated: March 04, 2026
+
+Status
+
+Updated to incorporate the v1 scalability blueprint (Stage 0/1/2 pipeline,
+cache keys, thresholds, rate limits, and evidence-based warnings).
+
+Threat model scope
+• Adversary: consumer phishing/scam operators; assume low-to-medium technical skill, high social
+engineering skill.
+
+• Primary assets: user credentials, payment authorization, session tokens; secondary: user trust in
+LinkLook.
+
+• Primary attack surfaces: inbound links, redirectors, brand impersonation, abuse of legitimate hosting,
+user manipulation.
+Blueprint impact: Stage 2 must be protected against abuse (DoS by link spam). Rate limiting and
+graceful degradation are security requirements, not just scaling features.
+
+Key bypass strategies and mitigations
+• Fresh domains (zero reputation) → mitigate via domain-age, TLD weights, impersonation tokens, and
+escalation.
+
+• Legitimate-domain abuse (notion.site, github.io) → mitigate via Stage 2 content signals and classifier.
+• Redirect chain obfuscation → always chase redirects in Stage 2; cap hops; store chain signatures.
+• Geo/UA cloaking → sandbox fetch should emulate mobile Safari and (where feasible) local region.
+• User instructed to disable VPN → monitor VPN state; show explicit “protection off” warnings; educate
+with concise messaging.
+
+Stage 2 sandbox security controls
+• Container isolation; no access to internal networks; strict egress allowlist; resource quotas.
+• Timeouts for redirect/fetch/render; max response sizes; loop detection.
+• No credential submission; never execute downloaded binaries; disable dangerous browser
+capabilities in headless.
+Fail-safe: if Stage 2 crashes or times out, do not silently allow high-risk. For mid-risk, warn with Stage
+1 reasons.
+
+Abuse resistance (anti-DoS)
+
+Founder version
+
+Page 1
+
+LinkLook – Security and Threat Model (Updated)
+
+Control
+
+v1 default
+
+Global Stage 2 token bucket
+
+500 jobs/min (tunable)
+
+Per-domain cap
+
+10 deep scans/hour
+
+Per-device/day cap (rotating id)
+
+200 deep scans/day
+
+Queue priority
+
+explicit user checks > VPN escalations > background
+
+Founder version
+
+2026-03-04
+
+Page 2
+
+Universal Link / AASA abuse
+• Risk: domains with universal-link routing may open installed apps directly,
+reducing visibility for browser-first interception.
+• Mitigation: AASA crawling, Network Extension backstop, domain intelligence,
+and honest documentation of residual blind spots.
+Additional threat surfaces formally documented in v3
+- QR code initiated phishing
+- redirect chain obfuscation
+- shortener masking
+- first-24-hours domain abuse
+- brand impersonation through domain similarity and typosquatting
+
+Related documents
+- QR_Code_Link_Threat_Model.txt
+- Redirect_Chain_Intelligence_Model.txt
+- Shortener_Unwrapping_Strategy.txt
+- First_24_Hours_Domain_Risk_Model.txt
+- Domain_Similarity_Detection.txt
+- Typosquatting_Detection.txt

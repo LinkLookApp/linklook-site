@@ -1,0 +1,67 @@
+LINKLOOK — TSI QUESTION
+Version 2 — February 2026
+
+================================================================================
+STATUS
+================================================================================
+
+Final — ready to file after PoC is confirmed working on physical device.
+
+Filing sequence:
+1. Apple grants entitlement (Case ID 102832048134)
+2. PoC confirmed working on iPhone 11
+3. This TSI filed the same day as step 2
+
+================================================================================
+TSI QUESTION
+================================================================================
+
+My name is Bas Jonkhoff. I am the founder and sole developer of LinkLook, a
+consumer security app designed to protect elderly users from malicious links.
+
+Precondition: the user explicitly selects LinkLook as their default browser in
+iOS Settings.
+
+Remark: LinkLook cannot register itself automatically or silently as the
+default browser. This is a conscious, user-initiated choice.
+
+LinkLook's mechanism:
+
+— The user taps a link in any app.
+
+— iOS routes the URL to LinkLook.
+
+— LinkLook intercepts the URL.
+
+— LinkLook analyses the URL for security threats.
+
+— LinkLook always opens the URL in another, user-preferred browser.
+
+LinkLook acts as a transparent intermediary. It has no browser UI at all. It
+never shows any web content to the user. The user always lands in their own
+preferred browser.
+
+I am requesting confirmation that this architecture — silent interception,
+security analysis, handoff to user's preferred browser — is a compliant use of
+the web browser entitlement under current App Store guidelines.
+
+A proof of concept demonstrating the interception and handoff mechanism is
+available. The PoC does not include URL analysis — it demonstrates the core
+architectural claim only. The production v1 product will include full URL
+analysis via Google Safe Browsing and AI-powered verdicts. Safe links are
+handed off silently to the user's preferred browser. Unsafe links are reported
+to the user — no handoff.
+
+My App ID: app.linklook.LinkLook
+Related entitlement request: Case ID 102832048134
+
+================================================================================
+DOCUMENT HISTORY
+================================================================================
+
+v1 — February 2026 — Initial draft. Session 2.
+v2 — February 2026 — Final version. All changes locked. Session 2.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

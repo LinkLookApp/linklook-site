@@ -1,0 +1,451 @@
+LINKLOOK — PRODUCT REQUIREMENTS DOCUMENT (PRD)
+Version: 2026-03-10
+Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
+
+================================================================================
+1. PRODUCT SUMMARY
+================================================================================
+
+LinkLook is a minimal, safety-driven browser for iOS with a built-in preventive
+security gate. Its purpose is to help users recognize malicious or suspicious
+destinations before harm occurs. The browser part must be real enough to support
+the product direction, but kept as small and straightforward as possible.
+LinkLook combines a minimal browser experience with a protective security layer
+and a redirect option/button when appropriate. It is not positioned as a full-feature browser.
+
+Primary v1 characteristics:
+- minimal, safety-driven browser with preventive security gate
+- plain-English verdicts using four-state outcome model
+- privacy-first analysis pipeline
+- visible but calm proof that the product is active
+- redirect option/button as part of the browser flow
+
+LinkLook v1 is a minimal, safety-driven browser. The first version centers on
+clear browser flows, link-risk evaluation, transparent safe handling, and
+understandable protective actions. Action extension support is planned for V2.
+Network Extension is planned for V3.
+
+App Store rejection risk and browser entitlement approval risk are accepted
+showstopper risks.
+
+================================================================================
+2. PRODUCT GOALS
+================================================================================
+
+1. Reduce scam-link exposure materially for iPhone users.
+2. Be understandable in one sentence.
+3. Feel privacy-safe.
+4. Avoid reputational damage from overclaiming or false positives.
+5. Be easy to recommend to parents and relatives.
+6. Support a Netherlands-first launch without blocking later international expansion.
+
+================================================================================
+3. PRIMARY USERS
+================================================================================
+
+Primary user segments:
+- adult children protecting elderly relatives
+- iPhone users who recently encountered a scam or near-scam
+- security-conscious users who want proactive link checking
+
+================================================================================
+4. CORE EXPERIENCE
+================================================================================
+
+When a user taps a link that routes through LinkLook:
+1. LinkLook receives the URL.
+2. LinkLook normalizes and inspects inputs, collects available safety signals.
+3. LinkLook determines the outcome.
+4. The result is presented clearly to the user.
+5. LinkLook then either continues transparently, informs, warns, blocks, or
+   allows redirect when appropriate.
+
+Core product sentence:
+“LinkLook checks links before they open.”
+
+Canonical outcome model:
+The LinkLook MVP outcome model is: allow (transparent), inform, warn, and block.
+Inform, warn, and block must include an explanation. Allow should remain
+low-friction and transparent. Redirect is part of the browser flow, not a
+separate product mode.
+
+Routing requirements
+- allow: low-friction, transparent continuation
+- inform: brief explanation, user proceeds easily
+- warn: clear warning with explanation before navigation
+- block: stopped by default with explanation
+- redirect option/button: presented carefully so it is not mistaken for a safety
+  approval; wording and placement must make clear that redirecting sends the link
+  elsewhere and does not mean the destination is considered safe by LinkLook
+
+================================================================================
+5. UX REQUIREMENTS
+================================================================================
+
+5.1 ALLOW PATH (transparent)
+- safe links should feel low-friction and smooth
+- on a fast trusted path, the user should barely notice LinkLook
+- copy must remain calm and brief
+
+5.2 INFORM PATH
+- brief explanation when there is something worth noting but risk is low
+- user proceeds easily, no heavy friction
+
+5.3 WARN PATH
+- warnings must be plain English
+- warning screens must not feel theatrical or sensational
+- where confidence is not extreme, prefer warning-style friction over overly
+  aggressive blocking
+
+5.4 BLOCK PATH
+- blocked links must stop by default with a clear explanation
+- explanation must use plain, calm, human language
+
+5.5 PROOF OF ACTIVITY
+The product must visibly demonstrate useful activity over time.
+Examples:
+- links checked today / this week
+- suspicious links flagged
+- safe links passed
+
+This mitigates the “nothing happened” problem common in security products.
+
+Recent checks history (MDL-106):
+LinkLook keeps a local history of recent link checks. History is on by default
+so users can see what LinkLook has checked and what verdicts were given. Each
+entry contains: URL, verdict, reason code, and timestamp. No page content,
+screenshots, or cookies are stored. History is stored on-device only (personal
+trust data under MDL-100) and never leaves the device. The user can clear
+history or disable it entirely from the in-app settings screen.
+
+5.6 SHAREABILITY
+Where appropriate after a high-confidence suspicious event, the UX may support
+subtle sharing or educational follow-up. Any such mechanism must remain calm and
+credibly framed. No celebratory or self-congratulatory tone.
+
+5.7 PREFERENCES ARCHITECTURE (MDL-104, MDL-105)
+
+Preference storage is split between iOS Settings bundle and the in-app settings
+screen based on the nature of each setting.
+
+iOS Settings bundle (device-level configuration):
+- profile type (PROTECTED / STANDARD)
+- response mode (block / warn)
+Rationale: device-level configurations set during setup or by an adult child
+installer (Profile 1). PROTECTED profile's locked block mode belongs at the
+device configuration level.
+
+In-app settings screen (user-experience preferences):
+- default handoff browser (MDL-104, Safari default)
+- safe-link display preference (MDL-109, always show result by default)
+- whitelist management
+- notification preferences
+- recent checks history toggle and clear (MDL-106, on by default)
+- crowdsourced threat contribution opt-in (MDL-108, off by default, V2)
+- foundation donation tier display (read-only)
+Rationale: decisions made in context by active users. Safety net for elderly
+STANDARD profile users who may not navigate to iOS Settings reliably —
+confirmed or adjusted based on TestFlight behavioural data.
+
+Browser preference requirements (MDL-104):
+- Settings screen accessible from the main screen via a gear icon
+- only installed browsers are shown in the list
+- LinkLook itself is never a redirect target
+- Safari is the default redirect browser out of the box
+- preference is stored on-device (aligns with privacy-first principle, MDL-100)
+- all redirect paths respect the preference: result screen action, in-app
+  browser toolbar button
+- if the preferred browser is uninstalled, LinkLook falls back to Safari
+- supported browsers at launch: Safari, Chrome, Firefox, Edge, Opera, Brave,
+  DuckDuckGo
+- browser detection uses LSApplicationQueriesSchemes in Info.plist
+
+Crowdsourced threat contribution opt-in (MDL-108, V2):
+- toggle in the in-app settings screen, OFF by default
+- label: "Help improve safety for everyone" (or equivalent plain-language copy)
+- when enabled, LinkLook may submit anonymous domain-level threat signals to the
+  central aggregation service
+- only domain-level observations are submitted — no personal trust data, no
+  browsing history, no URLs, no user identity
+- signals are protected by differential privacy and k-anonymity (MDL-100)
+- a domain enters the shared blocklist only after 1,000+ distinct reports
+- toggle must be off by default because it crosses the "nothing leaves your
+  phone" boundary — explicit user consent is required
+- V1 does not implement the backend; V1 must respect the architectural
+  separation so the toggle can be wired in V2 without refactoring
+- the toggle state is personal trust data (MDL-100) and stays on-device
+
+Safe-link display preference (MDL-109):
+- controls what happens when the engine verdict is "allow"
+- two modes:
+  - "Always show result" (default): the safe result screen is displayed briefly
+    so the user sees LinkLook checked the link and confirmed it is safe. This
+    provides reassurance, especially for the primary audience (elderly users,
+    PROTECTED profile). The page then loads in the minimal browser.
+  - "Auto-open safe links": safe links pass through silently and load in the
+    minimal browser without showing the safe result screen. Intended for power
+    users on STANDARD profile who trust LinkLook and want less friction.
+- default is "always show result" because reassurance is a core trust-building
+  feature — users need to see that LinkLook is working for them
+- PROTECTED profile: "always show result" is enforced and cannot be changed to
+  auto-open, because the adult child installer set up LinkLook for reassurance
+- STANDARD profile: user can choose either mode
+- this preference is stored on-device (personal trust data, MDL-100)
+- inform, warn, and block verdicts are NEVER auto-opened regardless of this
+  setting — only the allow path is affected
+- this preference does not affect the core rule: no web content may load before
+  LinkLook has reached the allowed state for that specific URL
+
+App Group sync constraint (hard, MDL-105):
+The Network Extension runs as a separate process and cannot read UserDefaults
+from the main app directly. All preference values must be synchronised into the
+shared App Group container (group.app.linklook.LinkLook) on every foreground
+transition. The extension always reads from the shared container. Stale
+configuration is a real failure mode. Must be confirmed on physical hardware
+before any TestFlight build.
+
+================================================================================
+6. TRUST REQUIREMENTS
+================================================================================
+
+The product must not look like spyware.
+
+Privacy-first principle:
+LinkLook follows a privacy-first approach by default. It should use only the
+minimum data necessary for link-safety, avoid hidden behavioral profiling, and
+remain clear and transparent about what data is processed and why. Where
+user-specific trust or preference data exists, it should remain on-device where
+possible. Privacy-impacting exceptions are only allowed when clearly necessary
+for security, proportionate, protected, and transparent.
+
+Two-data-flow separation (MDL-100):
+Personal trust data (allow/block choices, preferences) stays on-device and never
+leaves. Threat signal data (domain-level observations, not user-level data) is
+submitted anonymously, aggregated centrally, and fed back into a shared blocklist.
+Differential privacy and k-anonymity are specified as privacy mechanisms. A domain
+only enters the global shared list after 1,000+ distinct user reports.
+
+Proactive reclassification notification (MDL-101):
+If a link that LinkLook previously cleared as safe is later identified as
+malicious, affected users receive a proactive plain-English notification with
+actionable steps. This must not be a buried log entry.
+
+Trust requirements:
+- simple privacy explanation in onboarding
+- App Store copy that states LinkLook checks destinations, not messages
+- stored data minimised by architecture
+- no exaggerated security claims
+- explicit management of user confusion and misuse risk
+
+================================================================================
+7. POSITIONING REQUIREMENTS
+================================================================================
+
+Approved phrasing:
+- checks links before they open
+- warns about suspicious websites
+- reduces the risk of scam links
+- phishing / smishing protection on iPhone
+
+Disallowed public framing:
+- prevents all scams
+- complete protection
+- guaranteed safety
+
+================================================================================
+8. GROWTH-SENSITIVE REQUIREMENTS
+================================================================================
+
+The product must support discovery and recommendation.
+
+Requirements:
+- App Store screenshots must clearly show suspicious-link warnings
+- copy must make sense to non-technical users
+- family-protection story must be easy to explain
+- the app should have a meaningful free entry point
+
+================================================================================
+9. METRICS
+================================================================================
+
+Quality metrics:
+- false positive rate
+- detection rate on known malicious test sets
+- latency to verdict
+
+Trust / behaviour metrics:
+- weekly active users
+- uninstall rate within 7 days
+- percentage of users retaining LinkLook in regular use
+- rate of repeat usage after warning events
+
+Growth metrics:
+- App Store conversion rate
+- share of organic installs
+- installs driven by family-protection message
+- number of user-reported near-miss stories
+
+================================================================================
+10. NON-GOALS FOR v1
+================================================================================
+
+- broad “do everything” mobile security positioning
+- enterprise feature creep
+- AI-agent complexity for its own sake
+- monetisation-first design at the cost of adoption and trust
+
+================================================================================
+11. LAUNCH-MARKET REQUIREMENTS
+================================================================================
+
+- Launch messaging must work for a Netherlands-first market entry.
+- Dutch PR and support materials should be easy to produce.
+- Core product sentence must remain simple enough for local media, family recommendation, and App Store discovery.
+
+Localization readiness (MDL-103):
+Netherlands-first launch implies Dutch + English from V1. All user-facing
+strings must use Swift localized strings from the start. Reason codes stay
+language-neutral. The reason-code-to-message mapping lives in a localizable
+resource file, not in code.
+
+================================================================================
+12. BROWSER MODE
+================================================================================
+
+Guiding principle
+LinkLook is a minimal, safety-driven browser with a built-in preventive
+security gate. The browser part must be real enough to support the product
+direction, but kept as small and straightforward as possible.
+
+The primary v1 flow is: receive URL, normalize and inspect inputs, collect
+available safety signals, determine outcome, present result clearly, then
+either continue transparently, inform, warn, block, or allow redirect.
+Redirect is part of the browser flow, not a separate product mode.
+
+12.1 MUST HAVE
+
+1. Basic browser capability
+   LinkLook must function as a genuine browser and not just as a warning screen.
+   - open a URL
+   - display web content
+   - support standard forward navigation into the requested page when allowed
+   - support returning to the previous screen or state
+
+2. Preventive link safety gate
+   Every supported link flow must pass through LinkLook's decision logic before
+   the destination page is opened.
+   - evaluate the URL before page load when possible
+   - return a clear decision such as safe, warn, block, or inform
+   - prevent direct continuation for blocked destinations
+
+3. Clear decision screens
+   The user must understand what LinkLook decided and what action is available.
+   - safe screen or direct safe flow
+   - warn / inform screen with plain language
+   - block screen with plain language
+   - consistent buttons and wording
+
+4. Open elsewhere option
+   For allowed situations, the user must be able to continue in another browser.
+   This supports the product direction of a minimal browser with a security gate
+   instead of a full-feature browser. The destination browser is controlled by
+   the user's browser preference setting (see 5.7, MDL-104).
+
+5. Minimal essential navigation controls
+   The browser must include only the controls needed to make it credible and
+   usable.
+   - back
+   - reload
+   - open elsewhere
+   - clear indication of current page or domain
+
+6. Core decision engine separated from iOS UI
+   The safety decision logic must be reusable and independent from UI and
+   Apple-specific frameworks. This keeps the core testable, portable, and easier
+   to evolve.
+
+7. Testable behavior from the start
+   Critical link handling behavior must be covered by automated tests early.
+   - safe case
+   - warn case
+   - block case
+   - malformed URL case
+   - fallback / unknown case
+
+12.2 SHOULD HAVE
+
+1. Simple browser identity
+   LinkLook should look and behave enough like a browser that Apple and users
+   can understand its role.
+   - address / URL display
+   - simple page title display
+   - loading feedback
+   - basic error handling page
+
+2. Strong, plain-language UX for elderly and non-technical users
+   The product should be easy to understand at first glance.
+   - short labels
+   - calm screen structure
+   - large enough controls
+   - no technical jargon unless needed
+
+3. Explain why a result is warn / inform / block
+   The user should get a short understandable reason, not just a color or
+   status.
+   Examples: suspicious destination, link came from an unexpected route,
+   destination does not match what the message suggests.
+
+4. Policy-driven behavior
+   LinkLook behavior should be adjustable without changing app code where
+   practical.
+   - policy snapshot or rules source
+   - configurable thresholds / categories
+   - ability to evolve handling over time
+
+5. Graceful fallback when advanced capabilities are unavailable
+   The browser should still work in a reduced mode if some capabilities are not
+   available.
+   Examples: entitlement not yet granted, no advanced network inspection
+   available, backend unavailable.
+
+12.3 COULD HAVE
+
+1. (Promoted to must-have — see MDL-106 and section 5.5)
+2. Domain-focused explanations — show the main domain clearly, highlight when
+   the destination differs from what the user may expect
+3. Client-side intelligence over time — local heuristics, ML-assisted signals
+   on device, smarter user-specific warnings
+4. More browser conveniences — share options, limited tab support, reader
+   conveniences (only after the core value works well)
+5. Optional telemetry / trust feedback loop — only if privacy model is clear
+   and accepted
+
+12.4 WON'T HAVE FOR V1
+
+1. Full-feature browser parity with Safari or Chrome
+2. Complex tab management
+3. Rich browser customization (themes, extensions, profiles, advanced settings)
+4. Heavy browsing feature set (bookmarks system, download manager, reading
+   list, advanced content controls)
+5. AI-first scope expansion before core browser + gate are proven
+6. Dependency of the core on iOS UI code or Apple frameworks
+
+================================================================================
+13. AI READINESS
+================================================================================
+
+LinkLook should be AI-ready from the start so later AI capabilities can be
+added without major redesign. MVP does not depend on advanced AI layers, but it
+should prepare clean interfaces, structured evidence, and modular outputs. AI is
+prioritized before Network Extension in the roadmap. Core ML remains the active
+planned path. Apple Foundation Models are optional and device-dependent. Custom
+retrained SLM work is deferred. Backend AI may become useful later, but it is
+not an architectural requirement for the current roadmap.
+
+================================================================================
+14. VERSION ROADMAP
+================================================================================
+
+- V1: minimal, safety-driven browser with preventive security gate
+- V2: Action extension via share sheet
+- V3: Network Extension

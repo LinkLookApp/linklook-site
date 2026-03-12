@@ -1,0 +1,335 @@
+LINKLOOK
+BUSINESS PLAN v12
+March 2026
+
+Origin: ChatGPT
+
+================================================================================
+NOTE ON THIS VERSION
+================================================================================
+
+This version incorporates the March 8, 2026 growth and launch-scope discussion.
+The main change is strategic, not architectural: LinkLook is now explicitly
+positioned as a cold-start security product whose first challenge is trust,
+discovery, and adoption momentum rather than technical completeness.
+
+Material updates in v12:
+
+1. Launch scope clarified.
+   v1 is a straightforward, security-driven browser. Network Extension remains
+   highly valuable (planned for V3), but is treated as a major complexity
+   multiplier and should not delay first market validation.
+
+2. Protection estimate clarified.
+   The v1 browser is expected to reduce scam exposure materially, but not
+   perfectly. Working planning estimate: roughly 60–75% reduction in scam
+   exposure for the average iPhone user. Adding Network Extension later (V3) is
+   expected to move the protection envelope to roughly >80% in many scenarios,
+   but not to 100%.
+
+3. Positioning discipline clarified.
+   LinkLook must never be marketed as perfect protection. The product promise is
+   “checks links before they open” and “reduces scam risk,” not “prevents all
+   scams.” Reputation risk comes primarily from expectation mismatch.
+
+4. Free v1 confirmed as intentional growth strategy.
+   Free is not merely an early-stage pricing placeholder. It is a deliberate
+   adoption mechanism to reduce friction, increase install willingness, improve
+   telemetry, and accelerate word-of-mouth.
+
+5. Distribution and discovery updated.
+   App Store search, problem-solution website pages, and near-miss sharing are
+   now named as core acquisition channels. The adult-child / elderly-protection
+   use case is elevated further as a primary demand generator.
+
+6. Growth risk clarified.
+   The dominant first-year business risk is no longer framed mainly as product
+   weakness. It is user inertia: people often seek protection only after a near
+   miss. LinkLook therefore needs strong discovery hooks for post-scare search
+   behaviour and visible proof of activity inside the product.
+
+================================================================================
+1. SUMMARY
+================================================================================
+
+LinkLook is an iPhone security product that checks links before they open.
+Its strategic advantage is timing: it intervenes at the tap moment, before the
+user lands on the destination page. That makes the product unusually well suited
+for phishing, smishing, parcel scams, fake bank alerts, and similar mobile-first
+attacks.
+
+The company thesis is simple:
+- Scam attacks increasingly start with mobile link taps.
+- Users often act too quickly.
+- Existing protections usually operate later in the chain.
+- LinkLook introduces a pause, evaluates the destination, and explains the risk.
+
+LinkLook is therefore not a generic “mobile security app.” It is a focused
+pre-navigation link safety layer.
+
+================================================================================
+2. CORE POSITIONING
+================================================================================
+
+Primary plain-language promise:
+“LinkLook checks links before they open.”
+
+Supporting promise:
+“LinkLook reduces the risk of scam and phishing links on iPhone.”
+
+Language to avoid:
+- “Prevents scams”
+- “Stops all phishing”
+- “Complete protection”
+- Any absolute claim that creates a reputational trap
+
+Core category to build in the user’s mind:
+- link safety layer
+- scam link protection
+- phishing link checker
+
+================================================================================
+3. PRODUCT SCOPE AND LAUNCH LOGIC
+================================================================================
+
+3.1 Straightforward, security-driven browser (V1)
+
+Recommended first public product:
+- straightforward, security-driven browser
+- link classification pipeline with four-state outcome model
+- plain-English warning UX
+- redirect option/button as part of the browser flow
+- visible but calm activity summaries
+
+Planning estimate for protection value:
+- V1 browser: roughly 60–75% reduction in scam exposure for the average
+  iPhone user, assuming the detection pipeline is competent and the main
+  scam path is browser-opened links
+
+This estimate is a business-planning approximation, not a public claim.
+
+3.2 Version roadmap
+
+- V2: Action extension via share sheet
+- V3: Network Extension
+
+Network Extension remains strategically important because it extends visibility
+and closes part of the browser-bypass gap. However, it materially increases:
+- engineering complexity
+- entitlement and review risk
+- privacy-review scope
+- testing scope
+- launch delay risk
+
+Planning estimate:
+- V1 browser-only: baseline effort
+- browser + NE in the same first release: roughly 2–4x the execution effort
+
+Working product strategy:
+- NE is not a gate for first validation — it is V3
+- AI comes before Network Extension in the roadmap (MDL-088)
+
+3.3 AI in v1
+
+AI belongs in v1 as a classification component, not as an autonomous “agent”
+product layer. The architecture should be:
+- deterministic and rule-based checks first
+- domain and redirect intelligence second
+- AI analysis for ambiguous or higher-risk cases
+
+The product is “security platform with AI,” not “AI product that happens to do
+security.”
+
+================================================================================
+4. REPUTATION STRATEGY
+================================================================================
+
+The real formula is:
+reputation risk = expectation - reality
+
+A miss does not automatically destroy trust. Security products miss attacks.
+Trust is damaged primarily when marketing implies certainty that the architecture
+cannot honestly deliver.
+
+Reputation protection rules:
+- promise risk reduction, not perfection
+- prefer warnings over aggressive hard blocking when confidence is not high
+- explain limitations calmly and honestly
+- make visible what LinkLook did check, even when everything looked safe
+- be extremely clear that the product is privacy-minimised, not surveillance
+
+Three early reputational failure modes to avoid:
+1. Looking like spyware
+2. Blocking legitimate links too often
+3. Looking inactive or invisible after installation
+
+================================================================================
+5. TARGET USERS
+================================================================================
+
+Primary strategic user group:
+Adult children and family members who want to protect elderly relatives from
+scam links.
+
+Why this group matters:
+- the emotional motivation is high
+- the user/buyer split works in LinkLook’s favour
+- scam stories circulate strongly in families
+- word-of-mouth can be more natural than in generic security software
+
+Secondary groups:
+- security-curious iPhone users
+- people who recently experienced a near-scam event
+- privacy-conscious users who dislike VPN-style surveillance products
+
+================================================================================
+6. GO-TO-MARKET
+================================================================================
+
+6.1 Free v1
+
+v1 should remain free as an intentional adoption strategy.
+
+Rationale:
+- removes purchase friction at the exact moment users want reassurance
+- improves trial willingness for a new trust-sensitive app
+- increases telemetry and feedback volume
+- supports word-of-mouth and PR
+- helps family members recommend the app to relatives without pricing friction
+
+Principle:
+Early-stage LinkLook optimises first for installs, trust, and validated demand;
+not for near-term revenue extraction.
+
+6.2 Discovery channels
+
+Most important first channels:
+1. App Store search
+2. Simple website pages targeting problem-solution search intent
+3. Near-miss sharing between family, friends, and colleagues
+4. PR / editorial coverage around scam prevention and elderly protection
+
+6.3 Search-intent strategy
+
+LinkLook should be easy to discover when a person searches immediately after a
+near-scam event. Typical high-intent searches include:
+- how to check if a link is safe
+- phishing protection iPhone
+- scam link protection
+- SMS scam link iPhone
+- suspicious link checker
+
+
+6.4 Launch geography
+LinkLook should start with a Netherlands-first launch thesis.
+
+Why Netherlands first:
+- manageable market size for trust-sensitive early rollout
+- high smartphone and digital-banking usage
+- scam awareness already exists
+- strong English proficiency reduces localisation pressure
+- local press and tech communities can amplify practical security stories fast
+
+Recommended sequence:
+- Phase 1: Netherlands
+- Phase 2: English-speaking expansion
+- Phase 3: broader EU localisation
+
+The Netherlands-first choice is a go-to-market focus, not a product limitation.
+The product, website, and App Store assets should remain ready for broader
+international reach where practical.
+
+6.5 Dutch launch channels
+High-leverage Dutch channels include:
+- Tweakers / Dutch tech community
+- security-community credibility and expert feedback
+- scam-news coverage and consumer-protection press angles
+- family-protection narratives around elderly relatives
+
+6.6 Dutch press positioning
+Press framing should be human and practical, not “AI security platform.”
+Examples:
+- Dutch app warns before scam links open
+- App helps protect parents from scam links
+- iPhone security app checks links before they open
+- what happens if you click a phishing link
+- protect parents from scams
+
+The app and website copy should align with these phrases in plain English.
+
+6.4 Near-miss growth loop
+
+A strong organic loop exists when LinkLook blocks or warns on a suspicious link:
+near miss -> relief -> story -> recommendation -> install
+
+This should be supported carefully with calm UX and optional sharing,
+never with loud or self-congratulatory language.
+
+================================================================================
+7. COLD-START RISK
+================================================================================
+
+The biggest first-year business risk is user inertia.
+Most people do not install protection for a risk they have not personally felt.
+LinkLook must therefore be designed to win exactly when the user becomes aware
+of the problem.
+
+Mitigations:
+- free v1
+- strong App Store wording
+- website pages answering post-scare searches
+- family-protection positioning
+- visible in-app activity summaries (for example: links checked this week)
+- calm explanations that show the app is working even when no threat appeared
+
+================================================================================
+8. LONG-TERM ADVANTAGE
+================================================================================
+
+If LinkLook logs structured, privacy-minimised technical artefacts from day one,
+it can build a valuable dataset of scam infrastructure, redirects, impersonation
+patterns, and page classifications at the moment users tap suspicious links.
+
+That dataset supports:
+- better detection quality over time
+- future SLM training
+- stronger threat-intelligence capability
+- a durable moat that simple blacklist products do not have
+
+Data platform direction (MDL-102):
+The domain reputation database should be exposed via a public API in a future
+version, transforming LinkLook from a consumer app into a data platform. The
+model includes tiered B2B pricing and positions the database itself as the
+defensible acquisition asset. This is distinct from the Certified API Program
+(MDL-018/019) which covers universal-link verification.
+
+================================================================================
+9. YEAR-ONE MILESTONES
+================================================================================
+
+The first year should be judged primarily by these milestones:
+1. First 100 real users keep the app installed
+2. First confirmed near-miss / interception stories appear
+3. Organic sharing begins within families or friend groups
+4. Clear product category emerges in user language
+
+Success after year one is not perfection. Success is users being able to say:
+“LinkLook warned me before I opened the link.”
+
+================================================================================
+10. EXECUTIVE CONCLUSION
+================================================================================
+
+LinkLook should be built and launched as a focused, privacy-conscious,
+straightforward, security-driven browser product.
+
+The commercial thesis is not “build maximum coverage before launch.”
+It is:
+- launch a trustworthy product with meaningful protection
+- make it easy to discover after a scare
+- make it easy to recommend to parents and relatives
+- collect evidence and telemetry
+- improve protection depth from a position of real-world usage
+
+That path lowers the risk of building an impressive security system with too
+few users to matter.

@@ -1,0 +1,159 @@
+LinkLook – Deep Technical Appendix
+
+
+Version 1.0
+
+Generated: 2026-03-03 10:41 UTC
+
+
+
+This appendix documents the technical architecture, data schemas, privacy controls, integrity
+mechanisms, and model strategy foundations for LinkLook v1.
+1. System Architecture Overview
+
+Core Flow:
+1. Browser Interception Layer
+2. Deterministic Checks
+3. Sandboxed Docking Environment
+4. SLM (future primary classifier)
+5. LLM (reasoning & audit)
+6. Structured Event Emission (ADR-003)
+7. Optional Claims Evidence Logging (ADR-004)
+
+All components are modular and replaceable.
+
+
+
+
+2. Docking Architecture (Sandboxed Fetch)
+
+- Headless isolated container per request
+- No execution in user browser context
+- CPU/memory/time limits enforced
+- Network egress restricted
+- Disposable instances (no state persistence)
+
+
+
+
+3. Classification Record Schema (v1.1 Core Fields)
+
+{
+    "schema_version": "1.1",
+    "event_id": "uuid",
+    "timestamp_utc": "ISO8601",
+    "url": {
+       "canonical": "string",
+       "hash": "string"
+    },
+    "classification": {
+       "label": "allow|warn|block",
+       "confidence": "float",
+       "reason_codes": ["enum"],
+       "engine": "heuristics|llm|slm",
+       "engine_version": "string",
+       "policy_version": "string"
+    },
+    "pipeline_trace": ["ordered stages"],
+    "integrity": {
+       "collector_id": "string",
+       "event_signature": "HMAC/Signature",
+       "prev_event_hash": "string"
+    }
+}
+
+
+
+
+4. Claims Evidence Record (Companion Schema)
+{
+    "schema_version": "1.1",
+    "record_type": "claims_evidence_record",
+    "evidence_id": "uuid",
+    "event_id": "uuid_reference",
+    "capture_policy": "opt_in|high_risk|user_report",
+    "artifacts": {
+       "render_screenshot": {
+         "object_id": "encrypted_storage_id",
+         "sha256": "hash"
+       }
+    },
+    "retention_days": "integer",
+    "encryption": "envelope_kms"
+}
+
+
+
+
+5. Privacy-by-Design Enforcement Controls
+
+- No IP address persistence
+- Query parameters stripped or hashed
+- No raw HTML stored by default
+- Short-lived debug storage (<=14 days)
+- Evidence vault retention 7–30 days
+- Automated deletion jobs
+- Schema validation in CI
+
+
+
+
+6. Integrity & Tamper Evidence
+
+- Append-only log store
+- Event signing (server-side key)
+- Optional per-device hash chaining
+- Access logging for all evidence reads
+- Key rotation policy for encryption keys
+
+
+
+
+7. Model Strategy & Learning Pipeline
+
+- Deterministic → SLM (target >=80% coverage) → LLM audit
+- Structured dataset accumulation from v1
+- No live self-modifying production models
+- Offline retraining with version control
+- Rollback capability for every model version
+
+
+
+
+8. Observability & Metrics
+
+Key Metrics:
+- Interception latency (p80, p95)
+- False positive rate
+- Escalation rate (future SLM metric)
+- User back-out rate
+- Uptime
+
+All metrics aggregated without reconstructing browsing trails.
+
+
+
+
+9. Compliance & Audit Readiness
+
+Artifacts to produce during audit:
+- Data Flow Diagram
+- Schema definitions
+- Retention policy logs
+- Access logs
+- DPIA document
+- ADR log history
+
+System design prevents surveillance-style data retention.
+
+
+
+
+10. Future Extensions (Planned but Not Active in v1)
+
+- Local SLM inference option
+- Enterprise on-prem deployment
+- Policy-driven risk threshold tuning
+- Automated dataset quality scoring
+- Formal external security audit
+

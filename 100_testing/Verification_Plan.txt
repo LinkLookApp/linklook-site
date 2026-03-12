@@ -1,0 +1,73 @@
+LinkLook – Verification and Test Plan (Updated)
+
+2026-03-04
+
+Verification and Test Plan (Updated)
+Updated: March 04, 2026
+
+Status
+
+Updated to incorporate the v1 scalability blueprint (Stage 0/1/2 pipeline,
+cache keys, thresholds, rate limits, and evidence-based warnings).
+
+Verification strategy
+• Prove decision correctness: deterministic replay from stored features + thresholds + model versions.
+• Prove safety properties: Stage 2 cannot access internal networks; timeouts and caps enforced.
+• Prove scalability properties: cache hit ratios, Stage 2 job rates, and degradation behavior under load.
+Blueprint impact: add tests specifically for the gate→escalate thresholds, caches, TTLs, and Stage 2
+rate limiting.
+
+Test suites (v1)
+Suite
+
+Examples
+
+Stage 0 cache tests
+
+Normalization correctness; tracking param removal; TTL expiry; cache
+poisoning resistance
+
+Stage 1 scoring tests
+
+Domain age buckets; TLD weights; impersonation token matches;
+punycode detection; direct IP detection
+
+Stage 2 sandbox tests
+
+Redirect loop; >6 hops; JS cloaking; large payload; timeout behavior;
+evidence extraction
+
+Abuse/DoS tests
+
+Link spam causes Stage 2 saturation; verify graceful degradation;
+per-domain and per-device caps
+
+User UX tests
+
+Warn vs block flows; friction for “open anyway”; clarity of reason
+strings
+
+Golden test cases (starter set)
+• Fresh domain + brand keyword + login form → BLOCK with reasons.
+• Trusted domain (notion.site) hosting fake bank page → Stage 1 allows, Stage 2 blocks
+(content-based).
+
+• Bit.ly → 4-hop redirect → final phishing domain → Stage 2 blocks; cache redirect signature.
+• Geo-cloaked page returns benign content to desktop UA but phishing to mobile UA → sandbox must
+emulate mobile Safari.
+
+• Stage 2 unavailable → score 75 returns WARN (not ALLOW).
+
+Founder version
+
+Page 1
+
+LinkLook – Verification and Test Plan (Updated)
+
+Founder version
+
+2026-03-04
+
+Page 2
+
+

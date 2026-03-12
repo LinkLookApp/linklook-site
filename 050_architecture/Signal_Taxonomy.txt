@@ -1,0 +1,94 @@
+LinkLook Signal Taxonomy
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Principles
+- signals describe facts, not final decisions
+- signals are machine-readable
+- signals should remain stable over time
+
+Categories
+
+1. URL structure signals
+- url_has_ip_address
+- url_contains_long_subdomain_chain
+- url_contains_encoded_characters
+- url_contains_suspicious_keywords
+- url_contains_unusual_port
+- url_contains_username_section
+- url_length_exceeds_threshold
+
+2. Domain impersonation signals
+- domain_lookalike_brand
+- domain_punycode
+- domain_character_substitution
+- domain_homoglyph_attack
+- domain_typo_pattern
+
+3. Domain reputation signals
+- domain_known_phishing
+- domain_known_malware
+- domain_low_reputation
+- domain_recently_registered
+- domain_unusual_tld
+- domain_hosted_on_abusive_asn
+
+4. Redirect signals
+- redirect_chain_detected
+- redirect_chain_exceeds_threshold
+- redirect_chain_crosses_domains
+- redirect_from_shortener
+- redirect_to_known_malicious_domain
+
+5. Page content signals
+- page_contains_login_form
+- page_contains_password_field
+- page_contains_crypto_wallet_prompt
+- page_contains_payment_request
+- page_brand_mismatch
+
+6. Infrastructure signals
+- dns_fast_flux_detected
+- domain_points_to_suspicious_ip_range
+- domain_resolves_to_known_abuse_host
+
+7. Behavioral signals
+- link_received_via_sms
+- link_received_via_unknown_sender
+- domain_first_seen
+- rapid_domain_rotation_detected
+
+Signal format example
+{
+  "signal": "domain_recently_registered",
+  "value": true,
+  "confidence": 0.8
+}
+
+Extended taxonomy guidance
+Signals should describe facts, not final decisions.
+They should be machine-readable, stable, and grouped into categories such as:
+- URL structure signals
+- domain impersonation signals
+- domain reputation signals
+- redirect signals
+- page content signals
+- infrastructure signals
+- behavioral signals
+
+Illustrative signals
+- url_contains_suspicious_keywords
+- url_contains_long_subdomain_chain
+- domain_punycode
+- domain_character_substitution
+- domain_recently_registered
+- redirect_from_shortener
+- redirect_chain_exceeds_threshold
+- page_contains_login_form
+- page_brand_mismatch
+- domain_first_seen
+
+Signal metadata
+Signals may carry metadata such as confidence, measured values, or derived supporting context.
+Signals should be preserved even when the chosen final reason code abstracts them into a simpler explanation.

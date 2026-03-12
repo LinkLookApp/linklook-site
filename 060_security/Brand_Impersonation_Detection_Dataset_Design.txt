@@ -1,0 +1,63 @@
+Brand Impersonation Detection Dataset Design
+Generated: 2026-03-08
+
+Purpose
+Define the dataset that powers LinkLook's brand impersonation, domain similarity, and typosquatting detection.
+
+Why this matters
+A large share of phishing attacks imitates trusted brands, banks, government portals, delivery services, and support workflows.
+Without a curated protected-brand dataset, detection quality will be inconsistent and harder to explain.
+
+Dataset scope
+Priority categories
+- major technology platforms
+- payment providers
+- major Dutch banks
+- major EU banks
+- Dutch government and tax portals
+- parcel and delivery brands
+- telecom providers
+- identity and login platforms
+- high-value consumer brands frequently abused in scams
+
+Core record structure
+- brand_id
+- brand_name
+- canonical_domains
+- known_legitimate_tlds
+- known_login_domains
+- brand_keywords
+- protected_paths
+- region
+- category
+- risk_tier
+- notes
+- source
+- last_reviewed
+
+Example record
+brand_name: PayPal
+canonical_domains:
+- paypal.com
+known_legitimate_tlds:
+- .com
+brand_keywords:
+- paypal
+- payment
+risk_tier: high
+
+Governance rules
+- every entry should have a source and review date
+- changes should be versioned
+- risky additions should support manual approval
+- false-positive suppressions should be recorded separately
+- regional variants should be explicit rather than implied
+
+Consumers
+- Domain_Similarity_Detection.txt
+- Typosquatting_Detection.txt
+- Detection_Engine_Scoring_Model.txt
+- First_24_Hours_Domain_Risk_Model.txt
+
+Operational note
+This dataset is part of LinkLook's core defensive value and should be treated as security intelligence, not as a generic marketing list.

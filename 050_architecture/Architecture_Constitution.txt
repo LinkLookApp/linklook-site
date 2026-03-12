@@ -1,0 +1,35 @@
+LinkLook – Architecture Constitution
+
+Generated: 2026-03-03 07:02 UTC
+
+
+
+
+Core Principle
+
+Security > Convenience > Performance.
+
+
+
+Flow
+
+Intercept → Analyze → Decide → Explain → Learn.
+
+
+
+Layered Defense
+
+Deterministic → Static → Docking → SLM → LLM.
+
+
+
+Privacy by Design
+
+No surveillance, minimal data retention.
+
+
+
+Fail-Safe
+
+Warn on uncertainty, never silent allow.
+

@@ -1,0 +1,288 @@
+LinkLook – Architecture Overview
+Updated: 2026-03-10
+Aligned to: Canonical Master Decision Log 2026-03-10
+
+================================================================================
+1. CANONICAL ARCHITECTURE SUMMARY
+================================================================================
+
+LinkLook uses a browser-first architecture for v1. The first version is built
+around a straightforward, security-driven browser experience with a protective
+decision layer in the main app flow. The core architecture should keep browser
+UI, application flow, and decision logic clearly separated so that security
+behavior remains testable, explainable, and easier to evolve. The architecture
+should also remain ready for later extension points without forcing MVP
+complexity into the first release.
+
+================================================================================
+2. SCOPE AND DESIGN OBJECTIVES
+================================================================================
+
+- Break the tap-trap: decide before render where possible.
+- V1 is a straightforward, security-driven browser. No VPN or Network Extension
+  in the first release.
+- Scale to millions of checks/day by making deep inspection rare, cached, and
+  rate-limited.
+- Produce structured records for training, audit, and evidence.
+- Architectural cornerstone (v1): implement a gate-then-escalate pipeline.
+  Never deep-inspect everything by default.
+
+================================================================================
+3. CORE ARCHITECTURE BOUNDARY
+================================================================================
+
+The core decision layer must not depend on UI code or Apple-specific browser
+presentation code. It should have clear interfaces for input normalization,
+signal collection, scoring, outcome selection, and explanation generation. This
+keeps the system testable and allows future addition of AI-assisted components
+without redesigning the full app structure.
+
+================================================================================
+4. SYSTEM COMPONENTS (V1)
+================================================================================
+
+Component                   Responsibility
+
+LinkLook Browser UI         Straightforward, security-driven browser. Presents
+                            outcomes to the user. Handles redirect option/button.
+
+Decision Engine             Core decision logic: input normalization, signal
+(LinkLookCore)              collection, scoring, outcome selection, explanation
+                            generation. Must not depend on UI or Apple frameworks.
+
+Stage 0 Cache Layer         Three-tier URL reuse model (MDL-107):
+(MDL-107)                   1. Exact normalized URL (strongest reuse)
+                            2. URL pattern rules per domain (V2)
+                            3. Domain reputation (weakest — never alone approves a URL)
+                            Redirect chains tracked separately. TTL strategy; dedup.
+
+Stage 1 Risk Engine         Compute fast signals; output ALLOW/INFORM/WARN/BLOCK
+                            /ESCALATE with score and reasons.
+
+Stage 2 Deep Inspector      Redirect chase, safe fetch, optional JS render;
+(Cloud, when available)     phishing classifier; evidence extraction.
+                            Strictly rate-limited and sandboxed.
+
+Event Recorder              Writes structured records (privacy-minimized) for
+                            audit and future SLM/ML training.
+
+Smart Whitelist              Risk-tiered re-validation of previously approved
+(MDL-099)                    domains. Not a static allow list. Includes
+                             behavioural anomaly detection on whitelisted
+                             domains, certificate and DNS monitoring,
+                             quarantine-not-delete logic when a domain becomes
+                             suspicious, and automatic reinstatement with a log
+                             entry if re-validation clears the domain.
+
+Reclassification             If a previously cleared link is later identified
+Notifier (MDL-101)           as malicious, proactively notify affected users
+                             in plain English with actionable steps.
+
+Privacy posture: v1 avoids HTTPS decryption. Domain and URL-derived features
+are enough for early analysis and escalation.
+
+Two-data-flow separation (MDL-100):
+Personal trust data stays on-device and never leaves. Threat signal data
+(domain-level, not user-level) is submitted anonymously, aggregated centrally,
+and fed back into a shared blocklist. Differential privacy and k-anonymity
+apply. A domain enters the global list only after 1,000+ distinct user reports.
+
+================================================================================
+5. BROWSER FLOW (V1)
+================================================================================
+
+Entry path visibility (MDL-110):
+LinkLook receives a URL only when iOS delivers it as a standard web-link
+handoff to the system default browser. Universal links, custom URL schemes,
+App Clips, non-web content, and in-app browsers bypass LinkLook. See
+Entry_Path_Visibility.txt for the full visibility table and blind spot analysis.
+
+The primary v1 flow is:
+
+  receive URL
+  → normalize and inspect inputs
+  → check Stage 0 cache (MDL-107)
+  → if no cache hit: apply backend policy (MDL-027):
+      overrides → rules → score-based evaluation → defaultAction
+  → collect available safety signals
+  → determine outcome
+  → present the result clearly to the user
+  → then either:
+      - continue transparently (allow)
+      - inform with brief explanation
+      - warn with clear explanation
+      - block with explanation
+      - allow redirect when appropriate
+
+Redirect is part of the browser flow, not a separate product mode.
+
+Canonical outcome model: allow (transparent) / inform / warn / block.
+Inform, warn, and block must include an explanation. Allow should remain
+low-friction and transparent.
+
+Policy delivery (MDL-027):
+The backend publishes a versioned JSON policy that the app downloads, caches,
+and applies as a decision table. The policy contains signal weights, thresholds,
+rules, overrides, and a default action. Behavior is tunable without shipping
+new app code. See Backend_Policy_Specification.txt for the full specification.
+
+================================================================================
+6. DECISION PIPELINE
+================================================================================
+
+Stage 0: normalize + three-tier cache lookup (MDL-107):
+  1. Normalize URL (lowercase, strip tracking params, strip fragments,
+     normalize query order, remove default port)
+  2. Check exact normalized URL match (strongest — "this link was evaluated")
+  3. Check URL pattern rules (medium — "this path structure on this domain is
+     known safe/risky", V2)
+  4. Check domain reputation (weakest — domain trust alone never approves a URL)
+  5. Check redirect chain cache
+  If cache hit with valid TTL → return cached verdict. Otherwise → Stage 1.
+
+Stage 1: fast risk scoring in milliseconds using domain age, TLD risk,
+impersonation tokens, structure/entropy, punycode, redirector usage.
+
+Stage 2: deep inspection only for suspicious cases (redirect chase + safe fetch
++ optional JS render + classifier + evidence extraction), strictly rate-limited
+and sandboxed.
+
+Graceful degradation under load: high-confidence blocks proceed; mid-risk
+becomes warn without deep evidence; low-risk allows.
+
+Evidence-based warnings: show the top 2-3 human-readable reasons (new domain +
+brand impersonation + credential form, etc.).
+
+================================================================================
+7. OPERATIONAL CONTROLS
+================================================================================
+
+- Rate limiting: global token bucket for Stage 2, per-domain caps, per-device
+  (rotating id) caps.
+- Queue priority: explicit user checks > background rechecks.
+- Watchdog: detect protection-off state; surface a clear indicator.
+- Degradation: when Stage 2 is saturated, warn with Stage 1 reasons; do not
+  melt down into global blocking.
+
+================================================================================
+8. EXTENSION ROADMAP
+================================================================================
+
+Later product entry points should be added in sequence rather than forced into
+the MVP.
+
+- V2: Action extension via the share sheet, as a manual secondary entry point.
+  Reuses the core decision and explanation model.
+- V3: Network Extension as a later platform-level capability. Reuses the core
+  decision and explanation model where feasible.
+
+Note: Use "Action extension" terminology, not "Share Extension."
+
+================================================================================
+9. AI-READY ARCHITECTURE
+================================================================================
+
+The architecture should be AI-ready from the start. This means signals,
+evidence, scores, outcomes, and explanations should use structured interfaces
+and stable schemas. Deterministic logic remains the MVP base, but the design
+should allow later insertion of client-side and backend AI components with
+limited rework.
+
+AI roadmap position:
+- AI comes before Network Extension in the development roadmap.
+- Core ML remains the active planned client-side AI path.
+- Apple Foundation Models are optional and device-dependent (deferred).
+- Custom retrained SLM work is deferred.
+- Backend AI may become useful later but is not an architectural requirement
+  for the current roadmap.
+
+================================================================================
+10. LOCALIZATION READINESS (MDL-103)
+================================================================================
+
+The decision engine must return reason codes and structured data only — never a
+pre-composed user-facing string. The UI layer maps reason codes to localized
+display strings via a localizable resource file (.strings or .xcstrings).
+Reason codes (e.g. domain_impersonation, known_malicious_domain) stay
+language-neutral forever. User-facing strings must use String(localized:) or
+equivalent from day one. Netherlands-first launch (MDL-061) implies Dutch +
+English from V1.
+
+================================================================================
+11. DATA PLATFORM DIRECTION (MDL-102)
+================================================================================
+
+The domain reputation database should be exposed via a public API in a future
+version, transforming LinkLook from a consumer app into a data platform. This
+includes tiered B2B pricing and positions the database itself as the defensible
+acquisition asset. This is distinct from the Certified API Program (MDL-018/019)
+which covers universal-link verification for partner apps. MDL-102 covers the
+broader strategic direction of opening reputation intelligence as a service.
+
+================================================================================
+12. PREFERENCES ARCHITECTURE (MDL-104, MDL-105)
+================================================================================
+
+Preference storage is split based on the nature of the setting.
+
+iOS Settings bundle (Settings.bundle, values via UserDefaults.standard):
+- Profile type (PROTECTED / STANDARD)
+- Response mode (block / warn)
+
+In-app settings screen:
+- Default handoff browser (Safari default)
+- Safe-link display preference (MDL-109, always show result by default)
+- Whitelist management
+- Notification preferences
+- Recent checks history toggle and clear (MDL-106, on by default)
+- Crowdsourced threat contribution opt-in (MDL-108, off by default, V2)
+- Foundation donation tier display (read-only)
+
+Recent checks history storage (MDL-106):
+History is a local on-device store of link check entries (URL, verdict, reason
+code, timestamp). No page content, screenshots, or cookies. History is on by
+default to support Proof of Activity. The user can clear or disable it from
+in-app settings. History data is personal trust data (MDL-100) and never leaves
+the device.
+
+Crowdsourced threat contribution (MDL-108, V2):
+An opt-in toggle (off by default) that allows anonymous domain-level threat
+signals to be submitted to the central aggregation service. The toggle state
+itself is personal trust data (MDL-100) and stays on-device. When the toggle
+is off, no outbound signal data leaves the device — the two-data-flow separation
+(MDL-100) is fully respected. V1 ships without the backend but must keep the
+architectural separation clean so the toggle can be wired in V2.
+
+Safe-link display preference (MDL-109):
+Two modes for the allow verdict path: "always show result" (default) shows the
+safe result screen briefly for reassurance before loading the page; "auto-open
+safe links" skips the result screen and loads the page directly. PROTECTED
+profile enforces "always show result" — the preference cannot be changed.
+STANDARD profile users can choose. Only the allow path is affected — inform,
+warn, and block always show their respective screens regardless of this setting.
+The core rule is preserved: no web content loads before the allowed state.
+
+App Group sync constraint (hard):
+The Network Extension runs as a separate process and cannot read UserDefaults
+from the main app directly. All preference values must be synchronised into the
+shared App Group container (UserDefaults(suiteName: "group.app.linklook.LinkLook"))
+on every foreground transition. The extension always reads from the shared
+container. Stale configuration is a real failure mode — must be confirmed on
+physical hardware before any TestFlight build proceeds.
+
+Open item: Verify Settings bundle to App Group sync timing on iPhone 11 /
+iOS 26.2 beta before finalising. Timing behaviour must be confirmed on physical
+hardware, not assumed from Simulator results.
+
+================================================================================
+13. TERMS SUPERSEDED BY THIS VERSION
+================================================================================
+
+The following older architecture concepts are superseded in this document:
+
+- VPN/NEDNSProxyProvider as a v1 component (moved to V3 roadmap)
+- "Open with LinkLook" / Share Extension as v1 entry point (moved to V2 as
+  Action extension)
+- Three-state outcome model (replaced by four-state: allow/inform/warn/block)
+- Default-browser interceptor as the primary architecture identity
+- Minimal-browser fallback as an active architectural direction

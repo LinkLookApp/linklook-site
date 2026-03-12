@@ -1,0 +1,556 @@
+LinkLook — Backend Policy Specification
+Version: v2.0
+Date: 2026-03-11
+Origin: ChatGPT conversation, documented via Cowork session
+Resolves: MDL-027 (backend-client policy split)
+References: Decision_Policy_Rule_Engine.txt, Architecture.txt, Detection_Engine_Specification.txt
+
+================================================================================
+1. DESIGN PRINCIPLE
+================================================================================
+
+Store behavior as data, not code.
+
+The backend publishes a versioned, data-only policy document (JSON). The app
+downloads it, caches it locally, and applies it as a decision table. This lets
+LinkLook adjust behavior — signal weights, thresholds, overrides, rules —
+without shipping new app code.
+
+The app contains the decision engine. The policy contains the behavior.
+
+  code = engine
+  policy = behavior
+
+================================================================================
+2. POLICY DOCUMENT SHAPE
+================================================================================
+
+The policy is a single JSON document with five sections:
+
+  2.1  Metadata
+  2.2  Defaults
+  2.3  Signal weights and thresholds
+  2.4  Rules
+  2.5  Overrides
+
+--------------------------------------------------------------------------------
+2.1 METADATA
+--------------------------------------------------------------------------------
+
+Tells the app whether the policy is current, trustworthy, and usable.
+
+Fields:
+- policy_version    string    Unique version identifier (e.g. "2026.03.11.01")
+- issued_at         ISO 8601  When this policy was published
+- valid_until       ISO 8601  After this timestamp the app must fetch a new
+                              version. If fetch fails, the cached policy remains
+                              valid for the grace period (see section 3).
+- min_app_version   string    Minimum app build that can parse this policy.
+                              If the running app is older, it must ignore this
+                              policy and keep using its last compatible version.
+- signature         string    HMAC or signature for integrity verification.
+                              The app rejects any policy that fails verification.
+
+--------------------------------------------------------------------------------
+2.2 DEFAULTS
+--------------------------------------------------------------------------------
+
+What happens when no rule and no override matches.
+
+Fields:
+- default_action    enum      One of: allow | inform | warn | block
+                              For LinkLook the cautious default is "inform" —
+                              not "allow", because an unknown URL that matched
+                              nothing is not proven safe.
+
+--------------------------------------------------------------------------------
+2.3 SIGNAL WEIGHTS AND THRESHOLDS
+--------------------------------------------------------------------------------
+
+Maps signal identifiers to numeric weights. The engine sums matched signal
+weights and compares against thresholds to derive the action.
+
+Fields:
+- signal_weights    object    Keys are stable signal identifiers (see Signal
+                              Taxonomy and Reason Code Catalog). Values are
+                              integer weights.
+- warn_threshold    integer   Combined score at or above this triggers warn.
+- block_threshold   integer   Combined score at or above this triggers block.
+
+Scores below warn_threshold but above zero produce inform.
+Scores of zero with no rule match produce the default_action.
+
+Example signal weight entries:
+  very_young_domain          35
+  url_shortener              20
+  ip_literal_url             80
+  punycode_risk              30
+  brand_impersonation        45
+  sensitive_path_keywords    25
+  redirect_chain_risk        40
+  suspicious_tld             15
+  domain_impersonation       50
+  malformed_url              60
+
+Example thresholds:
+  warn_threshold             40
+  block_threshold            80
+
+These values are tuned over time based on real-world data. The backend can
+publish new weights without requiring an app update.
+
+--------------------------------------------------------------------------------
+2.4 RULES
+--------------------------------------------------------------------------------
+
+Explicit rules that override the score-based path. Each rule defines a match
+condition and a fixed action.
+
+Rule fields:
+- id                string    Stable rule identifier (e.g. "RULE-IMP-001")
+- enabled           boolean   Rules can be disabled without removal
+- priority          integer   Higher priority wins when multiple rules match.
+                              Overrides always have higher priority than rules.
+- match             object    What to match (see match types below)
+- decision          object    Action, reason code, and confidence to return
+- validity          object    Optional time window for the rule
+- source            object    Optional provenance of the rule
+- notes             string    Optional operator note, not used by the client
+
+Priority numbering guidance:
+  1000  Emergency block (immediate threat, short-circuit everything)
+   500  Exact URL match
+   300  Domain + path prefix match
+   100  Domain-level match
+    50  Signal-based match
+    10  Low-confidence / informational
+
+Match types (intentionally limited and predictable — no regex in V1):
+- exact_url         Full normalized URL match
+- domain            Registered domain match (include_subdomains flag)
+- domain_path_prefix Domain + path starts-with prefix
+- subdomain         Specific subdomain match
+- signal            Named signal identifier
+
+Match object fields:
+- type              string    One of the match types above
+- value             string    The URL, domain, path prefix, or signal name
+- include_subdomains boolean  For domain matches: also match subdomains
+                              (default true)
+
+Decision object:
+- action            enum      allow | inform | warn | block
+- reason_code       string    Stable reason code from Reason Code Catalog
+- confidence        float     Optional, 0.0–1.0. Used for analytics and
+                              future tuning. Not for user-facing text.
+
+Note: decision does NOT contain a user-facing message. The app maps reason_code
+to localized text via Reason_Code_To_Message_Mapping.txt. This keeps the
+policy language-neutral and avoids backend-managed translations.
+
+Validity object (optional per rule):
+- not_before        ISO 8601  Rule is ignored before this timestamp (null = immediate)
+- expires_at        ISO 8601  Rule is ignored after this timestamp (null = no expiry)
+
+Expired rules are skipped during evaluation. An expired approval for a URL
+falls back to the next matching rule or to default_action — it does not
+silently become allow.
+
+Source object (optional per rule):
+- type              string    Where the rule came from. Values:
+                              manual_review | backend_dataset | partner_feed |
+                              temporary_override | crowdsourced
+- ref               string    Reference identifier (e.g. "case-2026-0042",
+                              "feed-item-7781", "incident-2026-118")
+
+Source is used for audit trails and policy management, not for engine
+evaluation.
+
+Example rule:
+  {
+    "id": "RULE-IMP-001",
+    "enabled": true,
+    "priority": 300,
+    "match": {
+      "type": "domain",
+      "value": "example-security-check.com",
+      "include_subdomains": true
+    },
+    "decision": {
+      "action": "warn",
+      "reason_code": "suspicious_pattern",
+      "confidence": 0.72
+    },
+    "validity": {
+      "not_before": null,
+      "expires_at": "2026-06-01T00:00:00Z"
+    },
+    "source": {
+      "type": "partner_feed",
+      "ref": "feed-item-7781"
+    },
+    "notes": "Flagged by partner, review in June."
+  }
+
+Conflict resolution:
+When multiple rules match, the most severe action wins (block > warn > inform
+> allow), consistent with Decision_Policy_Rule_Engine.txt. Within the same
+severity level, the highest priority rule determines the reason code.
+
+Scope principle:
+An approved exact URL does NOT automatically approve the entire domain.
+Domain-level approval covers URLs on that domain only if the policy
+explicitly contains a domain-level rule. This prevents an attacker from
+using one legitimate path to smuggle in malicious paths on the same domain.
+
+--------------------------------------------------------------------------------
+2.5 OVERRIDES
+--------------------------------------------------------------------------------
+
+Force-applied decisions that always win over rules and score-based evaluation.
+Used for:
+- force-safe for specific known-good URLs or domains
+- force-warn for active high-risk campaigns
+- temporary block list entries
+- partner/certified exceptions (MDL-018/019)
+- emergency blocks with maximum priority
+
+Override fields are identical to rule fields (id, enabled, priority, match,
+decision, validity, source, notes) plus two additional controls:
+
+- allow_user_bypass  boolean  Whether the UI may let the user proceed despite
+                              the override decision. Default false.
+                              When false, the decision is final (hard block,
+                              hard allow). When true, the user sees the
+                              decision but can choose to continue.
+- sticky             boolean  Whether this override remains preferred when
+                              overlapping overrides exist at the same priority.
+                              Default false. Used for emergency blocks that must
+                              not be displaced by a later lower-confidence rule.
+
+Overrides are evaluated before rules and score-based evaluation. An override
+match short-circuits the rest of the pipeline.
+
+Example override (force-safe government site):
+  {
+    "id": "SAFE-GOV-001",
+    "enabled": true,
+    "priority": 1000,
+    "match": {
+      "type": "domain",
+      "value": "belastingdienst.nl",
+      "include_subdomains": true
+    },
+    "decision": {
+      "action": "allow",
+      "reason_code": "manual_allow",
+      "confidence": 0.99
+    },
+    "allow_user_bypass": false,
+    "sticky": false,
+    "validity": {
+      "not_before": null,
+      "expires_at": null
+    },
+    "source": {
+      "type": "manual_review",
+      "ref": "gov-allow-nl-001"
+    },
+    "notes": "Dutch tax authority, verified."
+  }
+
+Example override (emergency block):
+  {
+    "id": "BLOCK-EMRG-001",
+    "enabled": true,
+    "priority": 1000,
+    "match": {
+      "type": "domain",
+      "value": "phish-example-2026.net",
+      "include_subdomains": true
+    },
+    "decision": {
+      "action": "block",
+      "reason_code": "known_phishing",
+      "confidence": 1.0
+    },
+    "allow_user_bypass": false,
+    "sticky": true,
+    "validity": {
+      "not_before": null,
+      "expires_at": null
+    },
+    "source": {
+      "type": "backend_dataset",
+      "ref": "incident-2026-118"
+    },
+    "notes": "High-confidence block, sticky."
+  }
+
+--------------------------------------------------------------------------------
+2.6 MATCHING ORDER WITHIN RULES AND OVERRIDES
+--------------------------------------------------------------------------------
+
+When evaluating rules (or overrides), the engine follows this order:
+
+  1. Ignore disabled rules (enabled = false)
+  2. Ignore rules outside their validity window (before not_before or after
+     expires_at)
+  3. Collect all remaining rules whose match condition is satisfied
+  4. Sort by priority descending (highest priority first)
+  5. If equal priority, prefer the more specific match type:
+       exact URL > domain + path prefix > domain > signal
+  6. If still tied, the most severe action wins (block > warn > inform > allow)
+  7. Apply the winning rule's decision
+  8. If no rule matches, fall through to score-based evaluation (section 2.3)
+  9. If scoring also produces no result, apply default_action (section 2.2)
+
+This order is deterministic. Given the same URL and the same policy, the engine
+must always produce the same result.
+
+V1 constraints (keep it simple):
+- No regex matching. Match types are exact string comparisons or
+  starts-with for domain_path_prefix.
+- No user-specific rules. All rules apply to all users.
+- No A/B testing of rule sets. One policy version for all devices.
+
+================================================================================
+3. POLICY DELIVERY AND CACHING
+================================================================================
+
+Fetch mechanism:
+The app fetches the latest policy from the backend on:
+- app launch (if cached policy is older than 24 hours or past valid_until)
+- every foreground transition (lightweight: send current policy_version, backend
+  returns 304 Not Modified or the new policy)
+- background refresh (BGAppRefreshTask, same interval as blocklist sync)
+
+Endpoint:
+  GET /policy
+  Input:  { current_version: string }
+  Output: Full policy JSON or 304 Not Modified
+  Auth:   Device token (same as /analyse endpoint)
+
+Cache behavior:
+- The app always keeps the last valid policy on-device.
+- If fetch fails, the cached policy remains in effect.
+- Grace period: cached policy is usable for up to 7 days past valid_until.
+  After the grace period, the app falls back to a hardcoded baseline policy
+  bundled with the app binary (conservative: default_action = warn).
+- The grace period prevents a backend outage from leaving users unprotected
+  or from blocking all URLs.
+
+App Group sync:
+Policy must be synchronized to the shared App Group container on every
+foreground transition, consistent with the preferences sync constraint
+(MDL-105). If a Network Extension is added in V3, it reads policy from the
+shared container.
+
+Integrity:
+The app verifies the policy signature before applying it. A policy that fails
+verification is rejected and the previous valid policy remains in effect.
+
+================================================================================
+4. EVALUATION ORDER
+================================================================================
+
+When a URL arrives, the engine applies the policy in this order:
+
+  1. Normalize URL (see URL_Reuse_Data_Model.txt)
+  2. Check Stage 0 cache (MDL-107: exact URL → pattern → domain → redirect)
+     → if cache hit with valid TTL, return cached verdict
+  3. Check overrides (section 2.5)
+     → if override matches, return override decision, done
+  4. Check explicit rules (section 2.4)
+     → collect all matching rules
+  5. Evaluate signals and compute score (section 2.3)
+     → sum matched signal weights
+     → compare against warn_threshold and block_threshold
+  6. Combine: most severe result from rules and score wins
+     (block > warn > inform > allow)
+  7. If nothing matched: apply default_action (section 2.2)
+  8. Return final verdict with: action, reason_code, confidence, triggered
+     rules, matched signals, policy_version, engine_version
+
+This order ensures:
+- cached results are reused first (performance)
+- overrides always win (emergency control)
+- explicit rules take precedence over scoring (precision)
+- scoring handles the long tail (coverage)
+- default_action is the safety net (fail-safe)
+
+================================================================================
+5. WHAT THE POLICY DOES NOT CONTAIN
+================================================================================
+
+The policy is a decision table, not executable logic. It does not contain:
+
+- UI text or long user-facing messages (the app maps reason_code → UX via
+  Reason_Code_To_Message_Mapping.txt)
+- complex nested Boolean logic or scripting
+- platform-specific iOS behavior
+- code snippets or executable expressions
+- vague "AI says suspicious" fields without structured reason codes
+- personal trust data or user-specific settings
+
+The clean separation is:
+  backend policy  → action + reason_code
+  app UX layer    → maps reason_code to screen, text, and button layout
+
+================================================================================
+6. V1 KISS SCOPE AND CURRENT CODE REALITY
+================================================================================
+
+V1 ships with the engine/policy separation already in place, but the policy is
+bundled with the app rather than fetched from a backend. This is intentional:
+hardcode first, make it downloadable later.
+
+--------------------------------------------------------------------------------
+6.1 WHAT V1 CODE ALREADY COVERS
+--------------------------------------------------------------------------------
+
+The engine/policy split exists in Swift code today:
+
+  Code file                         What it does
+  ─────────────────────────────────────────────────────────────────────────
+  PolicyEngine.swift                The engine. Takes signals, applies rules,
+                                    returns decision + reasonCode + confidence
+                                    + triggeredRules. Conflict resolution: most
+                                    severe decision wins. Fallback to inform
+                                    when no rules match.
+
+  RuleSet.swift                     The decision policy. Static v1 rule set
+  (RuleSet.v1)                      with 18 rules covering block/warn/inform.
+                                    Each rule has: id, description, conditions
+                                    (signal names), decision, reasonCode,
+                                    priority, confidence. This is the data
+                                    that will later come from the backend JSON.
+
+  policy-config.json                Detection configuration. Brand lists,
+  PolicyConfig.swift                suspicious keywords, TLDs, confusable
+                                    characters, shortener domains, counting
+                                    thresholds. Used by signal detectors to
+                                    find signals — not by the engine to decide.
+
+The separation matches the doc architecture:
+  - PolicyEngine.swift  = the engine contract (Decision_Policy_Rule_Engine.txt)
+  - RuleSet.swift       = the policy data (this spec, sections 2.4 and 2.5)
+  - policy-config.json  = detection configuration (separate from policy)
+
+What already works:
+  - rule-based evaluation with priority and conflict resolution
+  - fallback to inform when no rules match (fail-safe)
+  - decision trace output (decision, reasonCode, confidence, triggeredRules)
+  - detection config loaded from bundled JSON (PolicyConfig.loadDefault())
+  - all rule IDs, reason codes, and signal names are stable identifiers
+
+--------------------------------------------------------------------------------
+6.2 WHAT V1 CODE DOES NOT YET COVER (V2 CODE TASKS)
+--------------------------------------------------------------------------------
+
+These are documented in this spec but not yet implemented in code:
+
+  Score-based evaluation (section 2.3):
+  The current PolicyEngine uses rule matching only — it checks whether a rule's
+  conditions are all present in the signal set. It does not sum numeric signal
+  weights against thresholds. The scoring path described in section 2.3 is a
+  V2 code task. V1 rules already contain a confidence value per rule, but there
+  is no global signal-weight scoring.
+
+  Backend policy fetch (section 3):
+  V1 bundles the policy in the app binary (RuleSet.v1 is a static constant).
+  The backend endpoint (GET /policy), fetch-on-foreground, 304 caching, grace
+  period, and signature verification described in section 3 are V2 code tasks.
+
+  Overrides as a separate layer (section 2.5):
+  V1 rules include force-safe entries (e.g. trusted brand domains), but they
+  are mixed into the same rule array rather than evaluated as a separate
+  override layer that short-circuits. Separating overrides is a V2 code task.
+
+  Policy metadata (section 2.1):
+  V1 has no policy_version, valid_until, min_app_version, or signature fields.
+  These are only needed once the policy is fetched from the backend (V2).
+
+  Detection config from backend:
+  policy-config.json (brand lists, keywords, TLDs) is bundled with the app.
+  Making it downloadable and versioned alongside the decision policy is a V2
+  code task.
+
+--------------------------------------------------------------------------------
+6.3 V1 INCLUDED (DOC SCOPE)
+--------------------------------------------------------------------------------
+
+- default_action = inform (hardcoded in PolicyEngine fallback)
+- 18 rules in RuleSet.v1 covering critical/high/medium/low priorities
+- detection configuration in policy-config.json (brands, keywords, TLDs,
+  confusables, shortener domains, thresholds)
+- basic rules for the initial rule set (see Initial_Rule_Set_v1.txt)
+
+--------------------------------------------------------------------------------
+6.4 DEFERRED TO V2 (DOC SCOPE)
+--------------------------------------------------------------------------------
+
+- score-based evaluation (signal weights × thresholds)
+- backend policy fetch, caching, and signature verification
+- override layer as separate short-circuit evaluation step
+- policy metadata (version, validity, signature, min_app_version)
+- per-rule validity windows (not_before / expires_at)
+- per-rule source tracking (type + ref for audit)
+- per-override allow_user_bypass and sticky controls
+- domain_path_prefix match type (requires URL pattern table, MDL-107 V2)
+- detection config fetch from backend
+- partner/certified exceptions (MDL-018/019)
+- A/B testing of signal weights
+- dynamic threshold adjustment based on user profile (PROTECTED vs STANDARD)
+
+--------------------------------------------------------------------------------
+6.5 DEFERRED TO V3 (DOC SCOPE)
+--------------------------------------------------------------------------------
+
+- Network Extension policy sync
+- policy versioning for multiple concurrent experiments
+
+================================================================================
+7. RELATIONSHIP TO EXISTING DOCS
+================================================================================
+
+This document answers MDL-027 and connects to:
+
+- Decision_Policy_Rule_Engine.txt    Engine contract: evaluation order, conflict
+                                     resolution, decision trace fields, fail-safe
+                                     rules, confidence derivation. This spec
+                                     defines the policy the engine applies.
+
+- Detection_Engine_Specification.txt Pipeline stages. This spec defines what
+                                     the policy contains at each stage boundary.
+
+- Architecture.txt (section 5)       Browser flow. Policy evaluation is step 3
+                                     ("determine outcome").
+
+- Architecture_Pipeline.txt          Full pipeline flow. Policy is applied at
+                                     every decision point in the flow.
+
+- Reason_Code_Catalog.txt            Stable reason codes used in rule and
+                                     override decisions.
+
+- Signal_Taxonomy.txt                Signal identifiers used as keys in
+                                     signal_weights.
+
+- URL_Reuse_Data_Model.txt           Stage 0 cache lookup that precedes policy
+                                     evaluation.
+
+- Product_Requirements.txt (12.1.4)  "Policy-driven behavior" requirement.
+                                     This spec is the implementation answer.
+
+- Policy_JSON_Schema_Draft.txt       Concrete JSON shape derived from this
+                                     spec. Data contract between backend and
+                                     app. Includes V1 code mapping table.
+
+- Policy_Evaluation_Precedence.txt   Runtime evaluation rules derived from
+                                     this spec. Full pipeline, matching order,
+                                     conflict resolution, fail-safe, and
+                                     determinism requirements.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

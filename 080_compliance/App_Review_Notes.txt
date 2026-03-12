@@ -1,0 +1,38 @@
+LINKLOOK — APP REVIEW NOTES
+Version: 2026-03-08
+Origin: ChatGPT
+
+Suggested App Review note
+LinkLook is a consumer security application designed to help users avoid
+phishing and scam websites delivered through malicious links.
+
+When a user taps a link in apps such as Messages, Mail, or other messaging
+applications, iOS delivers the URL to the default browser. LinkLook registers
+as the default browser so it can receive the URL before navigation occurs.
+
+LinkLook evaluates the destination URL and domain metadata to determine whether
+the link appears suspicious. This evaluation may include domain reputation,
+domain age, URL structure, redirect behaviour, and similar safety indicators.
+
+If the link appears safe, LinkLook forwards the URL to the user’s preferred
+browser using the standard iOS open URL mechanism so the webpage loads
+normally.
+
+If the link appears suspicious, LinkLook presents a warning explaining that the
+destination may be unsafe. The user can still choose to continue if they trust
+the source of the link.
+
+LinkLook is a straightforward, security-driven browser. It does not act as a
+VPN or proxy. It evaluates link destinations before presenting results to the
+user through a clear four-state outcome model (allow/inform/warn/block).
+
+Privacy is an important design principle. LinkLook stores a local check history
+on-device (URL, verdict, reason code, timestamp) so users can see what links
+were checked. This is a safety-check log, not a general browsing history. The
+user can clear or disable it at any time. LinkLook does not collect personal
+identifiers by default. The app evaluates link destinations and related metadata
+only for the purpose of identifying potential scam infrastructure.
+
+In a future version, users may opt in to anonymously contribute domain-level
+threat signals to help improve safety for everyone. This is off by default and
+requires explicit user consent before any data leaves the device.

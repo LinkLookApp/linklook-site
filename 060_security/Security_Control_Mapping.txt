@@ -1,0 +1,13 @@
+LinkLook — Security Control Mapping
+Generated: 2026-03-08
+Origin: ChatGPT
+
+Threat / Control mapping
+- Known malicious domains → local / remote deny lists
+- Fresh suspicious domains → domain age + intelligence scoring
+- Brand impersonation → similarity analysis + deep inspection
+- Redirect obfuscation → controlled redirect resolution
+- Universal-link bypass risk → AASA crawling + Network Extension coverage
+- Unsafe infrastructure after browser bypass → Network Extension observation
+- Model hallucination risk → deterministic-first pipeline and conservative merge
+- Abuse of deep inspection resources → rate limits, quotas, graceful degradation

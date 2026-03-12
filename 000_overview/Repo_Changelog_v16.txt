@@ -1,0 +1,15 @@
+LinkLook Repository Changelog
+
+Version: v16
+Timestamp: 2026-03-08_08-00-00
+
+Changes
+- Rebuilt the full canonical repository after the March 8 growth / launch-scope discussion
+- Updated Business Plan to v12 with interceptor-first launch logic, free-v1 rationale,
+  discovery strategy, reputation framing, and cold-start risk
+- Updated Founder Execution Guide with first-year operating priorities
+- Updated Risk Log with market, trust, discovery, and launch-delay risks
+- Updated Product Requirements with growth-sensitive and trust-sensitive product requirements
+- Updated Decision Log with launch-scope, free-v1, positioning, family GTM, and discovery decisions
+- Added Growth_Strategy.txt
+- Added Distribution_and_Discovery_Strategy.txt

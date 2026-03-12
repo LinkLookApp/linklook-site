@@ -1,0 +1,34 @@
+LinkLook Trust Speed Friction Principles
+Version: v1.0
+Date: 2026-03-08
+Origin: ChatGPT
+
+Purpose
+Define the psychological UX requirements that LinkLook must satisfy to remain trusted and usable.
+
+Principle 1: Speed
+Users are highly sensitive to delay in link-opening flows.
+LinkLook should aim for a near-instant experience on safe paths.
+Safe links should feel checked, not slowed down.
+
+Principle 2: Trust
+Users should feel protected, not confused or manipulated.
+Trust is supported by:
+- calm presentation
+- clear reasons
+- consistent behavior
+- honest handling of uncertainty
+
+Principle 3: Low friction
+A security product that interrupts too often will be bypassed or ignored.
+LinkLook should minimize friction on safe links while preserving strong protection on risky ones.
+
+Measurement themes
+- tap-to-decision time
+- warning obedience rate
+- override rate
+- trust and reassurance feedback
+- false-positive tolerance
+
+Design implication
+LinkLook should feel like a calm security guard by the door, not a police officer stopping the user every few seconds.
