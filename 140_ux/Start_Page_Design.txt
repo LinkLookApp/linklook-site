@@ -40,7 +40,7 @@ never shown. The check flow begins immediately.
   │  APP IDENTITY (centered)                                             │
   │                                                                      │
   │                         LinkLook                                     │
-  │              A minimal browser with a built-in safety check          │
+  │              A safety-driven browser          │
   └──────────────────────────────────────────────────────────────────────┘
 
   (No recent sites on the Home screen. History is shown only in the
@@ -77,7 +77,17 @@ never shown. The check flow begins immediately.
     back/forward move to the bottom browser toolbar.
   - Omnibox field — placeholder text: "Enter website or search"
     Keyboard type: .webSearch (gives the user a space bar for search text).
+    Font size: 20pt minimum. LinkLook's primary audience includes elderly
+    users — the text in the omnibox must be large enough to read comfortably
+    without glasses. The field must also support Dynamic Type scaling.
     Accepts URLs, domain names, and search queries (see §2.1a below).
+  - Go button (→) — a green circular button at the right end of the
+    omnibox field. Tapping it submits the current omnibox input (same as
+    pressing Return on the keyboard). Visible whenever the omnibox has
+    text. Hidden when the omnibox is empty (placeholder state).
+    SF Symbol: arrow.right, color: white on green (#4CAF76), size: 28pt
+    touch target. Provides an explicit tap target for users who may not
+    instinctively press the keyboard Return key.
   - No settings gear — settings are accessible via the tab bar only.
 
   The top bar persists across all screens. When browsing, it shows the
@@ -109,7 +119,7 @@ never shown. The check flow begins immediately.
   ─────────────────
   Centered below the top bar. Two lines of text:
   - "LinkLook" — app name, large bold text
-  - "A minimal browser with a built-in safety check" — tagline, smaller,
+  - "A safety-driven browser" — tagline, smaller,
     lighter text
 
   This section is only visible on the start page. It disappears when
@@ -149,7 +159,12 @@ never shown. The check flow begins immediately.
     (3) reset the screen to the clean start page (omnibox + app identity)
     The Home button must never be a no-op. It always navigates.
   - Recent — opens the full history screen
-  - Settings — opens in-app settings
+  - Settings — opens in-app settings. When a preferred browser has been
+    chosen in Settings, the Settings tab icon changes to show the icon
+    of that browser (e.g. Safari compass, Chrome globe, Firefox flame,
+    Brave shield) instead of the default gear icon. This gives the user
+    a persistent visual reminder of which browser they've selected.
+    If the preferred browser is "System Default", the gear icon remains.
 
   The tab bar persists across all screens.
 
@@ -210,6 +225,13 @@ never shown. The check flow begins immediately.
                                                                             when browsing history
                                                                             exists
 
+  Top bar: Go      arrow.right              →           white on    28pt    Circular green button
+                                                        #4CAF76     touch   at right end of omnibox.
+                                                                    target  Visible only when
+                                                                            omnibox has text input.
+                                                                            Submits input (same as
+                                                                            keyboard Return).
+
   Toolbar: back    chevron.left             ←           system      44pt    Bottom bar during
                                                                     frame   browsing
 
@@ -235,9 +257,15 @@ never shown. The check flow begins immediately.
   Tab: Recent      clock.arrow.circlepath   ◷           same        22pt    Shows full history
                                                                             screen
 
-  Tab: Settings    gearshape                ⚙           same        22pt    Settings accessible
-                                                                            only via tab bar (not
-                                                                            top bar)
+  Tab: Settings    gearshape                ⚙           same        22pt    Default icon. When a
+                   (or browser icon)                                         preferred browser is
+                                                                            chosen in Settings,
+                                                                            shows that browser's
+                                                                            icon instead (e.g.
+                                                                            safari, globe, flame,
+                                                                            shield). Reverts to
+                                                                            gearshape if set to
+                                                                            "System Default".
 
   All icons use SF Symbols (Apple system icon library, available from iOS 13+).
   Rendering mode: monochrome. Weight: regular (matching body text weight).
@@ -251,6 +279,7 @@ never shown. The check flow begins immediately.
   VoiceOver labels:
   - Back arrow:            "Back"
   - Omnibox field:         "Enter website or search"
+  - Go button:             "Go"
   - Home tab:              "Home"
   - Recent tab:            "Recent sites"
   - Settings tab:          "Settings"
@@ -289,7 +318,13 @@ never shown. The check flow begins immediately.
   - Home screen unchanged (history was never shown here)
   - Recent tab shows "History recording is off" message
 
-  4.4 BROWSING (WebView active)
+  4.4 CHECKING (link check in progress)
+  - Spinner + time-based status messages shown in content area
+  - Full spec: Checking_Progress_UX.txt
+  - Go button hidden, omnibox shows the URL being checked
+  - Back arrow enabled (cancels check, returns to start page)
+
+  4.5 BROWSING (WebView active)
   - Omnibox shows current URL (or search query text if search-originated)
   - Page content fills the area between omnibox and browser toolbar
   - Bottom browser toolbar visible: back, forward, reload/stop, browser icon

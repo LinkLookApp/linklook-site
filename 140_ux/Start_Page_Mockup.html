@@ -85,12 +85,29 @@
   }
   .address-field {
     flex: 1;
-    font-size: 16px;
+    font-size: 20px;  /* Large for elderly users — min 20pt */
     color: #9E9E9E;
     background: none;
     border: none;
     outline: none;
   }
+  .go-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #4CAF76;
+    color: white;
+    border: none;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .go-btn:hover { background: #3D8F62; }
+  .go-btn.hidden { display: none; }
 
   /* Content area */
   .content {
@@ -236,10 +253,11 @@
     <span class="icons">●●● ▮▮▮ 🔋</span>
   </div>
 
-  <!-- Omnibox (top bar) — no gear icon, just back arrow + field -->
+  <!-- Omnibox (top bar) — back arrow + field + Go button -->
   <div class="top-bar">
     <span class="nav-back">←</span>
     <span class="address-field">Enter website or search</span>
+    <button class="go-btn hidden" title="Go">→</button>
   </div>
 
   <!-- Content -->
@@ -248,7 +266,7 @@
     <!-- App identity -->
     <div class="app-identity">
       <h1>LinkLook</h1>
-      <p>A minimal browser with a built-in safety check</p>
+      <p>A safety-driven browser</p>
     </div>
 
     <!-- No recent sites on Home screen — history is in the Recent tab only -->
@@ -290,7 +308,8 @@
 
   <!-- Omnibox showing current URL -->
   <div class="top-bar">
-    <span class="address-field" style="color: #2C2C2C; font-size: 14px;">https://bank.nl/login</span>
+    <span class="address-field" style="color: #2C2C2C;">https://bank.nl/login</span>
+    <button class="go-btn" title="Go">→</button>
   </div>
 
   <!-- WebView placeholder -->
@@ -309,7 +328,7 @@
     <button class="toolbar-btn browser-icon" title="Open in Safari">🧭</button>
   </div>
 
-  <!-- Tab bar -->
+  <!-- Tab bar — Settings icon shows chosen browser (Safari = 🧭) -->
   <div class="tab-bar">
     <div class="tab-item active">
       <span class="tab-icon">⌂</span>
@@ -320,7 +339,7 @@
       Recent
     </div>
     <div class="tab-item">
-      <span class="tab-icon">⚙</span>
+      <span class="tab-icon">🧭</span>
       Settings
     </div>
   </div>

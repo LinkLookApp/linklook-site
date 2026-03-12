@@ -20,8 +20,8 @@ Layout (top to bottom):
 - omnibox: back arrow (when applicable), unified address/search field
   ("Enter website or search") — browser-style, establishes LinkLook as a
   real browser. No settings gear in the top bar (accessible via tab bar).
-- app identity: "LinkLook" heading, "A minimal browser with a built-in safety
-  check" tagline — centered, only visible on start page
+- app identity: "LinkLook" heading, "A safety-driven browser" tagline —
+  centered, only visible on start page
 - tab bar: Home, Recent, Settings — persists across all screens
   NOTE: Recent sites are NOT shown on the Home/start page. History is only
   accessible from the Recent tab. The Home screen stays clean and focused.
@@ -65,6 +65,12 @@ Visual reference: 140_ux/Start_Page_Mockup.html
   Open elsewhere (or Continue anyway depending on policy)
 - never auto-mark a link safe on timeout, never spin indefinitely
 - full spec: 140_ux/Checking_Progress_UX.txt
+
+Result screen rules (apply to all verdict screens):
+- Do NOT show a "Check another link" button. The Home tab in the tab bar
+  already navigates back to the start page. Redundant navigation clutters
+  the result screen. The result screen shows only: verdict, explanation,
+  primary action (e.g. "Go to Site"), and secondary action if applicable.
 
 1. Allow flow (transparent)
 - user taps a link
