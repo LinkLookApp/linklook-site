@@ -194,5 +194,19 @@ Risk_Log.txt                         Entry path blind spots should be tracked
                                      as named risks.
 
 ================================================================================
+9. USER-FACING COVERAGE WORDING
+================================================================================
+
+The approved user-facing text blocks that explain LinkLook's coverage and
+limitations are maintained in:
+
+  140_ux/Coverage_Limits_Wording.txt
+
+That document is the single source of truth for all onboarding, App Store,
+settings, and support wording about what LinkLook checks and what it misses.
+Any change to the visibility table in section 5 above must trigger a review
+of the wording blocks in Coverage_Limits_Wording.txt.
+
+================================================================================
 END OF DOCUMENT
 ================================================================================

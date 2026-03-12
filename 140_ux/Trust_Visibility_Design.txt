@@ -1,0 +1,176 @@
+LinkLook — Trust Visibility Design
+Version: v1.0
+Date: 2026-03-12
+Origin: Address-now hardening pass, item #3
+References: Core_User_Flows.txt (Flow 11), Start_Page_Design.txt,
+            RecentView.swift, HistoryStore.swift
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+A security product that works silently can feel useless. Users need visible
+proof that LinkLook is active and working. This document defines the minimum
+trust visibility for MVP — what users see, where they see it, and how it
+stays calm and honest.
+
+================================================================================
+2. WHAT EXISTS TODAY
+================================================================================
+
+  - Recent tab with domain, verdict badge, timestamp, and open status
+  - HistoryStore with local-only persistence (up to 100 entries)
+  - Start page shows 3-5 recent sites with domain and status label
+  - Privacy: no page content, screenshots, or cookies stored
+
+This is a good foundation. The gaps are:
+
+  a) No summary or "proof of work" — just a list of rows
+  b) No plain-language reason shown in the Recent tab
+  c) No trust signal on the start page for returning users
+  d) The Recent tab feels like a log, not reassurance
+
+================================================================================
+3. MVP TRUST VISIBILITY ADDITIONS
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1 START PAGE — TRUST SUMMARY CARD
+--------------------------------------------------------------------------------
+
+For returning users (at least one check recorded), the start page shows
+a trust summary card between the app identity section and the primary
+action card:
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │  ✓  LinkLook checked 12 links this week                         │
+  │     All clear — no threats found                                 │
+  └──────────────────────────────────────────────────────────────────┘
+
+  or, if threats were found:
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │  ✓  LinkLook checked 12 links this week                         │
+  │     1 link was blocked · 2 warnings shown                        │
+  └──────────────────────────────────────────────────────────────────┘
+
+Rules:
+  - Card only appears if history is enabled and at least 1 entry exists
+  - Time window: "this week" (rolling 7 days)
+  - Line 1: total checks count
+  - Line 2: summary of non-safe verdicts, or "All clear" if all safe
+  - Style: calm green card (same as primary action card style)
+  - If threats were found, line 2 uses amber/warm text, not red
+  - Card is not tappable (no action needed — it's just reassurance)
+
+Data source: HistoryStore.entries filtered to last 7 days.
+
+--------------------------------------------------------------------------------
+3.2 RECENT TAB — PLAIN-LANGUAGE REASON
+--------------------------------------------------------------------------------
+
+Each row in the Recent tab adds a short reason line below the URL:
+
+  Current:
+    bank.nl                                   Safe
+    https://bank.nl/login                     2 min ago
+
+  Updated:
+    bank.nl                                   Safe
+    https://bank.nl/login                     2 min ago
+    Trusted destination
+
+  For non-safe verdicts:
+    my-bank-login.xyz                         Blocked
+    https://my-bank-login.xyz/verify          5 min ago
+    May be pretending to be another company
+
+The reason text comes from the existing UXMapper short reason for each
+reason code. No new copy needed — reuse the message mapping from
+Reason_Code_To_Message_Mapping.txt.
+
+Data source: HistoryEntry.reasonCode → UXMapper → short reason string.
+
+Implementation note: HistoryEntry already stores reasonCode. The Recent
+tab just needs to map it to a display string via UXMapper.
+
+--------------------------------------------------------------------------------
+3.3 RECENT TAB — EMPTY STATE UPGRADE
+--------------------------------------------------------------------------------
+
+Current empty state:
+  "No recent checks"
+  "Links you check will appear here."
+
+Updated empty state:
+  "No recent checks"
+  "When LinkLook checks a link, you'll see the result here —
+   so you always know what was checked and what was found."
+
+This sets the expectation that the Recent tab is proof of activity.
+
+--------------------------------------------------------------------------------
+3.4 NO ADDITIONAL UI SURFACES IN MVP
+--------------------------------------------------------------------------------
+
+The following are explicitly deferred:
+  - Push notifications about checks (too noisy, not calm)
+  - Weekly summary notifications (nice but not MVP)
+  - Badge count on app icon (misleading for a security product)
+  - Dashboard or statistics screen (over-engineered for MVP)
+
+The trust summary card on the start page and the improved Recent tab
+are sufficient for MVP trust visibility.
+
+================================================================================
+4. PRIVACY RULES
+================================================================================
+
+All trust visibility data follows the existing privacy model:
+
+  - History is local only, never leaves the device (MDL-100)
+  - User can disable history — trust summary card disappears too
+  - User can clear history — trust summary resets
+  - No analytics, no telemetry about check counts
+  - The trust summary card shows aggregate counts, not specific URLs
+
+================================================================================
+5. DESIGN PRINCIPLES
+================================================================================
+
+  5.1 Calm, not alarming
+      The trust summary should feel like a quiet confirmation, not a
+      security dashboard with blinking lights.
+
+  5.2 Honest, not inflated
+      Show real counts. Never pad numbers or exaggerate protection.
+      If only 2 links were checked, say 2.
+
+  5.3 Useful, not decorative
+      Every piece of trust visibility must answer a real user question:
+      "Is this thing working?" or "What did it find?"
+
+  5.4 Optional, not forced
+      If the user disables history, all trust visibility disappears
+      gracefully. No guilt trips.
+
+================================================================================
+6. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Start_Page_Design.txt             Trust summary card placement
+                                    (new element in section 1 layout).
+
+  Core_User_Flows.txt (Flow 11)     History flow — this doc extends it
+                                    with trust framing.
+
+  Reason_Code_To_Message_Mapping.txt  Source for plain-language reasons
+                                      shown in Recent tab rows.
+
+  Coverage_Limits_Wording.txt       Trust visibility complements coverage
+                                    honesty — users see both what's
+                                    checked and what was found.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

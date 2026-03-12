@@ -1,0 +1,193 @@
+LinkLook — False Positive Recovery Flow
+Version: v1.0
+Date: 2026-03-12
+Origin: Address-now hardening pass, item #4
+References: Core_User_Flows.txt (Flow 7), Security_Assessment.txt,
+            Reason_Code_To_Message_Mapping.txt, HistoryStore.swift
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+If LinkLook blocks or warns about a safe link, users lose trust. One or
+two bad experiences can cause abandonment. This document defines the
+false-positive recovery loop: how users report mistakes, what data is
+captured, and how reports become test cases and policy improvements.
+
+================================================================================
+2. USER-FACING FLOW
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1 WHERE THE REPORT BUTTON APPEARS
+--------------------------------------------------------------------------------
+
+A "This doesn't look right" link appears on two screens:
+
+  a) Result screen (warn and block verdicts only)
+     Below the secondary action button, small text link:
+     "This doesn't look right"
+
+  b) Recent tab (any verdict row)
+     Swipe left on a row reveals a "Report" action button.
+
+The report option is NOT shown on safe (allow) verdicts on the result
+screen — users don't need to report correct safe verdicts.
+
+--------------------------------------------------------------------------------
+2.2 REPORT SHEET (bottom sheet)
+--------------------------------------------------------------------------------
+
+When the user taps "This doesn't look right" or swipes to "Report":
+
+  Title: "Report a mistake"
+  Subtext: "If you think LinkLook got this wrong, let us know.
+            This helps improve future checks."
+
+  Pre-filled (read-only):
+    URL:      [the checked URL, truncated middle]
+    Verdict:  [the verdict shown, e.g. "Blocked"]
+    Reason:   [the plain-language reason, e.g. "May be pretending..."]
+
+  User input:
+    "What happened?" (optional free text, max 200 characters)
+    Placeholder: "e.g. This is my bank's real website"
+
+  Buttons:
+    [Send Report]    (primary, green)
+    [Cancel]         (secondary, text only)
+
+--------------------------------------------------------------------------------
+2.3 CONFIRMATION
+--------------------------------------------------------------------------------
+
+After tapping "Send Report":
+
+  "Thank you — your report has been saved."
+  "We'll review it to improve LinkLook."
+
+  The sheet dismisses after 2 seconds or on tap.
+
+--------------------------------------------------------------------------------
+2.4 DATA CAPTURED PER REPORT
+--------------------------------------------------------------------------------
+
+  Field               Source                  Notes
+  ──────────────────────────────────────────────────────────────
+  url                 checked URL             full URL
+  domain              parsed from URL         for grouping
+  verdict             engine verdict          allow/inform/warn/block
+  reasonCode          engine reason code      e.g. domainImpersonation
+  signalSnapshot      top signals at time     signal IDs + scores
+  userComment         free text input         optional, max 200 chars
+  timestamp           report creation time    ISO 8601
+  appVersion          app build version       for version tracking
+  engineVersion       policy/engine version   for regression tracking
+
+  NOT captured:
+  - Device identifiers or user identity
+  - Page content, screenshots, or cookies
+  - Location or IP address
+  - Clipboard contents
+
+================================================================================
+3. STORAGE AND PROCESSING
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1 V1: LOCAL STORAGE ONLY
+--------------------------------------------------------------------------------
+
+Reports are stored on-device in a separate store (not HistoryStore):
+
+  FalsePositiveReportStore
+    - Array of FalsePositiveReport objects
+    - Persisted to UserDefaults or local JSON file
+    - Maximum 50 reports stored locally
+    - User can view and delete their reports from Settings
+
+In V1, reports stay on-device. The founder reviews them manually by
+connecting to a test device or via TestFlight feedback.
+
+--------------------------------------------------------------------------------
+3.2 V2: ANONYMOUS SUBMISSION (opt-in)
+--------------------------------------------------------------------------------
+
+When anonymous telemetry is enabled (MDL-108), reports can be submitted
+to the backend. This is opt-in and follows the same consent model as
+crowdsourced threat contribution.
+
+The submission contains the data from section 2.4, with no device or
+user identifiers.
+
+================================================================================
+4. OPERATIONAL LOOP
+================================================================================
+
+Every false-positive report triggers this loop:
+
+  1. TRIAGE
+     - Is the report valid? (user reported a genuine false positive)
+     - Is it a duplicate of a known issue?
+     - What is the severity? (trusted brand blocked = high,
+       obscure domain warned = low)
+
+  2. ROOT CAUSE
+     - Which signal(s) fired incorrectly?
+     - Is it a rule problem, a data problem, or a threshold problem?
+
+  3. FIX
+     - Update the rule, signal weight, or allowlist
+     - If a trusted domain is being incorrectly flagged, add to
+       trusted domain allowlist with documentation
+
+  4. TEST CASE
+     - Every important false positive becomes a golden fixture test.
+     - The test asserts the corrected verdict for that URL pattern.
+     - Rule from CLAUDE.md: "if a test fails because of an engine gap,
+       keep the test as-is and fix the engine."
+
+  5. VERIFY
+     - Run the full test suite to confirm the fix
+     - Check that the fix does not create new false negatives
+       (previously caught threats now passing as safe)
+
+  6. RELEASE
+     - Ship the policy update (V1: app update; V2: remote policy push)
+
+================================================================================
+5. REGRESSION RULE
+================================================================================
+
+  Every false positive that:
+    - affects a commonly used domain (banks, government, mail providers)
+    - is reported by more than one user (V2)
+    - involves a brand impersonation signal firing on the real brand
+
+  MUST become a permanent test case in golden-fixtures.json.
+
+  These tests are never removed. They accumulate as a growing regression
+  suite that prevents the same mistake from happening again.
+
+================================================================================
+6. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Core_User_Flows.txt (Flow 7)             This doc replaces the stub
+                                           with a full flow definition.
+
+  Security_Assessment.txt                  Incident response for false-
+                                           positive waves (section 6.1).
+
+  Reason_Code_To_Message_Mapping.txt       Reason shown to user in the
+                                           report sheet.
+
+  golden-fixtures.json                     Where regression tests from
+                                           false positives are stored.
+
+  CLAUDE.md                                Rule: never weaken a test to
+                                           match broken behavior.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

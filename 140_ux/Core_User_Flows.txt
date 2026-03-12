@@ -11,26 +11,34 @@ fallback direction has been superseded (MDL-007).
 
 Canonical UX flows
 
-0. Start page (app opened directly)
+0. Start page — omnibox flow (app opened directly)
 - the user opens LinkLook without tapping a link
 - the screen is calm, clean, and almost empty
+- one field does everything: URLs, domains, and search
 
 Layout (top to bottom):
-- top bar: back/forward arrows, address field ("Enter website or paste link"),
-  settings gear icon — browser-style, establishes LinkLook as a real browser
+- omnibox: back arrow (when applicable), unified address/search field
+  ("Enter website or search") — browser-style, establishes LinkLook as a
+  real browser. No settings gear in the top bar (accessible via tab bar).
 - app identity: "LinkLook" heading, "A minimal browser with a built-in safety
   check" tagline — centered, only visible on start page
-- primary action card: "Safe browsing starts here" headline, "Check a link
-  before opening it." subtext, "Paste from clipboard" button (dark filled,
-  primary action)
 - recent sites: 3–5 most recent checks with domain name and status
   ("Previously checked" / "Not opened yet") — hidden on first launch or if
   history is disabled (MDL-106)
 - tab bar: Home, Recent, Settings — persists across all screens
 
+Omnibox input classification:
+- Full URL (starts with http:// or https://) → use as-is
+- Domain (contains dot, no spaces, e.g. bank.nl) → prepend https://
+- Search text (everything else) → convert to Google search URL
+All three cases go through the same safety check → result → browsing flow.
+
+When browsing, a bottom toolbar appears with four buttons:
+- Back, Forward, Reload/Stop, Open in preferred browser (shows browser icon)
+
 Visual style: white background, generous spacing, rounded card elements,
-dark primary button, light grey secondary text. No news, ads, bookmarks,
-or search suggestions.
+light grey secondary text. No news, ads, bookmarks, or search suggestions.
+No "paste from clipboard" button — users paste directly into the omnibox.
 
 When iOS hands LinkLook a URL via default-browser handoff, the start page
 is never shown — the check flow begins immediately.
@@ -74,6 +82,10 @@ Visual reference: 140_ux/Start_Page_Mockup.html
 
 7. False positive flow
 - preserve trust by allowing a controlled override where appropriate
+- "This doesn't look right" link on warn/block result screens
+- swipe-to-report on any Recent tab row
+- report sheet captures URL, verdict, reason, optional user comment
+- full design in False_Positive_Recovery_Flow.txt
 
 8. Education flow
 - explain in plain language why a link is risky
@@ -87,7 +99,7 @@ Visual reference: 140_ux/Start_Page_Mockup.html
 
 10. Settings flow (MDL-104, MDL-105)
 
-In-app settings (gear icon on main screen):
+In-app settings (Settings tab in tab bar):
 - user picks which browser safe links should open in (Safari default)
 - user picks safe-link display mode (MDL-109, "always show result" by default):
   — "always show result": safe result screen shown briefly for reassurance,

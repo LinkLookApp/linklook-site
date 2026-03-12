@@ -1,0 +1,193 @@
+LinkLook — AI Boundary Rules
+Version: v1.0
+Date: 2026-03-12
+Origin: Address-now hardening pass, item #6
+References: Architecture_Constitution.txt, Decision_Engine_Interface.txt,
+            SLM_Training_Pipeline.txt, Backend_Policy_Specification.txt
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+LinkLook wants AI capabilities later, but the product must stay
+explainable and testable at every stage. This document defines what
+remains deterministic, what AI may assist with, and what rules protect
+the explanation and testing model from being eroded by AI integration.
+
+These rules apply from now onward. Any future AI work must comply.
+
+================================================================================
+2. THE BOUNDARY
+================================================================================
+
+  DETERMINISTIC (must stay rule-based, never replaced by AI):
+
+    a) The verdict model
+       allow / inform / warn / block — always produced by deterministic
+       rules with explicit thresholds. An AI model may never be the sole
+       source of a verdict.
+
+    b) The reason code model
+       Every verdict must carry at least one reason code from the defined
+       set (ReasonCode.swift). Reason codes are human-readable, testable,
+       and stable. AI may not invent new reason codes at runtime.
+
+    c) The explanation chain
+       The path from signals → rules → verdict → reason → user message
+       must be fully traceable. A human must be able to answer "why did
+       LinkLook block this link?" by reading the signal snapshot and
+       rule evaluation log.
+
+    d) The fail-safe behavior
+       Fail-safe rules (warn on uncertainty, never silent allow) are
+       deterministic and unconditional. AI cannot override fail-safes.
+
+    e) The trusted domain allowlist
+       Allowlist membership is an explicit, auditable list. AI cannot
+       add or remove entries.
+
+  AI-ASSISTED (AI may contribute, but does not control):
+
+    f) Signal scoring
+       AI may produce a confidence score for a signal (e.g. "this domain
+       looks 87% like a brand impersonation"). But the score enters the
+       deterministic rule engine as one input among many. The rule engine
+       decides the verdict, not the AI score alone.
+
+    g) New signal detection
+       AI may identify patterns that existing rules miss (e.g. novel
+       phishing layouts, new social engineering text patterns). These
+       become candidates for new deterministic rules — not runtime AI
+       verdicts.
+
+    h) Prioritization and triage
+       AI may help prioritize which reports, domains, or patterns to
+       review first. This is an operational assist, not a user-facing
+       decision.
+
+    i) Content analysis (V3 sandbox)
+       If LinkLook adds page content analysis (HTML fetch, screenshot),
+       AI may assist with classification. But the output must be mapped
+       to a defined signal with a defined reason code before it can
+       influence a verdict.
+
+================================================================================
+3. ARCHITECTURAL RULES
+================================================================================
+
+  Rule 1: AI assists, never replaces explanation.
+  Every verdict must be explainable without referencing AI internals.
+  "The AI said so" is never an acceptable reason.
+
+  Rule 2: AI outputs enter through the signal interface.
+  AI models produce signals with IDs, scores, and confidence levels.
+  These signals are processed by the same deterministic rule engine as
+  all other signals. No separate AI verdict path.
+
+  Rule 3: AI paths must be testable.
+  Any AI-assisted signal must have test fixtures that verify:
+    - the signal fires correctly on known positive examples
+    - the signal does not fire on known negative examples
+    - the downstream verdict is correct given the signal
+  If a test cannot be written, the AI path cannot ship.
+
+  Rule 4: AI can be disabled without breaking the product.
+  The deterministic engine must produce correct verdicts for all
+  currently tested scenarios without any AI assistance. AI adds
+  coverage, not core capability.
+
+  Rule 5: AI model updates follow the policy change process.
+  Deploying a new AI model or changing model weights is a policy
+  change (see Policy_Governance_And_Incident_Handling.txt section 4).
+  It requires the same approval, testing, and rollback readiness.
+
+  Rule 6: AI does not access user data beyond the current check.
+  An AI model receives the URL and extracted signals for the current
+  check only. It does not access history, user preferences, device
+  information, or cross-check data. Privacy by design applies to AI
+  paths exactly as it applies to rule paths.
+
+================================================================================
+4. LAYERED DEFENSE ORDER
+================================================================================
+
+From Architecture_Constitution.txt:
+
+  Deterministic → Static → Docking → SLM → LLM
+
+This order is also a priority order. Earlier layers have higher
+authority. If a deterministic rule produces a verdict, later layers
+do not override it. Later layers only contribute when earlier layers
+produce insufficient signal.
+
+  Layer           Example                       Can override earlier?
+  ──────────────────────────────────────────────────────────────────
+  Deterministic   Allowlist match, block list    N/A (first layer)
+  Static          URL structure heuristics       No
+  Docking         HTML fetch, page analysis      No
+  SLM             On-device small language model No
+  LLM             Server-side large model        No
+
+  Exception: a later layer may ESCALATE a verdict (safe → warn) if it
+  finds additional risk. A later layer may never DE-ESCALATE a verdict
+  (block → safe). This preserves the conservative fail-safe principle.
+
+================================================================================
+5. STABLE MODELS THAT AI MUST NOT CHANGE
+================================================================================
+
+The following models are stable interfaces. AI integration must work
+within them, not replace them:
+
+  a) Verdict enum: allow, inform, warn, block
+     (defined in DecisionEngine, used everywhere)
+
+  b) ReasonCode enum: 44 defined codes
+     (new codes can be added through the policy change process,
+      but existing codes cannot be redefined)
+
+  c) Signal taxonomy: URL structure, domain impersonation, domain
+     reputation, redirect patterns, page content, infrastructure,
+     behavioral
+     (new signal categories can be added, existing ones are stable)
+
+  d) HistoryEntry model: url, domain, verdict, reasonCode, timestamp
+     (AI metadata does not enter the history model)
+
+  e) UX message mapping: reason code → user-facing message
+     (AI cannot produce free-form user messages)
+
+================================================================================
+6. WHEN TO REVISIT THIS DOCUMENT
+================================================================================
+
+This document should be reviewed when:
+  - An AI feature is proposed for development
+  - The signal taxonomy is extended
+  - The verdict model is changed
+  - A new detection layer is added to the pipeline
+  - An AI model is deployed for the first time
+
+Until then, these rules stand as written.
+
+================================================================================
+7. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Architecture_Constitution.txt     Layered defense order originates
+                                    here. This doc makes it enforceable.
+
+  Decision_Engine_Interface.txt     Signal interface that AI must use.
+
+  SLM_Training_Pipeline.txt        Future AI training pipeline must
+                                    comply with these boundary rules.
+
+  Backend_Policy_Specification.txt  "No vague AI says suspicious fields"
+                                    rule aligns with rule 1 here.
+
+  Policy_Governance_And_            AI model updates are policy changes
+  Incident_Handling.txt             and follow the same process.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

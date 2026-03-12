@@ -1,10 +1,19 @@
 LinkLook — Start Page Design
-Version: v1.0
-Date: 2026-03-11
+Version: v2.0
+Date: 2026-03-12
 Origin: Founder mockup, documented via Cowork session
 References: Core_User_Flows.txt (Flow 0), UX_Principles.txt,
             Security_Warning_User_Experience.txt
-Visual reference: Start_Page_Mockup.html (in this folder)
+Visual reference: Start_Page_Mockup.html (in this folder — updated for v2.0,
+                  shows both idle and browsing states side by side)
+
+Changelog v2.0 (2026-03-12):
+- Omnibox replaces paste-only model: one field for URLs, domains, and search
+- Settings gear removed from top bar (accessible via tab bar only)
+- "Paste from clipboard" card removed (user can paste into omnibox directly)
+- Bottom browser toolbar shows preferred browser icon as redirect button
+- Fixed search engine: Google (v1, no settings)
+- Input classification: full URL / domain / search text
 
 ================================================================================
 PURPOSE
@@ -22,9 +31,9 @@ never shown. The check flow begins immediately.
 ================================================================================
 
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  TOP BAR                                                             │
-  │  ← →   [ Enter website or paste link                        ]   ⚙   │
-  │  back/forward arrows, address field, settings gear icon              │
+  │  OMNIBOX (top bar)                                                   │
+  │  ←   [ Enter website or search                                 ]     │
+  │  back arrow (when applicable), unified address/search field          │
   └──────────────────────────────────────────────────────────────────────┘
 
   ┌──────────────────────────────────────────────────────────────────────┐
@@ -32,16 +41,6 @@ never shown. The check flow begins immediately.
   │                                                                      │
   │                         LinkLook                                     │
   │              A minimal browser with a built-in safety check          │
-  └──────────────────────────────────────────────────────────────────────┘
-
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │  PRIMARY ACTION CARD (centered, rounded corners, subtle background)  │
-  │                                                                      │
-  │                    Safe browsing starts here                         │
-  │                 Check a link before opening it.                      │
-  │                                                                      │
-  │                    [ Paste from clipboard ]                          │
-  │                    (primary button, dark/filled)                     │
   └──────────────────────────────────────────────────────────────────────┘
 
   ┌──────────────────────────────────────────────────────────────────────┐
@@ -63,25 +62,58 @@ never shown. The check flow begins immediately.
   │         Home              Recent              Settings               │
   └──────────────────────────────────────────────────────────────────────┘
 
+  When browsing, a BROWSER TOOLBAR appears at the bottom (above tab bar):
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  BROWSER TOOLBAR (bottom, when browsing)                             │
+  │                                                                      │
+  │     ←         →         ↻ / ✕        [browser icon]                 │
+  │    back     forward   reload/stop   open in preferred browser        │
+  │                                     (shows icon of chosen browser)   │
+  └──────────────────────────────────────────────────────────────────────┘
+
 ================================================================================
 2. ELEMENT DESCRIPTIONS
 ================================================================================
 
-  2.1 TOP BAR
-  ────────────
-  A browser-style navigation bar that establishes LinkLook as a real browser
-  for Apple App Review.
+  2.1 OMNIBOX (TOP BAR)
+  ──────────────────────
+  A unified address/search bar that establishes LinkLook as a real browser
+  for Apple App Review. This is the single entry point for all navigation.
 
   Elements:
-  - Back arrow (←) and forward arrow (→) — standard browser navigation,
-    greyed out on the start page since there is no browsing history yet
-  - Address field — placeholder text: "Enter website or paste link"
-    This is a tappable text field. When tapped, the keyboard appears and
-    the user can type or paste a URL.
-  - Settings gear icon (⚙) — opens in-app settings
+  - Back arrow (←) — shown when not in browsing mode; greyed out on the
+    start page since there is no browsing history yet. During browsing,
+    back/forward move to the bottom browser toolbar.
+  - Omnibox field — placeholder text: "Enter website or search"
+    Keyboard type: .webSearch (gives the user a space bar for search text).
+    Accepts URLs, domain names, and search queries (see §2.1a below).
+  - No settings gear — settings are accessible via the tab bar only.
 
   The top bar persists across all screens. When browsing, it shows the
   current URL. On the start page, it shows the placeholder.
+
+  2.1a INPUT CLASSIFICATION (omnibox logic)
+  ──────────────────────────────────────────
+  The omnibox classifies user input into three cases:
+
+  A. Full URL — starts with http:// or https://
+     Examples: https://bank.nl/login, http://example.com
+     Action: use as-is, run safety check
+
+  B. Domain / host-like — contains a dot (.) and no spaces
+     Examples: bank.nl, www.amazon.com, 192.168.1.1
+     Action: prepend https://, run safety check
+
+  C. Search text — everything else (contains spaces, or no dot)
+     Examples: best noise cancelling headphones, what is smishing
+     Action: convert to https://www.google.com/search?q=<encoded>,
+             run safety check on the Google URL
+
+  Fixed search engine for v1: Google. No search-engine settings.
+
+  After classification and normalization, all three cases go through the
+  same LinkLook safety check → result → browsing flow.
 
   2.2 APP IDENTITY
   ─────────────────
@@ -93,23 +125,12 @@ never shown. The check flow begins immediately.
   This section is only visible on the start page. It disappears when
   browsing begins.
 
-  2.3 PRIMARY ACTION CARD
-  ────────────────────────
-  A rounded-corner card with a subtle light grey background. Centered on
-  the page. Contains:
-  - "Safe browsing starts here" — headline, large bold text
-  - "Check a link before opening it." — subtext, lighter
-  - "Paste from clipboard" — primary action button, dark filled style
-
-  The "Paste from clipboard" button reads the system clipboard. If the
-  clipboard contains a URL, tapping the button immediately starts the
-  check flow. If the clipboard does not contain a URL, the button can
-  either be hidden or show a brief message.
-
-  iOS clipboard access note: since iOS 16, reading the clipboard triggers
-  a system permission banner ("LinkLook pasted from [app]"). This is
-  expected and acceptable — it shows the user that LinkLook is transparent
-  about clipboard access.
+  2.3 (REMOVED — PRIMARY ACTION CARD)
+  ─────────────────────────────────────
+  The "Safe browsing starts here" card with "Paste from clipboard" button
+  has been removed in v2.0. The omnibox is now the sole entry point.
+  Users can paste directly into the omnibox field using standard iOS
+  paste gestures.
 
   2.4 RECENT SITES
   ─────────────────
@@ -140,6 +161,23 @@ never shown. The check flow begins immediately.
   - Settings — opens in-app settings
 
   The tab bar persists across all screens.
+
+  2.6 BROWSER TOOLBAR (bottom, during browsing)
+  ───────────────────────────────────────────────
+  When the user is browsing (WebView active), a bottom toolbar appears
+  with four buttons, evenly spaced:
+
+  - Back (chevron.left) — go back in web history, or exit browsing
+  - Forward (chevron.right) — go forward in web history
+  - Reload/Stop (arrow.clockwise / xmark) — reload page or stop loading
+  - Open in preferred browser — shows the SF Symbol icon of the user's
+    chosen browser (e.g. "safari" for Safari, "globe" for Chrome,
+    "flame" for Firefox, "shield" for Brave). Tapping opens the current
+    page in that browser.
+
+  The preferred browser icon makes it immediately clear where the link
+  will be redirected to, and acts as a visual reminder of the user's
+  browser preference from Settings.
 
 ================================================================================
 3. VISUAL STYLE
@@ -181,11 +219,22 @@ never shown. The check flow begins immediately.
                                                                             when browsing history
                                                                             exists
 
-  Top bar: fwd     chevron.right            →           #2E7D4F     20pt    Same disabled/enabled
-                                                                            behavior as back
+  Toolbar: back    chevron.left             ←           system      44pt    Bottom bar during
+                                                                    frame   browsing
 
-  Top bar: gear    gearshape                ⚙           #4CAF76     22pt    Opens in-app settings.
-                                                                            Always enabled.
+  Toolbar: fwd     chevron.right            →           system      44pt    Bottom bar during
+                                                                    frame   browsing
+
+  Toolbar: reload  arrow.clockwise          ↻           system      44pt    Shown when page is
+                                                                    frame   not loading
+
+  Toolbar: stop    xmark                    ✕           system      44pt    Shown while page is
+                                                                    frame   loading
+
+  Toolbar: open    (varies by browser)      —           system      44pt    Shows the icon of the
+                   safari / globe /                                 frame   user's preferred browser.
+                   flame / shield /                                         See PreferredBrowser
+                   lock.shield                                              iconName mapping.
 
   Tab: Home        house                    ⌂           #4CAF76     22pt    Active state: #4CAF76
                                                         (active)            Inactive: #9E9E9E
@@ -195,14 +244,9 @@ never shown. The check flow begins immediately.
   Tab: Recent      clock.arrow.circlepath   ◷           same        22pt    Shows full history
                                                                             screen
 
-  Tab: Settings    gearshape                ⚙           same        22pt    Same icon as top bar
-                                                                            gear, but in tab bar
-                                                                            context
-
-  Paste button     doc.on.clipboard         —           #FFFFFF     16pt    Inside the "Paste from
-                   (optional, left of                   (on green            clipboard" button.
-                   button text)                          bg)         Optional — text-only
-                                                                            button is also fine.
+  Tab: Settings    gearshape                ⚙           same        22pt    Settings accessible
+                                                                            only via tab bar (not
+                                                                            top bar)
 
   All icons use SF Symbols (Apple system icon library, available from iOS 13+).
   Rendering mode: monochrome. Weight: regular (matching body text weight).
@@ -214,15 +258,17 @@ never shown. The check flow begins immediately.
   - Enabled = full color, tappable.
 
   VoiceOver labels:
-  - Back arrow:       "Back"
-  - Forward arrow:    "Forward"
-  - Gear (top bar):   "Settings"
-  - Address field:    "Enter website or paste link"
-  - Paste button:     "Paste link from clipboard"
-  - Home tab:         "Home"
-  - Recent tab:       "Recent sites"
-  - Settings tab:     "Settings"
-  - Recent site row:  "{domain}, {status}" (e.g. "bank.nl, Previously checked")
+  - Back arrow:            "Back"
+  - Omnibox field:         "Enter website or search"
+  - Home tab:              "Home"
+  - Recent tab:            "Recent sites"
+  - Settings tab:          "Settings"
+  - Recent site row:       "{domain}, {status}" (e.g. "bank.nl, Previously checked")
+  - Toolbar: back:         "Back"
+  - Toolbar: forward:      "Forward"
+  - Toolbar: reload:       "Reload"
+  - Toolbar: stop:         "Stop loading"
+  - Toolbar: open:         "Open in {browser name}" (e.g. "Open in Safari")
 
   Accessibility:
   - All text must pass WCAG AA contrast ratio
@@ -236,25 +282,28 @@ never shown. The check flow begins immediately.
 
   4.1 FIRST LAUNCH (empty state)
   - Recent sites section is hidden (no history yet)
-  - Start page shows only: top bar, app identity, primary action card,
-    tab bar
-  - Even calmer and emptier than the normal state
+  - Start page shows only: omnibox, app identity, tab bar
+  - Even calmer and emptier than the normal state — just the field and
+    the app name
+
+  4.1b NOT-DEFAULT STATE (after onboarding, no handoff received yet)
+  - A gentle reminder card appears below the app identity, prompting the
+    user to set LinkLook as default browser.
+    See Default_Browser_Activation_Flow.txt section 5.
+  - Card disappears once LinkLook receives its first URL handoff.
 
   4.2 RETURNING USER (normal state)
   - Recent sites section shows 3–5 most recent checks
   - All elements visible as described in section 1
 
-  4.3 CLIPBOARD HAS URL
-  - "Paste from clipboard" button is prominent
-  - Optionally: the URL is previewed below the button (truncated)
-
-  4.4 CLIPBOARD EMPTY OR NO URL
-  - "Paste from clipboard" button can be dimmed or hidden
-  - The address field becomes the primary entry point
-
-  4.5 HISTORY DISABLED
+  4.3 HISTORY DISABLED
   - Recent sites section is hidden
   - Layout similar to first launch state
+
+  4.4 BROWSING (WebView active)
+  - Omnibox shows current URL (or search query text if search-originated)
+  - Page content fills the area between omnibox and browser toolbar
+  - Bottom browser toolbar visible: back, forward, reload/stop, browser icon
 
 ================================================================================
 5. DESIGN PRINCIPLES

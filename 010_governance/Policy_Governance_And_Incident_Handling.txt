@@ -1,0 +1,228 @@
+LinkLook — Policy Governance and Incident Handling
+Version: v1.0
+Date: 2026-03-12
+Origin: Address-now hardening pass, item #5
+References: Security_Assessment.txt (section 6.4),
+            Risk_Log.txt, False_Positive_Recovery_Flow.txt,
+            Detection_Engine_Scoring_Model.txt
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+A security product is not only an app — it is also a response process.
+This document defines who can change policy, how changes are released,
+how rollback works, and what happens during incidents. It applies from
+day one, even when the founder is the only operator.
+
+================================================================================
+2. POLICY OWNERSHIP
+================================================================================
+
+  Role            Who (V1)    Responsibility
+  ────────────────────────────────────────────────────────────────────
+  Policy owner    Founder     Approves all rule changes, signal weight
+                              changes, allowlist additions, and
+                              threshold adjustments.
+
+  Policy author   Founder     Writes and tests policy changes.
+
+  Policy reviewer (none V1)   In V2+, a second person reviews changes
+                              before release.
+
+  Rule: No policy change ships without the policy owner's explicit
+  approval, even if the owner and author are the same person. This
+  means: write the change, test it, then consciously approve it as
+  a separate step (not in the same moment).
+
+================================================================================
+3. WHAT COUNTS AS A POLICY CHANGE
+================================================================================
+
+  Any modification to:
+  - Signal weights or scoring thresholds
+  - Decision rules or rule ordering
+  - Trusted domain allowlist
+  - Block/warn reason code definitions
+  - Verdict-to-action mappings
+  - Remote policy JSON (V2)
+
+  NOT a policy change:
+  - UI text changes (but see Coverage_Limits_Wording.txt for wording rules)
+  - Bug fixes that don't alter verdict logic
+  - Performance optimizations with identical outcomes
+
+================================================================================
+4. POLICY CHANGE PROCESS
+================================================================================
+
+  Step  Action                                      Artifact
+  ──────────────────────────────────────────────────────────────────────
+  1     Identify the need (false positive report,   Issue or note
+        new threat pattern, signal gap)
+
+  2     Write the change (rule, weight, allowlist)  Code diff or
+                                                    policy JSON diff
+
+  3     Write or update test case                   golden-fixtures.json
+        (CLAUDE.md rule: never weaken a test)       or unit test
+
+  4     Run full test suite locally                 Test results
+
+  5     Review: does this fix the problem without   Checklist:
+        creating new false negatives?               - FP fixed?
+                                                    - No new FN?
+                                                    - Tests pass?
+
+  6     Approve (conscious separate step)           Commit message
+                                                    includes "POLICY:"
+                                                    prefix
+
+  7     Release (V1: app update; V2: policy push)   Release notes
+
+  8     Monitor for 24h after release               Manual check of
+                                                    recent verdicts
+
+================================================================================
+5. POLICY VERSION TRACKING
+================================================================================
+
+Every policy state has a version identifier:
+
+  V1 (local engine only):
+    - Policy version = app build number
+    - Every commit that changes verdict logic gets a "POLICY:" prefix
+      in the commit message
+    - golden-fixtures.json acts as the policy regression suite
+
+  V2 (remote policy):
+    - Policy version = semantic version in policy JSON header
+    - Backend tracks version history
+    - App logs which policy version produced each verdict
+    - HistoryEntry could be extended with policyVersion field
+
+================================================================================
+6. ROLLBACK
+================================================================================
+
+  6.1 V1 ROLLBACK (app-embedded policy)
+  - Revert the policy commit in git
+  - Run full test suite to confirm previous behavior restored
+  - Ship expedited app update (or use TestFlight for fast distribution)
+  - Worst case: Apple review takes 24-48h for expedited review
+
+  6.2 V2 ROLLBACK (remote policy)
+  - Push previous policy version to backend
+  - App fetches new policy on next check (or within polling interval)
+  - Rollback effective within minutes, no app update needed
+  - Backend retains last 10 policy versions for instant rollback
+
+  6.3 ROLLBACK RULE
+  When in doubt, roll back first, investigate second. A temporarily
+  less sensitive engine is better than a broken one.
+
+================================================================================
+7. INCIDENT TYPES AND PLAYBOOK
+================================================================================
+
+--------------------------------------------------------------------------------
+7.1 FALSE-POSITIVE WAVE
+--------------------------------------------------------------------------------
+
+  Trigger:  Multiple reports of safe sites being blocked/warned
+  Severity: High (trust damage)
+  Response:
+    1. Identify the common signal or rule causing false positives
+    2. If a single rule is responsible, disable or soften it immediately
+    3. Roll back if the fix is not obvious within 1 hour
+    4. Add all affected domains/patterns as test cases
+    5. Ship corrected policy
+    6. Communicate to affected users (V2: in-app note)
+
+--------------------------------------------------------------------------------
+7.2 FALSE-NEGATIVE MISS
+--------------------------------------------------------------------------------
+
+  Trigger:  Known malicious URL passes as safe
+  Severity: Critical (safety failure)
+  Response:
+    1. Add the domain/pattern to the block list immediately
+    2. Check for similar patterns that might also be missed
+    3. Add test cases for the missed pattern
+    4. Ship corrected policy as fast as possible
+    5. Review: was this a signal gap, a threshold problem, or a data gap?
+
+--------------------------------------------------------------------------------
+7.3 ENGINE FAILURE / CRASH
+--------------------------------------------------------------------------------
+
+  Trigger:  App crashes during link check, or engine returns no verdict
+  Severity: High (fail-safe must work)
+  Response:
+    1. Verify fail-safe behavior: does the app inform the user?
+       (It must never silently allow a link when the engine fails)
+    2. Identify the crash cause from crash logs
+    3. Fix and add a test case for the failure condition
+    4. Ship fix
+
+--------------------------------------------------------------------------------
+7.4 POLICY COMPROMISE (V2)
+--------------------------------------------------------------------------------
+
+  Trigger:  Remote policy is tampered with or serves malicious rules
+  Severity: Critical
+  Response:
+    1. Disable remote policy fetch — fall back to embedded policy
+    2. Investigate the compromise vector
+    3. Rotate any signing keys or API credentials
+    4. Re-validate the policy chain end to end
+    5. Re-enable remote policy only after root cause is resolved
+
+--------------------------------------------------------------------------------
+7.5 PRIVACY INCIDENT
+--------------------------------------------------------------------------------
+
+  Trigger:  User data leaves the device unintentionally, or data is
+            stored that should not be
+  Severity: Critical (trust and compliance)
+  Response:
+    1. Identify what data was exposed and how
+    2. Stop the leak immediately (disable the feature if needed)
+    3. Assess scope: how many users, what data
+    4. Notify affected users (even if the number is small)
+    5. Fix root cause and add test coverage
+    6. Review all data flows for similar risks
+
+================================================================================
+8. COMMUNICATION DURING INCIDENTS
+================================================================================
+
+  V1 (solo founder):
+  - App Store release notes explain significant policy changes
+  - TestFlight notes for urgent fixes
+  - No external incident page needed yet
+
+  V2+:
+  - Status page or in-app banner for significant incidents
+  - Email notification for critical issues (if user consented)
+  - Post-incident summary published within 7 days
+
+================================================================================
+9. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Security_Assessment.txt (6.4)        This doc fulfills the incident
+                                       response plan requirement.
+
+  Risk_Log.txt                         Incident types here correspond
+                                       to risks tracked there.
+
+  False_Positive_Recovery_Flow.txt     The operational loop (section 4)
+                                       feeds into incident type 7.1.
+
+  CLAUDE.md                            "Never weaken a test" rule
+                                       applies to all policy changes.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

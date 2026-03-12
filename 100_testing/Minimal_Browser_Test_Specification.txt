@@ -334,17 +334,18 @@ MB-G7-05 | App identity not visible when browsing
 
 ID       | Title
 ---------|--------------------------------------------------------------
-MB-G7-06 | Address field shows placeholder on start page
-         | Start page address field shows "Enter website or paste link"
+MB-G7-06 | Omnibox shows placeholder on start page
+         | Start page omnibox field shows "Enter website or search"
          | as placeholder text.
          |
 MB-G7-07 | Tapping address field opens keyboard
          | When user taps the address field, the keyboard appears and
          | the field is focused for text input.
          |
-MB-G7-08 | Submitting URL from address field triggers check
-         | When user types a URL in the address field and taps Go/Return,
-         | LinkLook starts the check flow (same as pasting a URL).
+MB-G7-08 | Submitting input from omnibox triggers check
+         | When user types a URL, domain, or search query in the omnibox
+         | and taps Go/Return, LinkLook classifies the input (URL, domain,
+         | or search text) and starts the check flow.
          |
 MB-G7-09 | Address field shows current URL when browsing
          | Given a page is loaded, the address field shows the current
@@ -395,22 +396,24 @@ MB-G7-18 | Tab bar persists across all screens
          | Tab bar remains visible on start page, result screens, history
          | screen, settings screen, and while browsing.
 
---- 7E: Paste and clipboard ---
+--- 7E: Omnibox input classification ---
 
 ID       | Title
 ---------|--------------------------------------------------------------
-MB-G7-19 | Paste button visible on start page
-         | The "Paste from clipboard" button is visible in the primary
-         | action card on the start page.
+MB-G7-19 | Full URL input triggers URL check
+         | Given the user types "https://bank.nl/login" in the omnibox
+         | and submits, LinkLook runs a safety check on that exact URL.
          |
-MB-G7-20 | Paste button triggers check when clipboard has URL
-         | Given the clipboard contains a URL, tapping "Paste from
-         | clipboard" immediately starts the check flow for that URL.
+MB-G7-20 | Domain input normalizes and checks
+         | Given the user types "bank.nl" in the omnibox and submits,
+         | LinkLook prepends https:// and runs a safety check on
+         | https://bank.nl.
          |
-MB-G7-21 | Paste button behavior when clipboard has no URL
-         | Given the clipboard is empty or contains non-URL text,
-         | tapping the paste button either does nothing or shows a
-         | brief message. It does not crash or start a check.
+MB-G7-21 | Search text converts to Google search URL
+         | Given the user types "best noise cancelling headphones" in
+         | the omnibox and submits, LinkLook converts this to a Google
+         | search URL (https://www.google.com/search?q=...) and runs
+         | a safety check on that URL.
 
 --- 7F: Recent sites interaction ---
 
@@ -428,13 +431,15 @@ MB-G7-24 | Recent sites limited to 3-5 items
          | The start page recent sites section shows a maximum of 3-5
          | entries. A "See all" or equivalent leads to the full history.
 
---- 7G: Gear icon ---
+--- 7G: Browser toolbar (during browsing) ---
 
 ID       | Title
 ---------|--------------------------------------------------------------
-MB-G7-25 | Gear icon opens settings
-         | Tapping the gear icon (⚙) in the top bar opens the in-app
-         | settings screen. Same destination as the Settings tab.
+MB-G7-25 | Browser toolbar shows preferred browser icon
+         | When browsing, the bottom toolbar's rightmost button shows the
+         | SF Symbol icon matching the user's preferred browser choice
+         | (e.g. "safari" for Safari, "globe" for Chrome, "flame" for
+         | Firefox). Tapping it opens the current page in that browser.
 
 --- 7H: Accessibility ---
 
@@ -442,14 +447,15 @@ ID       | Title
 ---------|--------------------------------------------------------------
 MB-G7-26 | VoiceOver labels on all interactive elements
          | All interactive elements have correct VoiceOver labels:
-         | "Back", "Forward", "Settings", "Enter website or paste link",
-         | "Paste link from clipboard", "Home", "Recent sites",
+         | "Back", "Enter website or search", "Home", "Recent sites",
          | "Settings", "{domain}, {status}" for recent site rows.
+         | Browser toolbar: "Back", "Forward", "Reload", "Stop loading",
+         | "Open in {browser name}".
          |
 MB-G7-27 | Touch targets meet minimum size
-         | All tappable elements (arrows, gear, paste button, tab items,
-         | recent site rows) meet the 44pt minimum touch target
-         | (Apple HIG).
+         | All tappable elements (arrows, omnibox, toolbar buttons,
+         | tab items, recent site rows) meet the 44pt minimum touch
+         | target (Apple HIG).
          |
 MB-G7-28 | Dynamic Type scales text and icons
          | When the user increases text size in iOS Accessibility

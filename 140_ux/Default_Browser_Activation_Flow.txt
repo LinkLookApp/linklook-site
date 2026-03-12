@@ -1,0 +1,207 @@
+LinkLook — Default Browser Activation Flow
+Version: v1.0
+Date: 2026-03-12
+Origin: Address-now hardening pass, item #2
+References: Entry_Path_Visibility.txt, Start_Page_Design.txt,
+            Coverage_Limits_Wording.txt, Core_User_Flows.txt
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+LinkLook only works when it is the default browser. If the user installs
+LinkLook but does not set it as default, they get zero protection. This
+document defines the activation flow that guides users through setup and
+keeps them aware of their default-browser status.
+
+================================================================================
+2. CORE PROBLEM
+================================================================================
+
+iOS does not let apps set themselves as default browser programmatically.
+The user must go to iOS Settings → LinkLook → Default Browser App and
+select LinkLook manually. This is a conscious Apple design choice.
+
+LinkLook must make this step as easy as possible without being pushy.
+
+================================================================================
+3. FIRST-LAUNCH ONBOARDING (3 screens)
+================================================================================
+
+The onboarding flow appears once, on first launch only. It cannot be
+skipped entirely — the user must tap through all three screens. Each
+screen has a single "Continue" button at the bottom.
+
+--------------------------------------------------------------------------------
+3.1 SCREEN 1 — WELCOME
+--------------------------------------------------------------------------------
+
+  Title:    "LinkLook checks links before you open them"
+  Subtext:  "When someone sends you a link, LinkLook looks at it first
+             and tells you if it's safe."
+  Visual:   Simple illustration or icon (shield + magnifying glass)
+  Button:   "Continue"
+
+--------------------------------------------------------------------------------
+3.2 SCREEN 2 — SET AS DEFAULT BROWSER
+--------------------------------------------------------------------------------
+
+  Title:    "Set LinkLook as your default browser"
+  Subtext:  "LinkLook can only check links if iOS sends them to it.
+             This takes one step."
+
+  Instructions (numbered, with visual hints):
+    1. Tap the button below to open Settings
+    2. Tap "Default Browser App"
+    3. Select "LinkLook"
+
+  Button:   "Open Settings"
+            → calls UIApplication.shared.open(URL(string:
+              UIApplication.openSettingsURLString)!)
+            → opens the LinkLook section in iOS Settings
+
+  Below the button:
+    "Already done? Tap Continue."
+    [Continue] (secondary style, less prominent)
+
+  Note: this screen does NOT block the user. If they tap "Continue"
+  without setting default, the app still opens — but the start page
+  will show a reminder (see section 5).
+
+--------------------------------------------------------------------------------
+3.3 SCREEN 3 — COVERAGE EXPLANATION
+--------------------------------------------------------------------------------
+
+  Title:    "What LinkLook checks"
+  Body:     The in-app explanation text from Coverage_Limits_Wording.txt
+            (block 2.1):
+
+            "LinkLook checks web links that reach it as your default
+             browser — like links you tap in Messages, Mail, or WhatsApp,
+             and QR codes that open as web addresses.
+
+             Some links bypass any browser. Apps that open links inside
+             their own viewer, or links that go directly to another app,
+             won't pass through LinkLook. You can always paste any link
+             into LinkLook to check it manually."
+
+  Button:   "Got it" → dismisses onboarding, shows start page
+
+================================================================================
+4. DEFAULT BROWSER STATUS DETECTION
+================================================================================
+
+iOS does not provide a public API to query which app is the default
+browser. LinkLook uses a heuristic:
+
+  4.1 HEURISTIC
+  LinkLook tracks whether it has ever received a URL via the default-
+  browser handoff path (http/https scheme in LinkLookApp.onOpenURL).
+
+  - If at least one URL has been received via handoff → status = ACTIVE
+  - If no URL has ever been received via handoff → status = UNKNOWN
+  - On first launch before any interaction → status = NOT_SET
+
+  The status is stored locally as a simple flag:
+    hasReceivedDefaultBrowserHandoff: Bool (UserDefaults)
+
+  4.2 LIMITATIONS
+  This heuristic cannot detect if the user later changes the default
+  browser away from LinkLook. It only knows LinkLook was default at
+  some point. This is acceptable for V1. A more robust approach (e.g.
+  periodic self-check via a custom URL) can be explored later.
+
+================================================================================
+5. START PAGE REMINDER (not-default state)
+================================================================================
+
+If LinkLook has never received a URL handoff (status = NOT_SET or
+UNKNOWN) and the onboarding has been completed, the start page shows
+a gentle reminder card between the primary action card and the recent
+sites section:
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │  LinkLook isn't receiving links yet.                             │
+  │  Make sure it's set as your default browser.                     │
+  │                                                                  │
+  │  [Open Settings]                                                 │
+  └──────────────────────────────────────────────────────────────────┘
+
+  - Card style: same as primary action card, but with a subtle
+    amber/warm background to distinguish it from the green theme
+  - The card disappears permanently once hasReceivedDefaultBrowserHandoff
+    becomes true
+  - The card can be dismissed manually (small × button), but reappears
+    on next app launch until the heuristic confirms activation
+
+================================================================================
+6. SETTINGS SCREEN STATUS ROW
+================================================================================
+
+The Settings tab gets a new row at the top of the settings list:
+
+  Default browser status:
+
+  If ACTIVE:
+    "Default browser    LinkLook ✓"
+    (green checkmark, no action needed)
+
+  If NOT_SET or UNKNOWN:
+    "Default browser    Not set"
+    (tappable → opens iOS Settings)
+    Subtitle: "Tap to open Settings and select LinkLook"
+
+================================================================================
+7. FAMILY INSTALLER SCENARIO
+================================================================================
+
+For the primary use case (adult child installs LinkLook for elderly
+parent), the onboarding serves double duty:
+
+  - The installer walks through screens 1-3 during setup
+  - Screen 2 ensures the installer sets the default browser
+  - Screen 3 gives the installer the honest coverage explanation
+
+  The parent (primary user) then sees:
+  - The start page with status confirmation (if set correctly)
+  - Or the gentle reminder (if the installer forgot)
+
+  Future enhancement: the device-level profile settings (PROTECTED /
+  STANDARD) from Architecture.txt should integrate with this flow,
+  but that is out of scope for this document.
+
+================================================================================
+8. METRICS TO TRACK LATER
+================================================================================
+
+These are not MVP requirements, but should be planned for:
+
+  - Install → default browser activation rate
+    (percentage of installs that reach hasReceivedDefaultBrowserHandoff = true)
+  - Time from install to first URL handoff
+  - Default browser retention
+    (requires periodic self-check, not in V1)
+  - Onboarding completion rate (if analytics are added)
+
+================================================================================
+9. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Entry_Path_Visibility.txt        Why default browser status matters —
+                                   LinkLook only sees URLs on this path.
+
+  Coverage_Limits_Wording.txt      Screen 3 uses the in-app explanation
+                                   text (block 2.1).
+
+  Start_Page_Design.txt            The reminder card (section 5) is a
+                                   new element on the start page.
+
+  Core_User_Flows.txt              The onboarding is a new flow that
+                                   precedes Flow 0 (start page).
+
+  TSI_Question.txt                 Apple's default browser entitlement
+                                   requirements.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

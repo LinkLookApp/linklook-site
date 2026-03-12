@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkLook — Start Page Mockup</title>
+<title>LinkLook — Start Page Mockup v2.0</title>
 <style>
   /* ── LinkLook brand colors ──
      Primary green:    #4CAF76  (medium green — buttons, active states, accents)
@@ -27,7 +27,18 @@
     display: flex;
     justify-content: center;
     padding: 20px;
+    gap: 30px;
   }
+
+  .mockup-label {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B6B6B;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
   .phone-frame {
     width: 390px;
     min-height: 844px;
@@ -51,7 +62,7 @@
     color: #2C2C2C;
   }
 
-  /* Top browser bar */
+  /* Top omnibox bar */
   .top-bar {
     margin: 6px 16px 0;
     padding: 10px 14px;
@@ -62,12 +73,15 @@
     gap: 10px;
     border: 1px solid #C8E6D0;
   }
-  .nav-arrows {
-    display: flex;
-    gap: 8px;
+  .nav-back {
     color: #2E7D4F;
     font-size: 20px;
     flex-shrink: 0;
+    opacity: 0.35;
+  }
+  .nav-back.enabled {
+    opacity: 1;
+    cursor: pointer;
   }
   .address-field {
     flex: 1;
@@ -76,12 +90,6 @@
     background: none;
     border: none;
     outline: none;
-  }
-  .gear-icon {
-    font-size: 22px;
-    color: #4CAF76;
-    cursor: pointer;
-    flex-shrink: 0;
   }
 
   /* Content area */
@@ -113,40 +121,6 @@
     font-weight: 400;
   }
 
-  /* Primary action card */
-  .action-card {
-    background: #F2EFE9;
-    border-radius: 16px;
-    padding: 32px 28px;
-    text-align: center;
-    width: 100%;
-    margin-bottom: 24px;
-  }
-  .action-card h2 {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: #2C2C2C;
-  }
-  .action-card p {
-    font-size: 15px;
-    color: #6B6B6B;
-    margin-bottom: 20px;
-  }
-  .paste-btn {
-    display: inline-block;
-    background: #4CAF76;
-    color: #fff;
-    padding: 14px 28px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: background 0.15s;
-  }
-  .paste-btn:hover { background: #3D8F62; }
-
   /* Recent sites */
   .recent-card {
     background: #F2EFE9;
@@ -169,8 +143,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
   }
   .recent-item:last-child { margin-bottom: 0; }
+  .recent-item:hover { background: #F5F3EE; }
   .recent-item .domain {
     font-size: 15px;
     font-weight: 600;
@@ -180,6 +156,33 @@
     font-size: 13px;
     color: #9E9E9E;
   }
+
+  /* Browser toolbar (bottom, during browsing) */
+  .browser-toolbar {
+    border-top: 1px solid #E5E0D8;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: #FAF8F4;
+  }
+  .toolbar-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #2E7D4F;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-radius: 8px;
+  }
+  .toolbar-btn:hover { background: #E8F5ED; }
+  .toolbar-btn.disabled { opacity: 0.35; cursor: default; }
+  .toolbar-btn.disabled:hover { background: none; }
+  .toolbar-btn.browser-icon { color: #4CAF76; }
 
   /* Tab bar */
   .tab-bar {
@@ -202,10 +205,29 @@
     margin-bottom: 2px;
     display: block;
   }
+
+  /* Browsing state */
+  .webview-placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    margin: 0;
+    color: #9E9E9E;
+    font-size: 14px;
+    border-top: 1px solid #E5E0D8;
+  }
 </style>
 </head>
 <body>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MOCKUP 1: START PAGE (idle state)
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<div>
+<div class="mockup-label">START PAGE (idle)</div>
 <div class="phone-frame">
 
   <!-- Status bar -->
@@ -214,14 +236,10 @@
     <span class="icons">●●● ▮▮▮ 🔋</span>
   </div>
 
-  <!-- Top browser bar -->
+  <!-- Omnibox (top bar) — no gear icon, just back arrow + field -->
   <div class="top-bar">
-    <div class="nav-arrows">
-      <span>←</span>
-      <span>→</span>
-    </div>
-    <span class="address-field">Enter website or paste link</span>
-    <span class="gear-icon">⚙</span>
+    <span class="nav-back">←</span>
+    <span class="address-field">Enter website or search</span>
   </div>
 
   <!-- Content -->
@@ -231,13 +249,6 @@
     <div class="app-identity">
       <h1>LinkLook</h1>
       <p>A minimal browser with a built-in safety check</p>
-    </div>
-
-    <!-- Primary action card -->
-    <div class="action-card">
-      <h2>Safe browsing starts here</h2>
-      <p>Check a link before opening it.</p>
-      <button class="paste-btn">Paste from clipboard</button>
     </div>
 
     <!-- Recent sites -->
@@ -275,6 +286,61 @@
     </div>
   </div>
 
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MOCKUP 2: BROWSING STATE (with browser toolbar)
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<div>
+<div class="mockup-label">BROWSING STATE</div>
+<div class="phone-frame">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="time">9:42</span>
+    <span class="icons">●●● ▮▮▮ 🔋</span>
+  </div>
+
+  <!-- Omnibox showing current URL -->
+  <div class="top-bar">
+    <span class="address-field" style="color: #2C2C2C; font-size: 14px;">https://bank.nl/login</span>
+  </div>
+
+  <!-- WebView placeholder -->
+  <div class="webview-placeholder">
+    <div style="text-align: center;">
+      <div style="font-size: 40px; margin-bottom: 8px;">🌐</div>
+      <div>Page content loads here</div>
+    </div>
+  </div>
+
+  <!-- Browser toolbar: Back | Forward | Reload/Stop | Browser icon -->
+  <div class="browser-toolbar">
+    <button class="toolbar-btn" title="Back">←</button>
+    <button class="toolbar-btn disabled" title="Forward">→</button>
+    <button class="toolbar-btn" title="Reload">↻</button>
+    <button class="toolbar-btn browser-icon" title="Open in Safari">🧭</button>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <div class="tab-item active">
+      <span class="tab-icon">⌂</span>
+      Home
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">◷</span>
+      Recent
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">⚙</span>
+      Settings
+    </div>
+  </div>
+
+</div>
 </div>
 
 </body>

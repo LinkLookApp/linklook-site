@@ -1,0 +1,105 @@
+LinkLook — Coverage Limits Wording
+Version: v1.0
+Date: 2026-03-12
+Origin: Address-now hardening pass, item #1
+References: Entry_Path_Visibility.txt, Start_Page_Design.txt,
+            Core_User_Flows.txt
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+This document contains the approved user-facing wording that explains what
+LinkLook checks and what it does not check. These text blocks are the single
+source of truth for all surfaces that describe LinkLook's coverage.
+
+The core rule: never claim "LinkLook checks every link on your phone."
+Always be honest about the default-browser path and its limits.
+
+================================================================================
+2. REUSABLE TEXT BLOCKS
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1 IN-APP EXPLANATION (onboarding screen or info sheet)
+--------------------------------------------------------------------------------
+
+  LinkLook checks web links that reach it as your default browser — like
+  links you tap in Messages, Mail, or WhatsApp, and QR codes that open as
+  web addresses.
+
+  Some links bypass any browser. Apps that open links inside their own
+  viewer, or links that go directly to another app, won't pass through
+  LinkLook. You can always paste any link into LinkLook to check it
+  manually.
+
+--------------------------------------------------------------------------------
+2.2 APP STORE DESCRIPTION BLOCK
+--------------------------------------------------------------------------------
+
+  LinkLook checks links that pass through it as your default browser.
+  Links opened inside other apps' built-in browsers or handled directly
+  by apps are not checked automatically. You can always paste a link to
+  check it manually.
+
+--------------------------------------------------------------------------------
+2.3 SETTINGS / ABOUT SCREEN (short form)
+--------------------------------------------------------------------------------
+
+  LinkLook checks links that reach it through the default browser path.
+  Not all links on your device pass through a browser. Tap here to learn
+  more.
+
+  (The "learn more" link opens the in-app explanation from 2.1.)
+
+================================================================================
+3. USAGE RULES
+================================================================================
+
+  3.1 Every surface that describes what LinkLook does must use one of the
+      text blocks above or a faithful adaptation of it.
+
+  3.2 No marketing copy, onboarding screen, App Store text, or support page
+      may claim broader coverage than what is stated here.
+
+  3.3 When coverage expands (V2 share sheet, V3 Network Extension), the
+      wording blocks in this document must be updated first, then propagated
+      to all surfaces.
+
+  3.4 If a reviewer, tester, or user identifies wording that implies broader
+      coverage than what LinkLook actually provides, that is treated as a
+      bug and fixed immediately.
+
+================================================================================
+4. WHERE EACH BLOCK IS USED
+================================================================================
+
+  Block 2.1 (in-app explanation):
+    - First-launch onboarding screen (see Start_Page_Design.txt, section 4.1)
+    - "How LinkLook works" info sheet accessible from Settings
+    - Any future help or FAQ screen
+
+  Block 2.2 (App Store):
+    - App Store description (primary listing)
+    - App Review notes
+    - Any external product page or landing page
+
+  Block 2.3 (short form):
+    - Settings screen, "About LinkLook" row
+    - Any tooltip or inline explanation where space is limited
+
+================================================================================
+5. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Entry_Path_Visibility.txt     Technical detail behind these wording blocks.
+                                Section 9 references this document.
+
+  Start_Page_Design.txt         First-launch state references the in-app
+                                explanation block.
+
+  UX_Principles.txt             Calm, honest tone applies to all wording.
+
+================================================================================
+END OF DOCUMENT
+================================================================================
