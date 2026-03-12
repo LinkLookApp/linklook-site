@@ -70,7 +70,10 @@ Result screen rules (apply to all verdict screens):
 - Do NOT show a "Check another link" button. The Home tab in the tab bar
   already navigates back to the start page. Redundant navigation clutters
   the result screen. The result screen shows only: verdict, explanation,
-  primary action (e.g. "Go to Site"), and secondary action if applicable.
+  primary action, and secondary action if applicable.
+- Button order: On all non-allow screens (inform, warn, block), "Go Back"
+  is always the large primary button and "Go to Site" / "Open Anyway" is
+  always the small secondary button. The safe choice is always prominent.
 
 1. Allow flow (transparent)
 - user taps a link
@@ -81,9 +84,11 @@ Result screen rules (apply to all verdict screens):
 2. Inform flow ("Heads Up")
 - link has something worth noting but risk is low
 - brief explanation shown
-- primary action: "Go to Site" (proceed to page)
-- secondary action: "Go Back" (return to start page)
-- user has an explicit choice, same pattern as Warn flow
+- primary action: "Go Back" (large button, return to start page)
+- secondary action: "Go to Site" (small button, proceed to page)
+- Go Back is always the prominent action on inform, warn, and block screens.
+  Go to Site is always the smaller secondary option. This keeps the safe
+  choice visually dominant across all non-allow verdict screens.
 
 3. Warn flow (suspicious / uncertain)
 - clear but calm warning
@@ -145,6 +150,9 @@ In-app settings (Settings tab in tab bar):
   — PROTECTED profile: always show result is enforced, cannot be changed
   — STANDARD profile: user can choose either mode
   — inform, warn, block verdicts always show their screens regardless
+- user picks text size: Small, Medium (default), or Large. Affects the
+  omnibox and result screens (titles, messages, buttons). Exact point sizes
+  defined in CLAUDE.md rule 14. Stored on-device.
 - user manages whitelist, notification preferences
 - user can view, clear, or disable recent checks history (MDL-106, on by default)
 - user can enable crowdsourced threat contribution (MDL-108, off by default, V2)
