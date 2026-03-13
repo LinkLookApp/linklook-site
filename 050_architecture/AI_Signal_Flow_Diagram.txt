@@ -1,0 +1,144 @@
+LinkLook — AI Signal Flow Diagram
+Status: active
+Date: 2026-03-13
+
+Purpose
+Show how AI signals flow through the LinkLook check pipeline. This diagram
+is the reference for understanding where AI fits in the architecture.
+
+================================================================================
+TERMINOLOGY (use consistently across all docs)
+================================================================================
+
+  Term                  Meaning
+  ──────────────────────────────────────────────────────────────────────────
+  AI signal model       Generic product term for any on-device AI model
+  URL signal model      Link classifier — scores URLs for phishing risk
+  Message signal model  Text classifier — scores message text for scam patterns
+  Core ML               Deployment/runtime technology (Apple on-device ML)
+  Foundation Models     Apple's optional on-device explanation layer (future)
+  Backend LLM           Optional future remote analysis layer (deferred)
+
+  Avoid: "SLM" as a product term (use only when discussing model size class).
+  Avoid: "Claude" as an architectural component (use "backend LLM" if needed).
+
+================================================================================
+SIGNAL FLOW DIAGRAM
+================================================================================
+
+  User input (omnibox / QR / clipboard / Share Sheet)
+      │
+      ▼
+  ┌──────────────────┐
+  │  Input Classifier │  URL or search query?
+  └──────────────────┘
+      │ URL
+      ▼
+  ┌──────────────────┐
+  │  URL Normalizer   │  scheme, host, domain parts, TLD, etc.
+  └──────────────────┘
+      │
+      ├──────────────────────────────────────────────────┐
+      │                                                  │
+      ▼                                                  ▼
+  ┌──────────────────┐                           ┌──────────────────┐
+  │  DETERMINISTIC    │                           │  EXTERNAL        │
+  │  PATH             │                           │  SIGNALS         │
+  │                   │                           │                  │
+  │  Signal           │                           │  GSB Lookup API  │
+  │  Extractor        │                           │  (parallel)      │
+  │  ├─ URL structure │                           │                  │
+  │  ├─ Domain        │                           │  Backend lookup  │
+  │  │  impersonation │                           │  (optional)      │
+  │  ├─ Redirect      │                           │                  │
+  │  │  patterns      │                           └──────────────────┘
+  │  └─ Keyword       │                                  │
+  │     analysis      │                                  │
+  │                   │                                  │
+  │  Policy Engine    │                                  │
+  │  (rules + config) │                                  │
+  │         │         │                                  │
+  │         ▼         │                                  │
+  │  Local verdict    │                                  │
+  └──────────────────┘                                   │
+      │                                                  │
+      │          ┌──────────────────┐                    │
+      │          │  AI URL SIGNAL   │                    │
+      │          │  (Pro only)      │                    │
+      │          │                  │                    │
+      │          │  Feature         │                    │
+      │          │  Extractor       │                    │
+      │          │  (17 features)   │                    │
+      │          │       │          │                    │
+      │          │       ▼          │                    │
+      │          │  Core ML model   │                    │
+      │          │       │          │                    │
+      │          │       ▼          │                    │
+      │          │  aiUrlRiskHigh   │                    │
+      │          │  or aiUrlClean   │                    │
+      │          └──────────────────┘                    │
+      │                  │                               │
+      ▼                  ▼                               ▼
+  ┌──────────────────────────────────────────────────────────┐
+  │                                                          │
+  │                 DETERMINISTIC COMBINER                   │
+  │                                                          │
+  │  1. Merge GSB signal (can escalate to BLOCK)             │
+  │  2. Merge AI signal (can escalate OK→INFORM, INFORM→WARN)│
+  │  3. Merge backend signal (highest severity wins)         │
+  │                                                          │
+  │  Rules, not AI, produce the final verdict.               │
+  │  AI can only escalate, never downgrade or override BLOCK.│
+  │                                                          │
+  │  Final verdict: allow / inform / warn / block            │
+  │  Reason code: deterministic, from approved set           │
+  │  For AI escalations: topPatternGroup → specific message  │
+  │                                                          │
+  └──────────────────────────────────────────────────────────┘
+      │
+      ▼
+  ┌──────────────────┐
+  │  UX Mapper        │  Verdict → screen type, buttons, message
+  └──────────────────┘
+      │
+      ▼
+  ┌──────────────────┐
+  │  Verdict Screen   │  Two-Step Safety Flow (CLAUDE.md rules 7–8)
+  └──────────────────┘
+      │
+      │  User taps "Check Message Context" (INFORM/WARN only, Pro)
+      ▼
+  ┌──────────────────┐
+  │  MESSAGE SIGNAL   │
+  │  (Pro only)       │
+  │                   │
+  │  User pastes text │
+  │       │           │
+  │       ▼           │
+  │  Core ML model    │
+  │  (multilingual)   │
+  │       │           │
+  │       ▼           │
+  │  Traffic-light    │
+  │  verdict +        │
+  │  scored labels    │
+  │                   │
+  │  Does NOT modify  │
+  │  URL verdict      │
+  └──────────────────┘
+
+================================================================================
+KEY INVARIANTS
+================================================================================
+
+1. The deterministic path always runs. AI is optional.
+2. AI models produce signals, not verdicts.
+3. The combiner is deterministic, not ML.
+4. AI can escalate, never downgrade, never override BLOCK.
+5. "The AI said so" is never shown to the user — pattern-specific messages only.
+6. The base product works correctly with AI disabled.
+7. Backend LLM is not a required runtime stage.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

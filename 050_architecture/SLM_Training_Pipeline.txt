@@ -1,4 +1,8 @@
 LinkLook — SLM Training Pipeline
+Status: deferred — data collection design remains valid; "SLM" terminology
+        superseded by "AI signal model" (see Model_Strategy.txt v2.0).
+        The training pipeline concept applies to the planned Core ML URL
+        signal model and message signal model.
 Generated: 2026-03-08
 Origin: ChatGPT
 

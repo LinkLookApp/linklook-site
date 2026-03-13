@@ -1,0 +1,110 @@
+LinkLook — AI Test Strategy
+Status: active
+Date: 2026-03-13
+
+Purpose
+Define how LinkLook's AI signal models are tested. This strategy covers
+the URL signal model and message signal model, their integration with the
+deterministic pipeline, and the combiner rules.
+
+References: AI_Model_Contracts.md, AI_Boundary_Rules.txt, CLAUDE.md rules 41–42.
+
+================================================================================
+1. TEST LAYERS
+================================================================================
+
+Layer 1 — Feature Extractor Unit Tests
+  Target: URLFeatureExtractor
+  What: Verify that every feature is correctly derived from NormalizedURL.
+  How: Deterministic unit tests with known URL inputs and expected outputs.
+  File: URLFeatureExtractorTests.swift
+  Coverage:
+    - Shannon entropy calculation (empty, uniform, random-looking strings)
+    - Host and path tokenization
+    - Brand token detection + position (official domains excluded)
+    - Suspicious keyword counting
+    - TLD categorization (common, country, new, suspicious)
+    - Port detection, punycode, userinfo, HTTPS, percent encoding
+    - Query parameter counting
+    - URL and host length
+
+Layer 2 — Model Output Threshold Tests
+  Target: URLModelOutput.triggersHighRisk
+  What: Verify decision thresholds are correctly applied.
+  How: Unit tests with synthetic URLModelOutput values.
+  File: AIURLModelTests.swift (URLModelOutputTests)
+  Coverage:
+    - Above threshold (malicious >= 0.85 AND confidence >= 0.7) → true
+    - At exact threshold → true
+    - High malicious but low confidence → false
+    - High confidence but low malicious → false
+    - Both below threshold → false
+
+Layer 3 — Combiner Rule Tests (U1–U6)
+  Target: LinkCheckService.mergeAI
+  What: Verify that AI signals are correctly merged with the base verdict.
+  How: Integration tests using MockURLSignalModel with configurable outputs.
+  File: AIURLModelTests.swift (AIURLCombinerTests)
+  Coverage:
+    - U1: aiUrlRiskHigh + allow → INFORM
+    - U2: aiUrlRiskHigh + inform → WARN
+    - U3: aiUrlRiskHigh + warn → keep WARN, add signal badge
+    - U4: aiUrlRiskHigh + block → keep BLOCK, add signal only
+    - U5: aiUrlClean + any → no change (never downgrade)
+    - U6: No AI model → no change
+    - AI + GSB interaction (both signals present)
+    - GSB BLOCK overrides AI clean
+    - AI high risk + GSB clean → still escalates
+    - Below-threshold suspicious → no escalation
+
+Layer 4 — Model Accuracy Tests (post-training)
+  Target: Trained Core ML model
+  What: Verify model meets minimum accuracy thresholds.
+  How: Run model against AI test fixtures, measure per-category accuracy.
+  File: AI_Test_Fixtures.yaml (fixture data), model accuracy test suite (TBD)
+  Coverage: See AI_Test_Catalog.txt for fixture categories.
+  Gating: Model cannot ship unless all minimum accuracy thresholds are met.
+
+Layer 5 — AI-Disabled Regression Tests
+  Target: Full pipeline with urlSignalModel = nil
+  What: Verify the base product works correctly with AI disabled.
+  How: Run existing golden fixture tests without AI model configured.
+  File: IntegrationTests.swift, LinkCheckServiceTests.swift
+  Rule: AI-disabled build must pass all existing core safety tests.
+  This is AI_Boundary_Rules.txt rule 4.
+
+================================================================================
+2. TEST PRINCIPLES
+================================================================================
+
+a) AI tests use MockURLSignalModel, never a real Core ML model.
+   Real model testing happens in the model accuracy layer (Layer 4).
+
+b) All combiner tests are deterministic — no randomness, no flakiness.
+
+c) Every AI code path must have a corresponding test fixture.
+   "If a test cannot be written, the AI path cannot ship."
+   (AI_Boundary_Rules.txt, rule 3)
+
+d) AI pattern-group messages must be tested for deterministic resolution.
+   Every topPatternGroup value must map to a specific, non-generic message.
+
+e) The message signal model does not modify URL verdicts. This invariant
+   must be tested independently.
+
+================================================================================
+3. TEST EXECUTION ORDER
+================================================================================
+
+1. Feature extractor unit tests (Layer 1)
+2. Threshold tests (Layer 2)
+3. Combiner rule tests (Layer 3)
+4. AI-disabled regression tests (Layer 5)
+5. Model accuracy tests (Layer 4) — only after training
+
+Tests 1–4 run in CI on every commit. Test 5 runs as a validation gate
+before model release.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

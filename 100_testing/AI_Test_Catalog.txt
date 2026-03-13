@@ -1,0 +1,175 @@
+LinkLook — AI Test Catalog
+Status: active
+Date: 2026-03-13
+
+Purpose
+Catalog all AI-specific test cases and their expected outcomes.
+Each case maps to a fixture in AI_Test_Fixtures.yaml.
+
+References: AI_Model_Contracts.md, AI_Test_Strategy.txt
+
+================================================================================
+URL MODEL TEST CASES
+================================================================================
+
+AI-URL-TC-001: Obvious benign URL
+  Input: https://www.google.com/search?q=weather
+  Expected: benignScore > 0.8, maliciousScore < 0.1
+  Category: true negative
+
+AI-URL-TC-002: Obvious phishing URL
+  Input: https://secure-login.paypal-verify.my-test-evil-2026.xyz/account
+  Expected: maliciousScore > 0.85, confidence > 0.7, topPatternGroup = brand_mimicry
+  Category: true positive
+
+AI-URL-TC-003: Brand impersonation in subdomain
+  Input: https://apple-id.my-test-phishing-2026.xyz/verify
+  Expected: maliciousScore > 0.7, containsBrandToken = true, brandPosition = subdomain
+  Category: true positive
+
+AI-URL-TC-004: Brand impersonation in path
+  Input: https://my-test-evil-2026.xyz/paypal/login/verify
+  Expected: suspiciousScore > 0.4, topPatternGroup = brand_mimicry or keyword_pattern
+  Category: suspicious
+
+AI-URL-TC-005: Punycode lookalike
+  Input: https://xn--pple-43d.my-test-evil-2026.xyz/
+  Expected: maliciousScore > 0.6, isPunycode = true, topPatternGroup = obfuscation
+  Category: true positive
+
+AI-URL-TC-006: IP address URL
+  Input: http://192.168.1.1:8080/login
+  Expected: suspiciousScore > 0.5 or maliciousScore > 0.3
+  Features: hasIPAddress = true, hasNonStandardPort = true
+  Category: suspicious
+
+AI-URL-TC-007: Userinfo obfuscation
+  Input: https://admin@my-test-evil-2026.xyz/secure
+  Expected: maliciousScore > 0.5, hasUserInfo = true, topPatternGroup = obfuscation
+  Category: suspicious
+
+AI-URL-TC-008: Suspicious encoding
+  Input: https://my-test-evil-2026.xyz/%70%61%79%70%61%6C/login
+  Expected: suspiciousScore > 0.4, percentEncodedCount >= 6
+  Category: suspicious
+
+AI-URL-TC-009: Shortened URL (after expansion)
+  Input: https://my-test-short-2026.xyz/redirect?url=http://my-test-evil-2026.xyz
+  Expected: suspiciousScore > 0.3 (open redirect pattern)
+  Category: inform-level
+
+AI-URL-TC-010: False-positive safe commercial URL
+  Input: https://www.amazon.com/dp/B09V3KXJPB
+  Expected: benignScore > 0.85, maliciousScore < 0.05
+  Category: true negative (must not false-positive)
+
+AI-URL-TC-011: AI model timeout / unavailable
+  Expected: pipeline returns deterministic verdict only, no AI signals present
+  Category: fallback
+
+AI-URL-TC-012: Suspicious TLD with clean content
+  Input: https://my-test-portfolio-2026.xyz/about
+  Expected: tldCategory = suspicious or new, but benignScore may still be moderate
+  Category: edge case
+
+AI-URL-TC-013: Very long URL with many parameters
+  Input: https://my-test-evil-2026.xyz/path/to/login?token=abc123&ref=evil&redirect=...
+  Expected: urlLength > 200, queryParamCount >= 3, pathDepth >= 3
+  Category: structural risk
+
+================================================================================
+MESSAGE MODEL TEST CASES
+================================================================================
+
+AI-MSG-TC-001: Benign sharing message
+  Input: "Hey, check out this cool article I found!"
+  Expected: benignScore > 0.7, scamLikelihood < 0.2
+  Category: true negative
+
+AI-MSG-TC-002: Fake bank message
+  Input: "URGENT: Your ING account has been suspended. Verify now to avoid closure."
+  Expected: scamLikelihood > 0.75, intentLabels include impersonation, urgency_pressure
+  Category: true positive
+
+AI-MSG-TC-003: Fake parcel delivery message
+  Input: "PostNL: Your package could not be delivered. Pay €1.99 shipping to reschedule."
+  Expected: scamLikelihood > 0.7, intentLabels include payment_request, impersonation
+  Category: true positive
+
+AI-MSG-TC-004: Credential request
+  Input: "Apple ID verification required. Enter your password to continue access."
+  Expected: scamLikelihood > 0.6, intentLabels include credential_request, impersonation
+  Category: true positive
+
+AI-MSG-TC-005: Payment request
+  Input: "Transfer €500 immediately to avoid legal action on your overdue account."
+  Expected: scamLikelihood > 0.7, intentLabels include payment_request, urgency_pressure
+  Category: true positive
+
+AI-MSG-TC-006: Urgency pressure
+  Input: "Your account will be deleted in 24 hours unless you click this link NOW."
+  Expected: scamLikelihood > 0.65, intentLabels include urgency_pressure
+  Category: true positive
+
+AI-MSG-TC-007: Impersonation language
+  Input: "This is the official security team at your bank. We detected suspicious activity."
+  Expected: scamLikelihood > 0.5, intentLabels include impersonation
+  Category: suspicious
+
+AI-MSG-TC-008: Mixed Dutch/English message
+  Input: "Uw pakket is onderweg. Klik hier om de bezorgkosten van €2.50 te betalen."
+  Expected: correct language handling, scamLikelihood > 0.5
+  Category: multilingual
+
+AI-MSG-TC-009: Short incomplete message
+  Input: "click here"
+  Expected: confidence < 0.5 (insufficient text for reliable classification)
+  Category: low confidence
+
+AI-MSG-TC-010: Noisy text / formatting anomalies
+  Input: "!!!URGENT!!! Y0ur Acc0unt Has Been C0mpr0mised !!! ACT N0W !!!"
+  Expected: scamLikelihood > 0.6, intentLabels include grammar_anomalies, urgency_pressure
+  Category: true positive
+
+AI-MSG-TC-011: Message model timeout / unavailable
+  Expected: show "Could not analyze" message, URL verdict unchanged
+  Category: fallback
+
+================================================================================
+COMBINED TEST CASES
+================================================================================
+
+AI-COMB-TC-001: Benign URL + benign message
+  URL verdict: allow (no AI escalation)
+  Message verdict: green ("This message looks normal")
+  Expected: no escalation, no scam warning
+
+AI-COMB-TC-002: Benign URL + suspicious message
+  URL verdict: allow (no AI escalation)
+  Message verdict: orange or red (scam patterns in text)
+  Expected: URL verdict stays allow. Message analysis shows warning separately.
+  Key: message model never changes URL verdict.
+
+AI-COMB-TC-003: Suspicious URL + benign message
+  URL verdict: inform or warn (AI escalated)
+  Message verdict: green
+  Expected: URL verdict reflects AI escalation. Message analysis is reassuring.
+
+AI-COMB-TC-004: Suspicious URL + suspicious message
+  URL verdict: warn (AI escalated from inform)
+  Message verdict: orange or red
+  Expected: both warnings present, displayed separately.
+
+AI-COMB-TC-005: Inform URL + suspicious message
+  URL verdict: inform (from structural analysis)
+  Message verdict: red (strong scam signals)
+  Expected: URL stays inform. Message shows strong warning. No cross-escalation.
+
+AI-COMB-TC-006: Warn URL + benign message
+  URL verdict: warn
+  Message verdict: green
+  Expected: URL stays warn. Message is reassuring. User sees both.
+
+================================================================================
+END OF DOCUMENT
+================================================================================

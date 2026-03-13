@@ -1,0 +1,210 @@
+# LinkLook AI Test Fixtures
+# Status: active
+# Date: 2026-03-13
+# Purpose: Machine-readable test fixtures for AI model validation.
+# All domains are synthetic (CLAUDE.md rule 4: clearly synthetic domains).
+# No real malicious URLs (CLAUDE.md rule 2).
+
+---
+url_model_fixtures:
+
+  - id: AI-URL-TC-001
+    category: true_negative
+    url: "https://www.google.com/search?q=weather"
+    expected:
+      benignScore_min: 0.8
+      maliciousScore_max: 0.1
+    features:
+      isHTTPS: true
+      containsBrandToken: false
+      tldCategory: common
+      hasIPAddress: false
+
+  - id: AI-URL-TC-002
+    category: true_positive
+    url: "https://secure-login.paypal-verify.my-test-evil-2026.xyz/account"
+    expected:
+      maliciousScore_min: 0.85
+      confidence_min: 0.7
+      topPatternGroup: brand_mimicry
+    features:
+      containsBrandToken: true
+      brandTokenPosition: subdomain
+      tldCategory: suspicious
+      suspiciousKeywordCount_min: 2
+
+  - id: AI-URL-TC-003
+    category: true_positive
+    url: "https://apple-id.my-test-phishing-2026.xyz/verify"
+    expected:
+      maliciousScore_min: 0.7
+    features:
+      containsBrandToken: true
+      brandTokenPosition: subdomain
+
+  - id: AI-URL-TC-004
+    category: suspicious
+    url: "https://my-test-evil-2026.xyz/paypal/login/verify"
+    expected:
+      suspiciousScore_min: 0.4
+    features:
+      pathDepth: 3
+      suspiciousKeywordCount_min: 2
+
+  - id: AI-URL-TC-005
+    category: true_positive
+    url: "https://xn--pple-43d.my-test-evil-2026.xyz/"
+    expected:
+      maliciousScore_min: 0.6
+      topPatternGroup: obfuscation
+    features:
+      isPunycode: true
+
+  - id: AI-URL-TC-006
+    category: suspicious
+    url: "http://192.168.1.1:8080/login"
+    expected:
+      suspiciousScore_min: 0.3
+    features:
+      hasIPAddress: true
+      hasNonStandardPort: true
+      isHTTPS: false
+
+  - id: AI-URL-TC-007
+    category: suspicious
+    url: "https://admin@my-test-evil-2026.xyz/secure"
+    expected:
+      maliciousScore_min: 0.5
+      topPatternGroup: obfuscation
+    features:
+      hasUserInfo: true
+
+  - id: AI-URL-TC-008
+    category: suspicious
+    url: "https://my-test-evil-2026.xyz/%70%61%79%70%61%6C/login"
+    expected:
+      suspiciousScore_min: 0.4
+    features:
+      percentEncodedCount_min: 6
+
+  - id: AI-URL-TC-009
+    category: inform
+    url: "https://my-test-short-2026.xyz/redirect?url=http://my-test-evil-2026.xyz"
+    expected:
+      suspiciousScore_min: 0.3
+    features:
+      queryParamCount: 1
+
+  - id: AI-URL-TC-010
+    category: true_negative
+    url: "https://www.amazon.com/dp/B09V3KXJPB"
+    expected:
+      benignScore_min: 0.85
+      maliciousScore_max: 0.05
+    features:
+      containsBrandToken: false  # amazon.com is official domain
+      tldCategory: common
+      isHTTPS: true
+
+  - id: AI-URL-TC-012
+    category: edge_case
+    url: "https://my-test-portfolio-2026.xyz/about"
+    expected:
+      # May be suspicious TLD but clean content
+      maliciousScore_max: 0.5
+    features:
+      tldCategory: suspicious
+      suspiciousKeywordCount: 0
+
+  - id: AI-URL-TC-013
+    category: structural_risk
+    url: "https://my-test-evil-2026.xyz/path/to/login?token=abc123&ref=evil&redirect=http://danger.example"
+    expected:
+      suspiciousScore_min: 0.3
+    features:
+      pathDepth_min: 3
+      queryParamCount_min: 3
+
+---
+message_model_fixtures:
+
+  - id: AI-MSG-TC-001
+    category: true_negative
+    text: "Hey, check out this cool article I found!"
+    channelHint: chat
+    expected:
+      benignScore_min: 0.7
+      scamLikelihood_max: 0.2
+
+  - id: AI-MSG-TC-002
+    category: true_positive
+    text: "URGENT: Your ING account has been suspended. Verify now to avoid closure."
+    channelHint: sms
+    expected:
+      scamLikelihood_min: 0.75
+      confidence_min: 0.7
+      intentLabels_include: [impersonation, urgency_pressure]
+
+  - id: AI-MSG-TC-003
+    category: true_positive
+    text: "PostNL: Your package could not be delivered. Pay €1.99 shipping to reschedule."
+    channelHint: sms
+    expected:
+      scamLikelihood_min: 0.7
+      intentLabels_include: [payment_request, impersonation]
+
+  - id: AI-MSG-TC-004
+    category: true_positive
+    text: "Apple ID verification required. Enter your password to continue access."
+    channelHint: email
+    expected:
+      scamLikelihood_min: 0.6
+      intentLabels_include: [credential_request, impersonation]
+
+  - id: AI-MSG-TC-005
+    category: true_positive
+    text: "Transfer €500 immediately to avoid legal action on your overdue account."
+    channelHint: email
+    expected:
+      scamLikelihood_min: 0.7
+      intentLabels_include: [payment_request, urgency_pressure]
+
+  - id: AI-MSG-TC-006
+    category: true_positive
+    text: "Your account will be deleted in 24 hours unless you click this link NOW."
+    channelHint: email
+    expected:
+      scamLikelihood_min: 0.65
+      intentLabels_include: [urgency_pressure]
+
+  - id: AI-MSG-TC-007
+    category: suspicious
+    text: "This is the official security team at your bank. We detected suspicious activity."
+    channelHint: email
+    expected:
+      scamLikelihood_min: 0.5
+      intentLabels_include: [impersonation]
+
+  - id: AI-MSG-TC-008
+    category: multilingual
+    text: "Uw pakket is onderweg. Klik hier om de bezorgkosten van €2.50 te betalen."
+    channelHint: sms
+    expected:
+      scamLikelihood_min: 0.5
+      note: "Dutch parcel scam — must handle correctly"
+
+  - id: AI-MSG-TC-009
+    category: low_confidence
+    text: "click here"
+    channelHint: unknown
+    expected:
+      confidence_max: 0.5
+      note: "Too short for reliable classification"
+
+  - id: AI-MSG-TC-010
+    category: true_positive
+    text: "!!!URGENT!!! Y0ur Acc0unt Has Been C0mpr0mised !!! ACT N0W !!!"
+    channelHint: sms
+    expected:
+      scamLikelihood_min: 0.6
+      intentLabels_include: [grammar_anomalies, urgency_pressure]

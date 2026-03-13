@@ -1,199 +1,147 @@
 ================================================================================
-LINKLOOK — MODEL STRATEGY (SLM / LLM ROADMAP)
-Document:  09 of 11
-Version:   1.1 — updated to incorporate Security_Threat_Deep_Dive_Appendix_v1
-Date:      2026-03-06 (updated)
-Authority: LinkLook_Model_Strategy_v1.txt, linklook technical architecture 1.txt,
-           pipeline_decisions_8.txt (D4, D7, D11),
-           LinkLook_Comprehensive_Chat_Summary_v1.txt,
-           Security_Threat_Deep_Dive_Appendix_v1.
+LINKLOOK — MODEL STRATEGY
+Status:   active
+Version:  2.0 — rewritten to match current architecture
+Date:     2026-03-13
+Authority:
+  - LinkLook_Master_Decision_Log_2026-03-10.txt (canonical source of truth)
+  - AI_Architecture_Note_v1.md
+  - AI_Boundary_Rules.txt
+  - AI_Model_Contracts.md
+Supersedes: Model_Strategy v1.1 (2026-03-06), which described a Claude-first
+            runtime architecture. That design is no longer active.
 ================================================================================
 
 ================================================================================
-MODEL ARCHITECTURE
-================================================================================
-
-THREE-TIER DECISION STACK:
-
-Tier 1 — Deterministic rules
-Fast, zero-latency, on-device decisions.
-Blocklist cache hits, top-500 pre-filter, structural heuristics.
-No model involved. Binary outcome: BLOCK or PASS.
-
-Tier 2 — SLM (Small Language Model) — v2+
-Handles the majority of ambiguous traffic.
-Target: ≥80% of non-deterministic cases resolved by SLM without a Claude call.
-v1 status: slot reserved in pipeline between GSB and Claude. Empty in v1.
-v2 status: trained on v1 classification records; introduced once sufficient
-           training volume exists.
-
-Tier 3 — Claude API (LLM)
-Handles edge cases, uncertain cases, and cases the SLM cannot resolve.
-Reserved for genuine uncertainty. Not the primary analysis engine.
-Provides plain-English explanation with every verdict.
-Remains the fallback for UNCERTAIN cases at v2 and beyond.
-
 GOVERNING PRINCIPLE
+================================================================================
+
+LinkLook is a deterministic safety product with optional bounded on-device AI
+signals. The base product does not depend on any external LLM. AI is additive
+and bounded: the core safety flow must work correctly with AI disabled.
+
 No live self-modifying production models. All model updates go through the
 cycle: sample → audit → validate → retrain. Version controlled. Staged
-deployment.
+deployment. Model updates ship with app updates (no over-the-air model
+replacement in v1.x).
 
 ================================================================================
-V1 MODEL BEHAVIOUR
+THREE-TIER DECISION STACK (current)
 ================================================================================
 
-In v1, the SLM slot is empty. All URLs that pass the deterministic tier
-(GSB + local caches) go directly to Claude.
+Tier 1 — Deterministic rules and policy
+Fast, zero-latency, on-device decisions.
+Structural analysis, Google Safe Browsing, signal extraction, policy engine.
+Binary or graduated outcome: allow / inform / warn / block.
+No model involved. This is the complete v1 base product.
 
-Claude receives exactly five data points per request:
-1. Full original URL including query parameters.
-2. Resolved destination URL after redirect chain.
-3. Domain registration date.
-4. User profile: PROTECTED or STANDARD.
-5. User mode: BLOCK or WARN.
+Tier 2 — Optional on-device bounded AI signals (Pro, planned)
+Two small, specialized models running on-device via Core ML:
 
-Claude returns structured JSON:
-  { "verdict": "SAFE" | "BLOCK" | "UNCERTAIN",
-    "explanation": "one sentence in plain English" }
+  a) URL signal model — tiny classifier trained on URL features.
+     Input: fixed-length numeric/categorical/boolean feature vector
+            derived from the NormalizedURL (23 engineered features).
+     Output: 3-class softmax (benign / suspicious / malicious) + confidence.
+     Role: produces a signal (aiUrlRiskHigh or aiUrlClean) that enters the
+           deterministic combiner. Can escalate (OK→INFORM, INFORM→WARN).
+           Cannot override BLOCK. Cannot downgrade. Cannot produce verdicts.
+     Runs: on every URL check (Pro users only), in parallel with Tier 1.
+     Privacy: fully on-device. No data leaves the device.
+     Contract: AI_Model_Contracts.md
 
-Explanation tone is calibrated per the four valid profile+mode combinations:
-  PROTECTED + BLOCK: calm, reassuring, no jargon.
-  STANDARD + BLOCK:  calm, slightly more technical detail allowed.
-  STANDARD + WARN:   informative, direct, more detail allowed.
-  PROTECTED + WARN:  impossible — PROTECTED profile is locked to BLOCK mode.
+  b) Message signal model — multilingual text classifier (Dutch + English).
+     Input: raw message text + optional channel hint.
+     Output: scam likelihood + scored intent labels + explanation tags.
+     Role: analyzes the surrounding message text when a user taps
+           "Check Message Context" on INFORM/WARN screens.
+           Produces a traffic-light verdict displayed alongside (not replacing)
+           the URL verdict. Never modifies the URL verdict.
+     Runs: only when explicitly triggered by user action.
+     Privacy: fully on-device. Text processed and discarded, never stored.
+     Contract: AI_Model_Contracts.md
 
-Claude error handling: if Claude returns an error, the verdict defaults to
-UNCERTAIN with a template explanation. UNCERTAIN is then treated per user
-mode (block in BLOCK mode, surface for user decision in WARN mode).
-
-================================================================================
-V2 SLM — TWO OPTIONS UNDER EVALUATION (D11)
-================================================================================
-
-DECISION DEFERRED TO V2. To be resolved once v1 training data is accumulated.
-
-OPTION A — BACKEND SLM
-Deployment: backend server.
-Training:   Standard supervised learning on v1 classification records.
-Advantages: Easier to train and update. No device storage impact. Can pass
-            through plain-English explanations (model output → Claude-quality
-            text).
-Requires:   Backend call for every SLM analysis — not fully offline-capable.
-Latency:    Additional network round trip for SLM cases.
-
-OPTION B — APPLE CORE ML ON-DEVICE CLASSIFIER
-Deployment: On-device, runs on Apple Neural Engine.
-Training:   Create ML on v1 classification records.
-Model size: 5–20MB on-device storage.
-Advantages: No backend call for confident verdicts. Very low latency.
-            Runs on Apple Neural Engine — battery-efficient.
-Limitations: Cannot generate plain-English explanations. Confident verdicts
-             use template explanations only. Claude reserved for uncertain
-             cases. Model updates require app update or OTA model download.
-Requires:   App update or OTA mechanism for model updates.
-
-V1 TRAINING LOG DESIGN:
-The v1 SLM training log schema has been designed to be compatible with both
-options. Features captured: URL hash, domain registration date, GSB verdict,
-Claude verdict, Claude explanation, hour-level timestamp. No additional
-features need to be added to the v1 log to support either option.
-
-DECISION CRITERIA FOR V2:
-- Volume of accumulated training data.
-- Measured quality of v1 classification records.
-- Battery impact considerations for the primary audience (older devices).
-- Desire for offline-capable confident verdicts (favours Option B).
-- Desire for high-quality natural language explanations (favours Option A).
+Tier 3 — Optional future explanation layer (deferred)
+  Foundation Models (Apple) may be used later for natural-language explanation
+  on supported devices only. This is an enhancement, not a requirement.
+  Backend LLM remains optional and deferred — it is not architecturally
+  required for any current or planned feature.
 
 ================================================================================
-SLM TRAINING GOAL
+WHAT CHANGED FROM v1.1
 ================================================================================
 
-Target: SLM handles ≥80% of non-deterministic URL cases without a Claude call.
-The remaining ≤20% escalate to Claude for genuine uncertainty.
+The v1.1 document (2026-03-06) described:
+  - Tier 2 as a "reserved SLM slot, empty in v1"
+  - Tier 3 as "Claude API fallback — all unknown URLs go directly to Claude"
+  - Claude receiving five data points and returning structured JSON
+  - Claude as the active v1 runtime path for non-deterministic cases
 
-This target:
-- Reduces Claude API cost at scale.
-- Reduces latency for the majority of analysed URLs.
-- Keeps Claude reserved for the cases where its reasoning adds most value.
+Per the Master Decision Log 2026-03-10:
+  - Core ML is the active-planned AI path (on-device, not server-side)
+  - Foundation Models are optional (not required)
+  - Claude backend is not architecturally required
+  - The older Claude-required wording is superseded
 
-================================================================================
-LEARNING LOOP
-================================================================================
-
-v1 COLLECTION PHASE:
-Every URL processed at Layer 3 emits a classification record (ADR-003).
-These records form the training corpus. Must be implemented from day one.
-
-v1.x / v2 TRAINING PHASE:
-Once sufficient volume exists (~180,000 records at 12 months at target scale),
-the first SLM iteration is trained on accumulated v1 records.
-
-ONGOING CYCLE (v2+):
-1. Sample a subset of live production analyses.
-2. Audit: compare SLM verdict to Claude verdict; identify disagreements.
-3. Validate: human review of high-disagreement cases.
-4. Retrain: incorporate validated labels; version and deploy new model.
-
-QUALITY CONTROLS:
-- SLM vs Claude disagreement rate tracked as a continuous metric.
-- Minimum confidence threshold required for SLM to return a verdict without
-  escalating to Claude.
-- Escalation rate (% of URLs reaching Claude) monitored weekly.
-- False positive rate monitored weekly.
+The current architecture:
+  - v1 base product runs entirely on deterministic rules + GSB
+  - AI models are additive signal sources, not fallback tiers
+  - No URL ever "goes directly to Claude"
+  - The base product must pass all safety tests with AI disabled
 
 ================================================================================
-AI-SPECIFIC THREATS (from Security_Threat_Deep_Dive_Appendix_v1)
+TRAINING DATA STRATEGY
 ================================================================================
 
-PROMPT INJECTION (LLM)
-Threat:    Malicious page content attempts to manipulate the classification
-           prompt, causing Claude to return incorrect verdicts.
-Mitigation:
-- Strict prompt isolation — page content is data input, never instruction.
-  The classification prompt must be hardcoded; no part of the analysed URL
-  or page content is allowed to modify the prompt structure.
-- Never allow page instructions to modify classification policy.
-- Deterministic validation layer before LLM output is trusted: Claude's
-  JSON response is validated against expected schema before any verdict is
-  acted on. Unexpected fields or formats trigger UNCERTAIN.
+URL signal model:
+  - Public phishing datasets: PhishTank, OpenPhish
+  - Legitimate URL corpus: Tranco top-10k
+  - Must validate against LinkLook's existing golden test fixtures before release
 
-MODEL EVASION
-Threat:    Obfuscated phishing content designed to bypass AI classification.
-           Visual-only credential harvesting (e.g. login form rendered as image).
-Mitigation:
-- DOM + text fingerprinting alongside visual analysis at Layer 2/3.
-- Heuristic pattern detection at Layer 2 before LLM involvement — catches
-  structural phishing signals independent of content understanding.
-- Escalation sampling for audit: a random sample of SAFE verdicts is
-  flagged for human review to catch evasion patterns over time.
+Message signal model:
+  - Scam message corpora (Dutch + English)
+  - Legitimate message samples
+  - Must validate against AI test fixtures (see 100_testing/AI_Test_Catalog.txt)
 
-ZERO-DAY AND FIRST-TIME DOMAIN HANDLING
-Threat:    No reputation signal exists for a first-observed domain. SLM and
-           blocklist layers provide no protection.
-Mitigation:
-- Full sandbox render in Stage 2 for unknown domains.
-- Heuristic anomaly detection (structural signals independent of reputation).
-- Fingerprint storage for later correlation across similar attacks.
-- Optional evidence capture under high-risk trigger conditions.
-These cases are the primary reason Claude remains the fallback tier — novel
-domains with no training data are exactly where LLM reasoning adds most value.
+Training log design (from v1):
+  Structured evaluation records emitted by the detection engine can support
+  future model training. Minimum fields: canonical URL hash, domain, timestamp,
+  feature vector, triggered signals, final verdict, confidence, verdict source.
+  No user identity required. Privacy by design applies to training data.
 
 ================================================================================
 VENDOR STRATEGY
 ================================================================================
 
-VENDOR ABSTRACTION
-The model interface is abstracted behind a defined API contract. No vendor
-lock-in. The SLM and LLM are replaceable components.
+The model interface is abstracted behind defined Swift protocols
+(URLSignalModelProtocol, MessageSignalModelProtocol). No vendor lock-in.
+Models are replaceable components.
 
-CLAUDE (ANTHROPIC) — CURRENT LLM
-Used as the Layer 3 fallback in v1. Performance and cost to be measured
-under realistic load before v2 planning.
+Core ML is the current deployment target. The protocol abstraction allows
+switching to alternative runtimes without architectural changes.
 
-FUTURE FLEXIBILITY
-The abstraction allows switching to alternative LLM providers or running
-a self-hosted model at the LLM tier without architectural changes.
+Backend LLM integration (any vendor) remains possible through the same signal
+interface if introduced later. It must enter as a non-authoritative signal,
+not as a verdict source.
+
+================================================================================
+AI-SPECIFIC THREAT MITIGATIONS
+================================================================================
+
+Model evasion:
+  Obfuscated phishing content designed to bypass AI classification is mitigated
+  by the deterministic pipeline running in parallel. AI is one signal among
+  many. The rule engine decides the verdict, not the AI score alone.
+
+Zero-day and first-time domains:
+  No reputation signal exists for first-observed domains. The deterministic
+  engine handles this through structural heuristics, unusual TLD detection,
+  and the fail-safe principle (warn on uncertainty, never silent allow).
+  AI signals add coverage for subtle patterns that rules may miss.
+
+Adversarial URLs:
+  URLs crafted to fool the AI model cannot bypass the deterministic checks
+  that run in parallel. The combiner's escalate-only rule means an AI miss
+  does not weaken protection — it only means the AI signal is absent.
 
 ================================================================================
 END OF DOCUMENT

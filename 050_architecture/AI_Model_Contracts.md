@@ -1,8 +1,12 @@
 # AI Model Input/Output Contracts
 
+> **Status: active** — implemented in code (URLSignalModel.swift,
+> URLFeatureExtractor.swift, LinkCheckService.swift). This document is the
+> single source of truth for model interfaces.
+
 > Exact specifications for LinkLook's two AI models.
 > Code and tests can be written against these contracts without ambiguity.
-> See also: AI Architecture Note v1, CLAUDE.md rules 41–42.
+> See also: AI Architecture Note v1, AI Boundary Rules, CLAUDE.md rules 41–42.
 
 ---
 
@@ -18,21 +22,24 @@ features that individually look benign but together signal phishing.
 - **Trigger:** Every URL check (Pro users only)
 - **Timeout:** Must complete within the 8-second checking window
 - **Privacy:** No data leaves the device
+- **Model updates:** Ship with app updates (no OTA in v1.x)
 
-### Input: `URLModelInput`
+### Architecture: Feature-Based Classifier
 
-The model receives a **fixed-length feature vector** derived from the
-`NormalizedURL` that already exists in the codebase.
+The URL model is a **feature-based classifier** (not token-based).
+It receives only numeric, categorical, and boolean engineered features.
+No raw strings are passed to the Core ML model at runtime.
+
+The `URLFeatureExtractor` (pure Swift) derives the feature vector from
+the `NormalizedURL`. The Core ML model receives only the derived features.
+
+### Core ML Runtime Input
+
+The Core ML model receives a fixed-length feature vector with these fields:
 
 ```
 Field                     Type      Description
 ─────────────────────────────────────────────────────────────────
-fullURL                   String    Original URL string (for tokenization)
-hostTokens                [String]  Host split on "." and "-"
-pathTokens                [String]  Path split on "/" and "-"
-registrableDomain         String?   From NormalizedURL
-subdomain                 String?   From NormalizedURL
-tld                       String?   From NormalizedURL
 subdomainDepth            Int       Number of subdomain levels (0–N)
 pathDepth                 Int       Number of path segments
 urlLength                 Int       Total character count of original URL
@@ -46,17 +53,61 @@ hasNonStandardPort        Bool      port != nil && port != 80 && port != 443
 isHTTPS                   Bool      scheme == "https"
 queryParamCount           Int       Number of query parameters
 percentEncodedCount       Int       Number of %-encoded sequences in URL
-containsBrandToken        Bool      Any known brand appears in host tokens
-brandTokenPosition        String    "none" | "start" | "middle" | "subdomain"
+containsBrandToken        Bool      Any known brand appears in host
+brandTokenPositionEncoded Int       0=none, 1=start, 2=middle, 3=subdomain
 suspiciousKeywordCount    Int       Count of phishing keywords in domain+path
-tldCategory               String    "common" | "country" | "new" | "suspicious"
+tldCategoryEncoded        Int       0=common, 1=country, 2=new, 3=suspicious
 ```
 
-**Derived features** (computed by the feature extractor, not the model):
-- `domainEntropy`: Shannon entropy calculated over characters in registrable domain
-- `pathEntropy`: Shannon entropy calculated over characters in path
-- `tldCategory`: Mapped from existing TLD lists in the codebase
-- `brandTokenPosition`: Mapped from existing brand detection logic
+17 features. All numeric or boolean. No variable-length inputs.
+
+### Swift Feature Extractor Interface
+
+The `URLFeatureExtractor` computes the feature vector and wraps it in a
+`URLModelInput` struct. This struct also carries the original URL string
+and NormalizedURL for the pipeline's use — but the Core ML model only
+receives the 17 engineered features listed above.
+
+```swift
+public struct URLModelInput: Sendable {
+    // Used by pipeline (not passed to Core ML model)
+    public let fullURL: String
+    public let normalizedURL: NormalizedURL
+
+    // Derived features (these are what the Core ML model receives)
+    public let hostTokens: [String]      // Used by pipeline for brand detection
+    public let pathTokens: [String]      // Used by pipeline for keyword counting
+    public let registrableDomain: String?
+    public let subdomain: String?
+    public let tld: String?
+    public let subdomainDepth: Int
+    public let pathDepth: Int
+    public let urlLength: Int
+    public let hostLength: Int
+    public let domainEntropy: Float
+    public let pathEntropy: Float
+    public let hasIPAddress: Bool
+    public let isPunycode: Bool
+    public let hasUserInfo: Bool
+    public let hasNonStandardPort: Bool
+    public let isHTTPS: Bool
+    public let queryParamCount: Int
+    public let percentEncodedCount: Int
+    public let containsBrandToken: Bool
+    public let brandTokenPosition: String  // "none"|"start"|"middle"|"subdomain"
+    public let suspiciousKeywordCount: Int
+    public let tldCategory: String         // "common"|"country"|"new"|"suspicious"
+}
+```
+
+Note: `hostTokens`, `pathTokens`, `fullURL`, and `normalizedURL` are
+carried in the struct for the pipeline's convenience (feature extraction,
+signal merging). They are NOT passed to the Core ML model. The Core ML
+model receives only the 17 numeric/boolean fields.
+
+When converting to Core ML input, the feature extractor maps:
+- `brandTokenPosition` → `brandTokenPositionEncoded` (Int)
+- `tldCategory` → `tldCategoryEncoded` (Int)
 
 ### Output: `URLModelOutput`
 
@@ -92,9 +143,16 @@ otherwise                                        →  signal: aiUrlClean (intern
 `aiUrlRiskHigh` can escalate: OK → INFORM, INFORM → WARN. Never overrides BLOCK.
 `aiUrlClean` is internal — never shown to user, never downgrades.
 
+### Derived features (computed by URLFeatureExtractor)
+- `domainEntropy`: Shannon entropy calculated over characters in registrable domain
+- `pathEntropy`: Shannon entropy calculated over characters in path
+- `tldCategory`: Mapped from PolicyConfig TLD lists
+- `brandTokenPosition`: Mapped from PolicyConfig brand detection logic
+- `suspiciousKeywordCount`: Count of PolicyConfig suspicious keywords in host+path
+
 ### Training data
 - Public phishing datasets: PhishTank, OpenPhish
-- Legitimate URL corpus: Tranco top-10k, Alexa top-10k
+- Legitimate URL corpus: Tranco top-10k
 - Must be validated against LinkLook's existing golden test fixtures before release
 
 ---
@@ -118,8 +176,6 @@ This is the "Check Message Context" Pro feature (CLAUDE.md rules 20–22).
 Field                     Type      Description
 ──────────────────────────────────────────────────────────────────
 rawText                   String    The message text the user pasted
-normalizedText            String    Lowercased, whitespace-normalized
-tokenCount                Int       Word count of normalized text
 channelHint               String?   "sms" | "email" | "chat" | "unknown"
                                     (optional — from InputContext.sourceType)
 ```
@@ -204,17 +260,21 @@ the existing verdict pipeline.
 
 ### URL model combiner rules
 
+The combiner maps `topPatternGroup` to a deterministic reason code.
+"The AI said so" is never an acceptable user-facing reason
+(AI_Boundary_Rules.txt, rule 1).
+
 ```
 Rule    Condition                                    Action
 ────────────────────────────────────────────────────────────────────
 U1      aiUrlRiskHigh + primary verdict OK       →   Escalate to INFORM
-        Reason: "LinkLook's AI model detected suspicious patterns"
+        Reason: mapped from topPatternGroup (see table below)
 
 U2      aiUrlRiskHigh + primary verdict INFORM   →   Escalate to WARN
-        Reason: same as U1
+        Reason: mapped from topPatternGroup (see table below)
 
 U3      aiUrlRiskHigh + primary verdict WARN     →   Keep WARN (already escalated)
-        Add signal badge: "AI-detected patterns"
+        Add signal badge from topPatternGroup
 
 U4      aiUrlRiskHigh + primary verdict BLOCK    →   Keep BLOCK (never override)
         Add signal only
@@ -225,6 +285,42 @@ U5      aiUrlClean + any primary verdict         →   No change (never downgrad
 U6      AI timeout or unavailable                →   No change
         Use structural + GSB results only
 ```
+
+### AI reason-code mapping (topPatternGroup → user-facing reason)
+
+The model's `topPatternGroup` output is mapped to a deterministic,
+human-readable reason. The model never generates free-form text.
+
+```
+topPatternGroup     Reason code         User-facing message
+────────────────────────────────────────────────────────────────────
+brand_mimicry       aiUrlRiskHigh       "This web address contains patterns
+                                         that mimic a well-known brand."
+
+obfuscation         aiUrlRiskHigh       "This web address uses obfuscation
+                                         techniques commonly seen in scam links."
+
+domain_structure    aiUrlRiskHigh       "This web address has a domain structure
+                                         commonly associated with phishing."
+
+keyword_pattern     aiUrlRiskHigh       "This web address contains a suspicious
+                                         combination of keywords."
+
+tld_risk            aiUrlRiskHigh       "This web address uses a domain type
+                                         frequently associated with scam sites."
+
+path_structure      aiUrlRiskHigh       "This web address has a URL path structure
+                                         commonly used in phishing attacks."
+
+mixed_signals       aiUrlRiskHigh       "Multiple aspects of this web address
+                                         match patterns seen in scam links."
+```
+
+Implementation note: The reason code remains `aiUrlRiskHigh` in all cases
+(it is the signal that caused escalation). The `topPatternGroup` is stored
+in the signal metadata and used by the UX mapper to select the specific
+user-facing message. This keeps the reason-code enum stable while providing
+pattern-specific explanations.
 
 ### Message model combiner rules
 
@@ -248,6 +344,7 @@ modify buttons, verdict color, or primary recommendation on the verdict screen.
 ## Swift Protocol Contracts
 
 These are the protocol signatures that the Core ML wrappers must implement.
+Implemented in: `LinkLookCore/Sources/LinkLookCore/AIModel/`
 
 ### URL model protocol
 
@@ -257,9 +354,10 @@ public protocol URLSignalModelProtocol: Sendable {
 }
 
 public struct URLModelInput: Sendable {
-    public let fullURL: String
-    public let normalizedURL: NormalizedURL
-    // Feature extractor derives all other fields from NormalizedURL
+    public let fullURL: String              // Pipeline use only
+    public let normalizedURL: NormalizedURL // Pipeline use only
+    // + 23 derived feature fields (see URLFeatureExtractor)
+    // Core ML model receives only the 17 numeric/boolean features
 }
 
 public struct URLModelOutput: Sendable {

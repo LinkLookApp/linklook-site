@@ -1,5 +1,9 @@
 # LinkLook AI Architecture Note v1
 
+> **Status: active** — foundational AI design document. Implemented in code
+> (URLSignalModel.swift, URLFeatureExtractor.swift, LinkCheckService.swift).
+> Contracts: AI_Model_Contracts.md. Boundary rules: AI_Boundary_Rules.txt.
+
 ## Goal
 Add AI in a controlled way as an extra signal layer for LinkLook.
 AI must not replace rules, policy, or backend reputation. AI is additive.

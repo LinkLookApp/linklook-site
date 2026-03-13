@@ -1,7 +1,8 @@
 LinkLook Reason Code Catalog
-Version: v1.0
-Date: 2026-03-08
-Origin: ChatGPT
+Status: active — authoritative list of all reason codes.
+Version: v2.0
+Date: 2026-03-13
+Origin: Expanded from v1.0 (2026-03-08) to include GSB and AI reason codes.
 
 Purpose
 Define stable machine-readable reason codes returned by the decision engine.
@@ -12,24 +13,94 @@ Stable reason codes allow:
 - consistent UX mapping
 - analyzable structured logs
 - cleaner future training datasets
+- explainable verdicts (AI_Boundary_Rules.txt, rule 1)
 
-Initial v1 reason codes
-- safe_destination
-- known_malicious_domain
-- domain_impersonation
-- suspicious_tld
-- redirect_chain_risk
-- shortener_unresolved
-- network_timeout
-- insufficient_signal
-- malformed_url
-- policy_blocked_destination
+Current reason codes (from ReasonCode.swift)
+
+Safe verdicts:
+- safe_destination — link passed all checks
+- trusted_benign — recognized trusted domain
+- benign_login_page — known login page on trusted domain
+
+Block — impersonation:
+- domain_impersonation — domain mimics another company
+- brand_impersonation — brand name in domain, not the real site
+- domain_character_substitution — character tricks to mimic a brand
+- parcel_impersonation — fake parcel delivery service
+
+Block — malicious:
+- known_malicious_domain — linked to known malicious activity
+- known_phishing_domain — linked to known phishing activity
+- malicious_redirect_chain — redirects through malicious sites
+- credential_harvest_risk — may steal login credentials
+- crypto_wallet_phishing — may steal cryptocurrency info
+- suspicious_keywords_combo — suspicious combination of security words
+
+Block — Google Safe Browsing (CLAUDE.md rule 30):
+- gsb_threat_match — flagged as dangerous by Google Safe Browsing
+
+Warn:
+- suspicious_domain — domain looks unusual and may be unsafe
+- suspicious_tld — uncommon web address type
+- raw_ip_link — raw IP address instead of domain name
+- deceptive_url_structure — deceptive URL structure
+- redirect_chain_risk — passes through multiple destinations
+- idn_spoofing_risk — special characters designed to look like another site
+- suspicious_url_structure — unusual structure common in scam links
+- suspicious_infrastructure — hosted on suspicious infrastructure
+- possible_brand_reference — references a brand, may not be official
+- unusual_port — non-standard connection port
+- open_redirect_risk — may redirect to unexpected destination
+
+Warn — AI URL analysis (CLAUDE.md rule 41, Pro only):
+- ai_url_risk_high — AI model detected suspicious patterns
+  NOTE: When this reason code is active, the user-facing message is
+  resolved from the topPatternGroup in the AI signal metadata, not from
+  a generic AI message. See "AI pattern-group mapping" below.
+
+Inform:
+- shortener_unresolved — cannot determine shortened link destination
+- network_timeout — safety check could not complete
+- insufficient_signal — not enough information to classify
+- malformed_url — URL appears malformed or invalid
+- first_seen_domain — new domain not previously encountered
+- external_lookup_failed — could not check external security databases
+- network_unavailable — no internet connection
+- policy_blocked_destination — blocked by policy
+
+AI pattern-group mapping (for ai_url_risk_high)
+
+When the AI URL model triggers aiUrlRiskHigh, the topPatternGroup from
+the model output determines the specific user-facing message. This keeps
+explanations deterministic and pattern-specific rather than generic.
+
+  topPatternGroup     User-facing message
+  ─────────────────────────────────────────────────────────────────
+  brand_mimicry       "This web address contains patterns that mimic
+                       a well-known brand."
+  obfuscation         "This web address uses obfuscation techniques
+                       commonly seen in scam links."
+  domain_structure    "This web address has a domain structure commonly
+                       associated with phishing."
+  keyword_pattern     "This web address contains a suspicious combination
+                       of keywords."
+  tld_risk            "This web address uses a domain type frequently
+                       associated with scam sites."
+  path_structure      "This web address has a URL path structure commonly
+                       used in phishing attacks."
+  mixed_signals       "Multiple aspects of this web address match patterns
+                       seen in scam links."
+
+This mapping is implemented in UXMapper.aiPatternMessage(for:).
 
 Rules for reason codes
 - reason codes describe the primary explanation for the final outcome
 - they should be stable over time
 - they should not be free-text
 - deprecate rather than silently rename when possible
+- AI cannot invent new reason codes at runtime (AI_Boundary_Rules.txt)
+- "The AI said so" is never an acceptable reason — always map to a
+  specific pattern group explanation
 
 Relationship to signals
 Signals are facts and observations.

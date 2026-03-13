@@ -1,4 +1,5 @@
 LinkLook — AI Boundary Rules
+Status: active — enforced in all AI integration work.
 Version: v1.0
 Date: 2026-03-12
 Origin: Address-now hardening pass, item #6

@@ -1,7 +1,8 @@
 LinkLook Test Traceability Matrix
-Version: v1.0
-Date: 2026-03-08
-Origin: ChatGPT
+Status: active
+Version: v2.0 — extended with AI requirements
+Date: 2026-03-13
+Origin: Expanded from v1.0 (2026-03-08)
 
 Purpose
 Define the traceability model that links LinkLook tests to architecture, policy, UX, and compliance requirements.
@@ -21,27 +22,124 @@ Each canonical test case should map to:
 Example structure
 Test ID -> Component -> Rule / Reason -> UX mapping -> Privacy / Logging expectation
 
-Illustrative examples
-1. TC-PHISH-001
+================================================================================
+CORE SAFETY TRACEABILITY
+================================================================================
+
+TC-PHISH-001
 - component: decision engine
 - reason: domain_impersonation
 - policy: impersonation block rule
 - UX mapping: phishing warning copy
 - privacy: only approved logging fields
 
-2. TC-FAIL-002
+TC-FAIL-002
 - component: reputation adapter timeout handling
 - reason: network_timeout
 - policy: fail-informatively policy
 - UX mapping: could-not-verify message
 - privacy: no raw page capture
 
-3. TC-SAFE-004
+TC-SAFE-004
 - component: normalization + decision engine
 - reason: safe_destination
 - policy: allow path
 - UX mapping: calm safe confirmation
 - privacy: minimal log footprint
 
-Operational rule
+TC-GSB-001
+- component: GSBLookupClient + LinkCheckService
+- reason: gsb_threat_match
+- policy: GSB escalation to BLOCK (CLAUDE.md rule 30)
+- UX mapping: "Flagged by Google Safe Browsing" message
+- privacy: URL hash prefixes sent to Google (CLAUDE.md rule 32)
+
+TC-GSB-002
+- component: GSBCache + LinkCheckService
+- reason: (no change — timeout)
+- policy: GSB timeout adds signal, keeps verdict (CLAUDE.md rule 31)
+- UX mapping: no change to verdict screen
+- privacy: timeout logged as externalLookupFailed
+
+================================================================================
+AI SIGNAL TRACEABILITY
+================================================================================
+
+AI-URL-001: URL model can emit high-risk signal
+- component: URLSignalModelProtocol + LinkCheckService.mergeAI
+- reason: ai_url_risk_high
+- policy: AI escalation rules U1–U6 (AI_Model_Contracts.md)
+- UX mapping: pattern-specific message from topPatternGroup
+- test: AIURLCombinerTests.testU1/U2
+- requirement: CLAUDE.md rule 41
+
+AI-URL-002: URL model cannot de-escalate verdicts
+- component: LinkCheckService.mergeAI
+- reason: (no change)
+- policy: AI can only escalate, never downgrade (CLAUDE.md rule 42)
+- UX mapping: verdict unchanged
+- test: AIURLCombinerTests.testU5_AIClean_DoesNotDowngradeWarn/Block
+- requirement: AI_Boundary_Rules.txt rule 2
+
+AI-URL-003: URL model timeout does not break check flow
+- component: LinkCheckService (urlSignalModel = nil path)
+- reason: (no AI signals)
+- policy: AI unavailable → use structural + GSB only (rule U6)
+- UX mapping: standard verdict, no AI badge
+- test: AIURLCombinerTests.testU6_NoAIModel_NoChange
+- requirement: AI_Boundary_Rules.txt rule 4
+
+AI-URL-004: Feature extractor produces correct 17-field vector
+- component: URLFeatureExtractor
+- test: URLFeatureExtractorTests (25 tests)
+- requirement: AI_Model_Contracts.md (Core ML Runtime Input section)
+
+AI-URL-005: AI reason maps to pattern-specific message, not generic
+- component: UXMapper.aiPatternMessage
+- reason: ai_url_risk_high
+- policy: "The AI said so" is not acceptable (AI_Boundary_Rules.txt rule 1)
+- UX mapping: topPatternGroup → specific message (7 mappings)
+- test: UXMapperTests (AI message mapping tests)
+- requirement: Reason_Code_Catalog.txt AI pattern-group mapping
+
+AI-MSG-001: Message model only runs when explicitly triggered
+- component: Context analysis screen (app layer)
+- policy: Only on user tap of "Check Message Context" (CLAUDE.md rule 20)
+- UX mapping: button visible on INFORM/WARN only
+- test: ResultView button presence tests
+- requirement: CLAUDE.md rules 20–22
+
+AI-MSG-002: Message model does not modify URL verdict
+- component: Context analysis display (separate from verdict)
+- policy: Context check adds information, never overrides URL verdict
+         (CLAUDE.md rule 22, AI_Model_Contracts.md combiner rules M1–M4)
+- test: Combined test cases AI-COMB-TC-002, AI-COMB-TC-005
+- requirement: AI_Boundary_Rules.txt section 2
+
+AI-COMB-001: Combiner remains deterministic
+- component: LinkCheckService.mergeAI, LinkCheckService.mergeGSB
+- policy: Combiner is deterministic, not ML (AI_Model_Contracts.md)
+- test: All combiner tests use MockURLSignalModel with fixed outputs
+- requirement: AI_Boundary_Rules.txt rules 1, 2
+
+AI-COMB-002: AI output maps only to approved reason groups
+- component: UXMapper.aiPatternMessage
+- policy: topPatternGroup must be one of 7 approved values
+- UX mapping: each maps to a specific approved message
+- test: UXMapper pattern message tests
+- requirement: AI_Boundary_Rules.txt rule 1, Reason_Code_Catalog.txt
+
+AI-DISABLED-001: Core safety tests pass with AI disabled
+- component: Full pipeline with urlSignalModel = nil
+- policy: Base product must work correctly without AI
+- test: All existing golden fixture tests (290+ tests)
+- requirement: AI_Boundary_Rules.txt rule 4
+
+================================================================================
+OPERATIONAL RULE
+================================================================================
+
 New critical features should not be considered complete unless they are represented in the traceability model through one or more automated tests.
+
+AI-specific addition: Any new AI signal, model, or combiner rule must have
+a corresponding traceability entry before it can ship.
