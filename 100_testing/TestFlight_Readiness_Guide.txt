@@ -1,0 +1,200 @@
+LinkLook — TestFlight Readiness Guide
+Status: active — working guidance for the days ahead
+Date: 2026-03-13
+
+Purpose
+Define what "ready for TestFlight" means for LinkLook. This document is a
+shipping guardrail: it says what must work, what can wait, and when to stop
+perfecting and submit.
+
+The goal is to reach external TestFlight as soon as possible for the browser
+entitlement, while making sure the first real-user impression lands right.
+
+================================================================================
+1. APPLE'S ACTUAL REQUIREMENTS
+================================================================================
+
+There is no Apple rule like "test 80% first" before TestFlight.
+
+The real standard: the build should be stable enough for real people to use,
+and for external TestFlight it should already be intended for public
+distribution and comply with the App Review Guidelines.
+
+Internal TestFlight:
+  You can use this earlier. Once the build is in "Ready to Submit", it can
+  be distributed to internal testers without waiting for TestFlight App
+  Review. Use this as soon as the core flow works and you want feedback.
+
+External TestFlight:
+  Stricter. The first build sent to external testers goes through a full
+  TestFlight App Review. Testing can start only after approval. Later builds
+  for the same version may not need a full review.
+
+Before moving to external TestFlight, Apple expects:
+  - The app installs and launches reliably
+  - The main user flow works end to end
+  - No obvious crashes or dead ends
+  - Required login/demo info is provided if needed
+  - Metadata and review notes accurately describe what the app does
+  - Tested on real devices for each platform/device family you support
+    (Apple explicitly says review happens under real-world conditions)
+
+Source: Apple Developer documentation.
+
+================================================================================
+2. LINKLOOK MINIMUM FOR EXTERNAL TESTFLIGHT
+================================================================================
+
+These must work on a real device (iPhone 16e as primary test device):
+
+  a) Link intake — omnibox accepts typed/pasted URLs
+  b) Safety check — spinner shows, check completes (structural + GSB)
+  c) Verdict screen — correct layout for OK/INFORM/WARN/BLOCK
+  d) Go Back path — returns to start page cleanly
+  e) Continue in LinkLook — opens URL in built-in browser
+  f) Open in Browser — redirects to selected browser
+  g) Home button — resets to start page, dismisses any active session
+  h) No major crash or security regression
+
+That's it. That is the external TestFlight bar.
+
+Everything else is either internal-TestFlight-level or post-TestFlight.
+
+================================================================================
+3. WHAT CAN WAIT (do NOT block TestFlight for these)
+================================================================================
+
+These are real features but they are NOT required for TestFlight submission:
+
+  - AI URL signal model (Pro feature, not built yet)
+  - Message context analysis (Pro feature, not built yet)
+  - QR code scanner
+  - Clipboard awareness ("Check copied link?")
+  - Share Sheet integration
+  - Voice input
+  - Screenshot/image analysis
+  - History/Recent screen polish
+  - Text size setting
+  - Early Access badges on Pro features
+  - Perfect animations and transitions
+  - Edge case URL handling (punycode, extremely long URLs, etc.)
+  - Backend reputation service integration
+
+These can ship in updates after the entitlement is secured.
+
+================================================================================
+4. TEST ORDER (priority sequence for the days ahead)
+================================================================================
+
+Phase 1 — "Does it launch and not crash?" (Internal TestFlight gate)
+  □ App installs from Xcode to real device
+  □ App launches to start page without crash
+  □ Omnibox accepts text input
+  □ Keyboard Return / Go button submits input
+  □ Tab bar navigation works (Home, Recent, Settings)
+
+Phase 2 — "Does the core flow work?" (External TestFlight gate)
+  □ Type a safe URL → check runs → OK verdict screen appears
+  □ Type a suspicious URL → check runs → WARN/INFORM screen appears
+  □ "Go Back" returns to start page
+  □ "Continue in LinkLook" opens the URL in built-in browser
+  □ "Open in Browser" opens in the selected browser
+  □ Home button from any state → clean start page
+  □ GSB integration works (clean result, not just timeout)
+  □ Timeout handling works (8-second limit, fallback screen)
+  □ No crash on any of the above
+
+Phase 3 — "Is it not embarrassing?" (External TestFlight quality bar)
+  □ Verdict screens look clean on iPhone 16e
+  □ Button labels are correct ("Continue in LinkLook", not old labels)
+  □ Messages are clear and not technical
+  □ No broken layouts on different screen sizes
+  □ Settings screen opens and browser preference works
+  □ Recent screen shows history entries
+  □ History entries are tappable and re-run checks
+
+Phase 4 — "Would a user appreciate this?" (Post-TestFlight polish)
+  □ Dynamic Type / text size setting
+  □ Checking progress messages are well-timed
+  □ Transitions feel smooth
+  □ Signal badges display correctly
+  □ Edge case URLs handled gracefully
+  □ Accessibility audit
+
+================================================================================
+5. THE "STOP PERFECTING" RULE
+================================================================================
+
+You tend to make it perfect instead of good enough. This section exists
+specifically to counter that instinct.
+
+Rules for the next days:
+
+  1. If Phase 2 passes on a real device, submit to internal TestFlight.
+     Do not wait for Phase 3.
+
+  2. If Phase 3 passes on a real device, submit to external TestFlight.
+     Do not wait for Phase 4.
+
+  3. Every feature not listed in section 2 is a "nice to have" that can
+     ship in a TestFlight update. The entitlement matters more.
+
+  4. If you find yourself spending more than 30 minutes on visual polish
+     before Phase 2 is complete, stop and go back to Phase 2.
+
+  5. "Good enough to submit" means: a real person can check a link, see
+     a verdict, and act on it without crashing or getting confused.
+     That's it.
+
+  6. The first external TestFlight build does not need to be the product
+     you ship to the App Store. It needs to be the product that gets you
+     the entitlement and first feedback.
+
+  7. After TestFlight approval, you can push updated builds frequently
+     without another full review. Use this: ship early, iterate fast.
+
+================================================================================
+6. TESTFLIGHT SUBMISSION CHECKLIST
+================================================================================
+
+Before hitting "Submit for Review":
+
+  □ Build succeeds on Xcode with no errors
+  □ All unit tests pass (swift test)
+  □ Tested on real iPhone 16e (not just Simulator)
+  □ Phase 2 items all checked
+  □ App Store metadata filled in:
+    - App name: LinkLook
+    - Subtitle: A safety-driven browser
+    - Description: accurate, matches what the app actually does
+    - Privacy nutrition labels: URL hashes sent to Google (GSB)
+    - Review notes: explain what the app does and how to test it
+  □ Demo instructions if needed (e.g. "paste this URL to see a WARN verdict")
+  □ No placeholder text visible in the app
+  □ No debug/test UI visible in the app
+
+================================================================================
+7. ENTITLEMENT TIMELINE AWARENESS
+================================================================================
+
+The browser entitlement (com.apple.developer.web-browser) is the reason
+for urgency. Without it, LinkLook cannot be the default browser.
+
+Timeline pressure:
+  - Internal TestFlight: submit as soon as Phase 2 passes
+  - External TestFlight: submit as soon as Phase 3 passes
+  - Entitlement approval may take days — every day of delay costs
+
+What the entitlement reviewer will look at:
+  - Does the app function as a browser? (It does — built-in WebView)
+  - Does it handle URLs from other apps? (Yes — default browser flow)
+  - Is it stable enough to be a daily driver? (Phase 3 covers this)
+
+They will NOT check:
+  - Whether AI features work
+  - Whether every edge case is handled
+  - Whether the design is pixel-perfect
+
+================================================================================
+END OF DOCUMENT
+================================================================================
