@@ -67,6 +67,23 @@ the same.
 After the safety check completes, the user sees a verdict screen. They **must**
 tap a button. There is no auto-proceed, no timeout-to-navigation, no bypass.
 
+### No-Preload Principle
+
+LinkLook NEVER loads, fetches, or renders the destination page before the user
+explicitly taps "Continue in LinkLook" or "Open in {browser}". The verdict screen
+is a neutral pre-open checkpoint showing only information derived from the URL
+itself and safe external lookups (GSB hash-prefix queries):
+
+- **Domain name** — extracted from the URL, displayed prominently in large readable text
+- **Full URL** — secondary, small monospace, truncated if long
+- **Verdict + reason** — from the decision engine
+- **Signal badges** — from structural analysis
+
+Page titles, favicons, Open Graph metadata, and other server-provided data are
+NOT fetched. Any HTTP request to the destination would leak the user's intent
+and IP address to a potentially malicious server. The domain alone is the right
+level of context for the user's decision. This principle is non-negotiable.
+
 ### Button labels (canonical)
 
 | Action               | Label                          | Code action     |
@@ -89,9 +106,13 @@ The link passed all checks.
 │                                      │
 │         ✅ Link Looks Safe           │
 │                                      │
-│    example.com/page                  │
+│    "This is a trusted website."      │
 │                                      │
-│    "This link looks safe."           │
+│  ┌──────────────────────────────────┐│
+│  │      apple.com                   ││
+│  │  https://www.apple.com/store     ││
+│  └──────────────────────────────────┘│
+│   (domain large, full URL small)     │
 │                                      │
 │  ┌────────────────┐ ┌─────────────┐ │
 │  │  Continue in   │ │  Open in    │ │
@@ -120,11 +141,15 @@ Minor concerns — the user should be aware but can proceed.
 │                                      │
 │         ℹ️ Heads Up                  │
 │                                      │
-│    short.link/abc123                 │
-│                                      │
 │    "LinkLook could not determine     │
 │     where this shortened link        │
 │     leads."                          │
+│                                      │
+│  ┌──────────────────────────────────┐│
+│  │      short.link                  ││
+│  │  https://short.link/abc123       ││
+│  └──────────────────────────────────┘│
+│   (domain large, full URL small)     │
 │                                      │
 │    [Shortened link] [New domain]     │
 │                                      │
@@ -143,6 +168,8 @@ Minor concerns — the user should be aware but can proceed.
 │  │   LinkLook     │ │  Chrome     │ │
 │  └────────────────┘ └─────────────┘ │
 │       (small)          (small)       │
+│                                      │
+│   Share verdict with…                │
 │                                      │
 └──────────────────────────────────────┘
 ```
@@ -163,11 +190,15 @@ Significant concerns — the user is strongly nudged away.
 │                                      │
 │         ⚠️ Be Careful               │
 │                                      │
-│    192.168.1.1/login.php             │
-│                                      │
 │    "This link uses a raw IP          │
 │     address instead of a website     │
 │     name."                           │
+│                                      │
+│  ┌──────────────────────────────────┐│
+│  │      192.168.1.1                 ││
+│  │  http://192.168.1.1/login.php    ││
+│  └──────────────────────────────────┘│
+│   (domain large, full URL small)     │
 │                                      │
 │    [Raw IP] [Credential keywords]    │
 │                                      │
@@ -181,11 +212,11 @@ Significant concerns — the user is strongly nudged away.
 │  └──────────────────────────────────┘│
 │       (medium, outlined, Pro)        │
 │                                      │
-│  ┌────────────────┐ ┌─────────────┐ │
-│  │  Continue in   │ │  Open in    │ │
-│  │   LinkLook     │ │  Chrome     │ │
-│  └────────────────┘ └─────────────┘ │
-│       (small)          (small)       │
+│   Continue in LinkLook  Open in Chrome│
+│       (very small)     (very small)  │
+│                                      │
+│   Share verdict with…                │
+│   This doesn't look right            │
 │                                      │
 └──────────────────────────────────────┘
 ```
@@ -193,6 +224,8 @@ Significant concerns — the user is strongly nudged away.
 - Same button structure as INFORM but with **orange/caution** visual treatment.
 - Colors, icons, and wording must **clearly distinguish WARN from INFORM**.
   The button layout is identical; the surrounding context does the differentiating.
+- WARN forward buttons are **very small** (0.6x font, light color) to make
+  "Go Back" clearly dominant. INFORM forward buttons are **small** (0.7x).
 - Signal badges visible (up to 3).
 
 ### Verdict: BLOCK (Link Blocked)
@@ -204,11 +237,18 @@ Clearly malicious — no forward path.
 │                                      │
 │         🛑 Link Blocked             │
 │                                      │
-│    paypa1-secure.login.xyz           │
+│  ┌──────────────────────────────────┐│
+│  │  ⚠ "This website may be         ││
+│  │    pretending to be another      ││
+│  │    company."                     ││
+│  └──────────────────────────────────┘│
+│   (reason in red card, prominent)    │
 │                                      │
-│    "This website may be              │
-│     pretending to be another         │
-│     company."                        │
+│  ┌──────────────────────────────────┐│
+│  │      paypa1-secure.login.xyz     ││
+│  │  https://paypa1-secure.login.xyz ││
+│  └──────────────────────────────────┘│
+│   (domain large, full URL small)     │
 │                                      │
 │    [Brand lookalike]                 │
 │    [Character tricks]                │
@@ -225,7 +265,8 @@ Clearly malicious — no forward path.
 ```
 
 - **One large "Go Back" button only.** No way forward.
-- Always show the **reason** for blocking. Never block without explanation.
+- Always show the **reason** for blocking in a **prominent red card** — medium-weight
+  text on a red-tinted background. Never block without explanation.
 - "This doesn't look right?" false-positive report link remains.
 - Visual treatment: **red/danger** accent.
 
