@@ -68,7 +68,6 @@ These are real features but they are NOT required for TestFlight submission:
   - AI URL signal model (Pro feature, not built yet)
   - Message context analysis (Pro feature, not built yet)
   - QR code scanner
-  - Clipboard awareness ("Check copied link?")
   - Share Sheet integration
   - Voice input
   - Screenshot/image analysis

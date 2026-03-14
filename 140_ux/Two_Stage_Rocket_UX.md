@@ -77,10 +77,9 @@ the same.
 |----------|-----------------------|--------------------------------------------------------------|------------|
 | 1        | Omnibox (type/paste)  | Core flow. Type or paste a URL into the omnibox.             | v1.0       |
 | 2        | QR code scanner       | Built-in scanner. Decoded URL enters the same flow.          | v1.x       |
-| 3        | Clipboard awareness   | Prompt "Check copied link?" when a URL is on clipboard.      | v1.x       |
-| 4        | Share Sheet           | iOS Share Sheet: "Check with LinkLook" from any app.         | v1.x       |
-| 5        | Screenshot analysis   | Import image → AI extracts links and text → enters flow.     | v2.0 (Pro) |
-| 6        | Voice input           | Microphone on omnibox → iOS speech recognition → enters flow.| v2.0       |
+| 3        | Share Sheet           | iOS Share Sheet: "Check with LinkLook" from any app.         | v1.x       |
+| 4        | Screenshot analysis   | Import image → AI extracts links and text → enters flow.     | v2.0 (Pro) |
+| 5        | Voice input           | Microphone on omnibox → iOS speech recognition → enters flow.| v2.0       |
 
 ---
 
@@ -356,10 +355,6 @@ via iMessage or WhatsApp. Not a primary button — appears as a link or icon.
 Built-in camera-based QR code scanner. Decoded URL enters the exact same
 two-step flow. Accessed from a camera icon on the Home screen or omnibox.
 
-### Clipboard Awareness
-When LinkLook opens and a URL is on the clipboard, show a non-intrusive prompt:
-"Check copied link?" One tap feeds it into Step 1. Never auto-scan — always ask.
-Respects iOS clipboard permission prompts.
 
 ### Share Sheet Integration
 iOS Share Sheet extension: "Check with LinkLook". Available when the user
