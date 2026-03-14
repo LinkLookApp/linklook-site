@@ -45,7 +45,7 @@ Source: Apple Developer documentation.
 2. LINKLOOK MINIMUM FOR EXTERNAL TESTFLIGHT
 ================================================================================
 
-These must work on a real device (iPhone 16e as primary test device):
+These must work on a real device (iPhone 11 as primary test device):
 
   a) Link intake — omnibox accepts typed/pasted URLs
   b) Safety check — spinner shows, check completes (structural + GSB)
@@ -105,7 +105,7 @@ Phase 2 — "Does the core flow work?" (External TestFlight gate)
   □ No crash on any of the above
 
 Phase 3 — "Is it not embarrassing?" (External TestFlight quality bar)
-  □ Verdict screens look clean on iPhone 16e
+  □ Verdict screens look clean on iPhone 11
   □ Button labels are correct ("Continue in LinkLook", not old labels)
   □ Messages are clear and not technical
   □ No broken layouts on different screen sizes
@@ -161,7 +161,7 @@ Before hitting "Submit for Review":
 
   □ Build succeeds on Xcode with no errors
   □ All unit tests pass (swift test)
-  □ Tested on real iPhone 16e (not just Simulator)
+  □ Tested on real iPhone 11 (not just Simulator)
   □ Phase 2 items all checked
   □ App Store metadata filled in:
     - App name: LinkLook

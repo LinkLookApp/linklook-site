@@ -1,38 +1,65 @@
 LINKLOOK — APP REVIEW NOTES
-Version: 2026-03-08
-Origin: ChatGPT
+Version: 2026-03-13
+Updated to match v1.0 feature set
 
-Suggested App Review note
-LinkLook is a consumer security application designed to help users avoid
-phishing and scam websites delivered through malicious links.
+================================================================================
+APP REVIEW NOTE (paste into App Store Connect)
+================================================================================
 
-When a user taps a link in apps such as Messages, Mail, or other messaging
-applications, iOS delivers the URL to the default browser. LinkLook registers
-as the default browser so it can receive the URL before navigation occurs.
+LinkLook is a safety-driven browser that checks links before you open them.
 
-LinkLook evaluates the destination URL and domain metadata to determine whether
-the link appears suspicious. This evaluation may include domain reputation,
-domain age, URL structure, redirect behaviour, and similar safety indicators.
+How it works:
+When a user taps a link in Messages, Mail, or any other app, iOS delivers the
+URL to LinkLook (registered as the default browser). LinkLook runs a safety
+check BEFORE loading the page and shows one of four verdicts: Safe, Caution,
+Warning, or Blocked.
 
-If the link appears safe, LinkLook forwards the URL to the user’s preferred
-browser using the standard iOS open URL mechanism so the webpage loads
-normally.
+The safety check combines:
+- Structural URL analysis (domain patterns, brand lookalike detection, TLD
+  category, IP address detection, URL shortener detection)
+- Google Safe Browsing API (hash-prefix lookup for known malware, phishing,
+  social engineering, and unwanted software)
 
-If the link appears suspicious, LinkLook presents a warning explaining that the
-destination may be unsafe. The user can still choose to continue if they trust
-the source of the link.
+After seeing the verdict, the user chooses what to do: go back, continue in
+LinkLook's built-in browser, or open the link in their preferred browser
+(Safari, Chrome, Firefox, etc.). LinkLook never loads a page without explicit
+user action.
 
-LinkLook is a straightforward, security-driven browser. It does not act as a
-VPN or proxy. It evaluates link destinations before presenting results to the
-user through a clear four-state outcome model (allow/inform/warn/block).
+Entry points:
+- Omnibox (type or paste a URL)
+- Default browser handoff (links from other apps)
+- QR code scanner (built-in camera scanner)
+- Clipboard detection (prompts when a URL is on the clipboard)
+- Share Sheet ("Check with LinkLook" from any app)
 
-Privacy is an important design principle. LinkLook stores a local check history
-on-device (URL, verdict, reason code, timestamp) so users can see what links
-were checked. This is a safety-check log, not a general browsing history. The
-user can clear or disable it at any time. LinkLook does not collect personal
-identifiers by default. The app evaluates link destinations and related metadata
-only for the purpose of identifying potential scam infrastructure.
+LinkLook does not act as a VPN or proxy. It evaluates URLs locally on-device
+and sends only SHA-256 hash prefixes to Google Safe Browsing (no full URLs).
+A local check history is stored on-device and can be cleared or disabled by
+the user at any time.
 
-In a future version, users may opt in to anonymously contribute domain-level
-threat signals to help improve safety for everyone. This is off by default and
-requires explicit user consent before any data leaves the device.
+Test instructions:
+1. Open the app and type "apple.com" — should show Safe verdict
+2. Type "bit.ly/test" — should show Caution (URL shortener)
+3. Tap "Go Back" — returns to start page
+4. Tap "Continue in LinkLook" on a safe link — opens in built-in browser
+5. Home button returns to start page from any state
+
+No login required. No demo account needed.
+
+================================================================================
+PRIVACY NOTES
+================================================================================
+
+Data sent off-device:
+- Google Safe Browsing: SHA-256 hash prefixes of URLs (not full URLs).
+  Used to check against Google's threat database. Required for phishing
+  and malware detection.
+
+Data stored on-device only:
+- Check history: URL, verdict, reason code, timestamp, entry source.
+  User can clear or disable at any time. Never leaves the device.
+- Feature vector log: numeric URL features (no raw URLs) for future
+  on-device AI model training. Never leaves the device.
+
+No personal identifiers collected. No analytics SDK. No advertising SDK.
+No third-party tracking.
