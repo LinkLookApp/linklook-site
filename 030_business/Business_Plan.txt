@@ -98,7 +98,7 @@ Recommended first public product:
 - straightforward, security-driven browser
 - link classification pipeline with four-state outcome model
 - plain-English warning UX
-- redirect option/button as part of the browser flow
+- built-in browsing flow inside LinkLook after verdict
 - visible but calm activity summaries
 
 Planning estimate for protection value:

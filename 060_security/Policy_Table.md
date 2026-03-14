@@ -34,9 +34,9 @@ These rules override the normal score.
 
 | Verdict | Meaning | Typical signals | Default UI action | User options |
 |---------|---------|-----------------|-------------------|--------------|
-| **OK** | No immediate risk signals found | Expected context, normal or trusted domain, no sensitive request, no suspicious behavior | Show result as low-friction | Continue · Open in preferred browser |
-| **INFORM** | Context unclear; user should apply judgment | Unexpected link, shortened or unfamiliar domain, QR link, newly registered / newly observed domain, low prevalence, limited trust context, but no strong scam signal yet | Show caution state | Go Back prominent; Continue · Open in preferred browser small |
-| **WARN** | Meaningful scam or phishing indicators are present | Urgency, impersonation, login/payment reset request, invoice/package lure, misleading wording, suspicious redirects/pop-ups, new domain combined with other suspicious signals | Show strong warning state | Go Back prominent; Continue · Open in preferred browser very small |
+| **OK** | No immediate risk signals found | Expected context, normal or trusted domain, no sensitive request, no suspicious behavior | Show result as low-friction | Continue |
+| **INFORM** | Context unclear; user should apply judgment | Unexpected link, shortened or unfamiliar domain, QR link, newly registered / newly observed domain, low prevalence, limited trust context, but no strong scam signal yet | Show caution state | Go Back prominent; Go to Site small |
+| **WARN** | Meaningful scam or phishing indicators are present | Urgency, impersonation, login/payment reset request, invoice/package lure, misleading wording, suspicious redirects/pop-ups, new domain combined with other suspicious signals | Show strong warning state | Go Back prominent; Go to Site very small |
 | **BLOCK** | Dangerous or highly suspicious | Known malicious/phishing reputation, forced download, fake update, fake support alert, install prompt, exploit-like behavior, high-confidence phishing pattern | Do not proceed directly | Go Back only |
 
 ---

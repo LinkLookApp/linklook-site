@@ -3,6 +3,17 @@ Version: v1.0
 Date: 2026-03-08
 Origin: ChatGPT
 
+================================================================================
+⚠️  SUPERSEDED — HISTORICAL DRAFT ONLY
+================================================================================
+
+This ADR describes an earlier architecture where LinkLook would fall back to a
+minimal browser if the default browser entitlement was refused. LinkLook has
+since adopted a primary browser model: all pages open inside LinkLook, there is
+no redirect to external browsers, and the "minimal browser fallback" concept is
+no longer the active direction. See CLAUDE.md rules 10-11 and the Master
+Decision Log for the current canonical model.
+
 Status
 Superseded — see LinkLook_Master_Decision_Log_2026-03-10.txt for current routing strategy
 

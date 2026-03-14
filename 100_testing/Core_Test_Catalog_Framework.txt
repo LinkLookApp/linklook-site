@@ -23,10 +23,10 @@ Examples:
 - known phishing domain: verdict is block, no web content loads at all
 - shortener is expanded and re-evaluated before any page load
 - warn URL: user sees warning screen first, no auto-load, may continue
-  into minimal browser or open elsewhere (MDL-104)
+  into LinkLook's built-in browser
 - inform URL: user sees inform screen first, no auto-load, may continue
 - network failure follows the defined fail-safe path (fail-safe, not fail-open)
-- open elsewhere: only the approved URL is handed off to preferred browser
+- forward action: only the approved URL is opened inside LinkLook
 
 2. Security and abuse test cases
 These describe attacker behaviors and phishing patterns.

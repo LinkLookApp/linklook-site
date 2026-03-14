@@ -1,5 +1,6 @@
 Security Warning User Experience
 Generated: 2026-03-08
+Updated: 2026-03-14
 
 Purpose
 Define how LinkLook should communicate SAFE, SUSPICIOUS, and BLOCK decisions without confusing or overwhelming the user.
@@ -12,30 +13,31 @@ Principles
 - reserve hard blocking for high-confidence risk
 
 Example states
-SAFE
+SAFE (OK)
 - Message: This link looks safe.
-- Action: Page loads in the minimal browser after verdict.
+- Action: One large "Open" button. Opens page in LinkLook's built-in browser.
 - Display mode (MDL-109): "always show result" (default) shows the safe screen
   briefly for reassurance; "auto-open safe links" skips the screen and loads
-  directly. PROTECTED profile enforces always show result.
-- Open elsewhere button available to hand off to preferred browser (MDL-104).
+  directly in LinkLook. PROTECTED profile enforces always show result.
+- There is no "Open in other browser" button. LinkLook IS the browser.
 
-SUSPICIOUS
+SUSPICIOUS (INFORM / WARN)
 - Message: This link has warning signs.
 - Explain one or two reasons such as new domain, hidden destination, or brand imitation.
-- Action: Let user stop or continue with friction.
+- Action: Large "Go Back" button (dominant). Small "Open" button (opens in
+  LinkLook). On WARN, "Open" requires an extra confirmation tap.
+- "Check Message Context" button available (Pro feature).
 
 BLOCK
 - Message: This link appears dangerous and was blocked.
 - Explain the strongest reason available.
-- Action: Default to stop.
+- Action: Large "Go Back" button only. No forward path.
 
-Browser preference
-The user chooses which browser safe links open in via Settings. Safari is the
-default redirect browser out of the box. LinkLook is a safety-driven default
-browser — it is never a redirect target itself. The preference list only shows
-browsers that are installed on the device. If the chosen browser is no longer
-available, LinkLook falls back to Safari.
+Browser model (updated 2026-03-14)
+LinkLook is the user's primary and only browser. There is no browser-picker
+setting and no redirect to an external browser. All pages open in LinkLook.
+Edge cases (DigiD, iDEAL, OAuth) are handled via automatic silent system
+handoff. See CLAUDE.md rules 10-11.
 
 Special cases
 - QR-origin links

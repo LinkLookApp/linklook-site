@@ -47,7 +47,7 @@ ON-DEVICE RESPONSIBILITIES (v1)
 - Normalize and classify input (URL vs search query)
 - Run the full check pipeline (see below)
 - Display verdict screen with appropriate buttons
-- Let the user choose: go back, continue in LinkLook, or open in browser
+- Let the user choose: go back or open in LinkLook (no external browser option)
 - Maintain history (Recent screen)
 
 OPTIONAL BACKEND
@@ -193,17 +193,17 @@ Step 2 — Verdict and Action:
   Show verdict screen. User MUST tap a button. No auto-proceed.
       ↓
   OK verdict:
-    Two equal buttons: "Continue in LinkLook" / "Open in {browser}"
+    One large "Open" button (opens in LinkLook)
       ↓
   INFORM verdict:
     Large "Go Back" button (dominant)
     Medium "Check Message Context" button (Pro feature)
-    Two small buttons: "Continue in LinkLook" / "Open in {browser}"
+    Small "Open" button (opens in LinkLook)
       ↓
   WARN verdict:
     Large "Go Back" button (dominant)
     Medium "Check Message Context" button (Pro feature)
-    Two small buttons: "Continue in LinkLook" / "Open in {browser}"
+    Very small "Open" button (opens in LinkLook, requires extra confirmation)
       ↓
   BLOCK verdict:
     Large "Go Back" button only. No forward path.

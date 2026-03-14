@@ -50,7 +50,7 @@ This policy applies especially to:
 - decision-to-UX mapping
 - warning / continue / back flows
 - minimal browser gate behavior (no web content before allowed state)
-- open elsewhere handoff behavior
+- forward action behavior inside LinkLook
 
 Non-goals
 This policy does not require test-first for disposable experiments, but any code that graduates into production scope must be brought under this policy.

@@ -1,7 +1,7 @@
 LinkLook Decision UX Test Specification
-Version: v2.0
-Date: 2026-03-11
-Origin: ChatGPT, updated to align with minimal browser model and Canonical Master Decision Log 2026-03-10
+Version: v3.0
+Date: 2026-03-14
+Origin: ChatGPT, updated to align with primary browser model and Canonical Master Decision Log 2026-03-10
 
 Purpose
 Define how LinkLook verifies that security decisions are translated into the correct UX behavior.
@@ -28,7 +28,7 @@ Each decision-UX test should verify:
 - whether override is offered
 - page load state (not loaded / loading / loaded)
 - browser chrome visibility (address bar, back/forward, reload)
-- open elsewhere button visibility and target (MDL-104)
+- forward action visibility and target state inside LinkLook
 - back button availability
 - accessibility labels and reading order where applicable
 
@@ -39,7 +39,7 @@ Canonical mappings to verify
 - page loads inside LinkLook browser only after this verdict is reached
 - no web content is visible before the allowed state
 - browser chrome (address bar, back/forward, reload) becomes active
-- open elsewhere button available
+- no external-browser button available
 - safe-link display preference (MDL-109) affects this path:
   - "always show result" (default): safe result screen shown briefly, then
     page loads. Test must verify screen appears before page render.
@@ -53,8 +53,8 @@ Canonical mappings to verify
 - explanation of incomplete or low-confidence risk
 - no auto-load: page is NOT loaded yet
 - user sees inform screen first
-- continue button opens page in minimal browser
-- open elsewhere button hands off to preferred browser (MDL-104)
+- Go to Site opens the page inside LinkLook when policy allows
+- no external-browser button available
 - back button available
 
 3. warn
@@ -63,8 +63,8 @@ Canonical mappings to verify
 - no auto-load: page is NOT loaded yet
 - user sees warning screen first
 - override (continue) is available only when policy allows
-- continue opens page in minimal browser, no double-open
-- open elsewhere button available
+- Go to Site opens page in LinkLook's built-in browser, no double-open
+- no external-browser button available
 - back button available
 
 4. block
@@ -72,7 +72,7 @@ Canonical mappings to verify
 - safe action (back) is primary
 - no web content loads at all — not in browser, not in background
 - dangerous continuation is hidden or strongly de-emphasized according to policy
-- open elsewhere is NOT available for blocked URLs
+- no forward action is available for blocked URLs unless a separately documented exception policy applies
 
 Reason-code specific mapping tests
 For each stable reason code, verify:
@@ -129,5 +129,5 @@ Failure examples to catch
 - web content visible before verdict is reached (core rule violation)
 - page auto-loads on inform or warn screen
 - double browser instance opened on continue tap
-- open elsewhere sends wrong or rewritten URL
+- Go to Site opens the wrong or rewritten URL inside LinkLook
 - blocked URL loads content in background

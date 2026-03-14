@@ -36,8 +36,8 @@ Test pyramid
 - blocked path: no web content loads at all
 - continue from inform/warn: opens in minimal browser, no double-open,
   pre-load gate verified
-- open elsewhere: explicit user action, correct URL handed off to preferred
-  browser (MDL-104), no hidden rewrite
+- forward action: explicit user action, correct approved URL opened inside
+  LinkLook, no hidden rewrite
 - minimal browser: page render, navigation, URL display, HTTPS handling,
   background/foreground recovery
   (see Minimal_Browser_Test_Specification.txt for full test set)

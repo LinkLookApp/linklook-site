@@ -26,7 +26,7 @@ Testing layers
 - inform / warn path: no auto-load, user sees decision screen first
 - block path: no web content loads at all
 - continue from inform/warn: opens in minimal browser, no double-open
-- open elsewhere: explicit user action, correct URL to preferred browser
+- forward action: explicit user action opens correct URL inside LinkLook
 - page render, navigation, URL display, HTTPS handling
 - background/foreground recovery
 - minimal browser tests (see Minimal_Browser_Test_Specification.txt):
@@ -55,7 +55,7 @@ TDD enforcement
 - every new detector or rule starts with a failing test
 - every important bug starts with a failing regression test
 - minimal browser gate behavior must be covered by automated tests
-- open elsewhere handoff must be testable without live platform dependency
+- forward action path must be testable without live platform dependency
 
 Required test coverage areas
 1. Decision engine
@@ -71,8 +71,8 @@ Required test coverage areas
 - override availability rules
 - warning copy selection
 
-3. Open Elsewhere and browser gate behavior
-- open elsewhere hands off correct URL to preferred browser (MDL-104)
+3. Browser gate behavior and smart system handoff
+- forward action opens correct approved URL inside LinkLook
 - no web content loads before LinkLook reaches the allowed state
 - suspicious link -> warning interstitial, no auto-load
 - blocked link -> no web content at all

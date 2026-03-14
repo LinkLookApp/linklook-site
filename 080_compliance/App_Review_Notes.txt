@@ -1,6 +1,6 @@
 LINKLOOK — APP REVIEW NOTES
-Version: 2026-03-13
-Updated to match v1.0 feature set
+Version: 2026-03-14
+Updated to match primary browser model
 
 ================================================================================
 APP REVIEW NOTE (paste into App Store Connect)
@@ -20,10 +20,10 @@ The safety check combines:
 - Google Safe Browsing API (hash-prefix lookup for known malware, phishing,
   social engineering, and unwanted software)
 
-After seeing the verdict, the user chooses what to do: go back, continue in
-LinkLook's built-in browser, or open the link in their preferred browser
-(Safari, Chrome, Firefox, etc.). LinkLook never loads a page without explicit
-user action.
+After seeing the verdict, the user chooses what to do: go back or open the
+page in LinkLook's built-in browser. All browsing happens inside LinkLook —
+LinkLook is the user's primary browser. LinkLook never loads a page without
+explicit user action.
 
 Entry points:
 - Omnibox (type or paste a URL)
@@ -41,7 +41,7 @@ Test instructions:
 1. Open the app and type "apple.com" — should show Safe verdict
 2. Type "bit.ly/test" — should show Caution (URL shortener)
 3. Tap "Go Back" — returns to start page
-4. Tap "Continue in LinkLook" on a safe link — opens in built-in browser
+4. Tap "Open" on a safe link — opens in LinkLook's built-in browser
 5. Home button returns to start page from any state
 
 No login required. No demo account needed.

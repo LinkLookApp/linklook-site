@@ -44,7 +44,8 @@ without redesigning the full app structure.
 Component                   Responsibility
 
 LinkLook Browser UI         Straightforward, security-driven browser. Presents
-                            outcomes to the user. Handles redirect option/button.
+                            outcomes to the user and hosts the built-in browsing
+                            flow after a verdict is reached.
 
 Decision Engine             Core decision logic: input normalization, signal
 (LinkLookCore)              collection, scoring, outcome selection, explanation
@@ -112,9 +113,10 @@ The primary v1 flow is:
       - inform with brief explanation
       - warn with clear explanation
       - block with explanation
-      - allow redirect when appropriate
+      - continue inside LinkLook when appropriate
 
-Redirect is part of the browser flow, not a separate product mode.
+Forward navigation remains inside LinkLook. External app handoff is limited
+to OS-required destination types and is not a general browser option.
 
 Canonical outcome model: allow (transparent) / inform / warn / block.
 Inform, warn, and block must include an explanation. Allow should remain
@@ -220,7 +222,7 @@ which covers universal-link verification for partner apps. MDL-102 covers the
 broader strategic direction of opening reputation intelligence as a service.
 
 ================================================================================
-12. PREFERENCES ARCHITECTURE (MDL-104, MDL-105)
+12. PREFERENCES ARCHITECTURE (MDL-105, MDL-109)
 ================================================================================
 
 Preference storage is split based on the nature of the setting.
@@ -230,8 +232,7 @@ iOS Settings bundle (Settings.bundle, values via UserDefaults.standard):
 - Response mode (block / warn)
 
 In-app settings screen:
-- Default handoff browser (Safari default)
-- Safe-link display preference (MDL-109, always show result by default)
+- Safe-link display preference (always show result by default) (MDL-109, always show result by default)
 - Whitelist management
 - Notification preferences
 - Recent checks history toggle and clear (MDL-106, on by default)

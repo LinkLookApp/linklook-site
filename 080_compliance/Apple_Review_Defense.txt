@@ -14,11 +14,13 @@ Core claims
 - Any stated limitation is documented honestly rather than hidden.
 
 Support points
-- LinkLook checks destinations before navigation and then forwards safe links
-  to the user’s preferred browser.
-- LinkLook is a straightforward, security-driven browser. It does not modify web
+- LinkLook checks destinations before navigation and then opens safe links
+  in its built-in browser (WKWebView).
+- LinkLook is a straightforward, safety-driven browser. It does not modify web
   traffic or operate as a VPN/proxy.
-- redirect option/button allows user to send a link to another browser
+- LinkLook is the user’s primary browser — all pages open inside LinkLook.
+  There is no redirect to external browsers. Edge cases (DigiD, iDEAL, OAuth)
+  are handled via automatic silent system handoff, not user-facing buttons.
 - privacy constraints are architectural, not marketing language only
 - warnings should assist user judgment rather than remove user control in all
   cases
@@ -32,7 +34,7 @@ Reviewer concerns to pre-answer
    browsing history. The user can clear or disable it. No check history data
    leaves the device.
 3. Does the app break normal browsing?
-   No. Safe links are handed off to the user’s browser and suspicious links can
-   be explained in plain language.
+   No. Safe links open in LinkLook’s built-in browser. Suspicious links are
+   explained in plain language. The user always chooses whether to proceed.
 4. Does LinkLook claim perfect safety?
    No. Public language is about warning and risk reduction, not guarantees.

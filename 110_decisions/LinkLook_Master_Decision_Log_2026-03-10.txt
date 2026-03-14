@@ -49,12 +49,12 @@ Date(s):
 MDL-003
 Subject: Product Scope / Purpose
 Status: Superseded
-Title: Safe links should be handed off to the user’s preferred browser
-Note: Superseded by MDL-075. LinkLook is now a straightforward, security-driven
-browser. Safe links continue transparently within LinkLook. Redirect to another
-browser is an explicit user action via the redirect option/button (MDL-077).
+Title: Safe links were originally planned to be handed off to the user’s preferred browser
+Note: Superseded by the in-LinkLook browser direction. Safe links now open in
+LinkLook itself unless an OS-required destination type triggers system handoff.
 Decision:
 When a link is considered safe, LinkLook should hand off navigation to the user’s preferred browser.
+[HISTORICAL — no longer active. See MDL-075 and CLAUDE.md rule 10.]
 Main source chats:
 - LinkLook iOS Security Description
 - Default Browser Entitlement Guidance
@@ -943,10 +943,11 @@ SECTION 10 — BROWSER POSITIONING AND UX SAFETY FLOW
 MDL-075
 Subject: Browser Positioning
 Status: Decided
-Title: LinkLook is a straightforward, security-driven browser with a redirect option
+Title: LinkLook is a straightforward, security-driven browser
 Decision:
-LinkLook is positioned as a straightforward, security-driven browser for iOS. It is not
-positioned as a default-browser interceptor and not as a minimal-browser fallback concept.
+LinkLook is positioned as a straightforward, security-driven browser for iOS. Users
+remain inside LinkLook for normal forward navigation. It is not positioned as a
+redirect-first interceptor product.
 Source: LinkLook Browser Requirements; user clarification
 Date: 2026-03-10
 
@@ -963,9 +964,10 @@ Date: 2026-03-10
 MDL-077
 Subject: Browser UX Safety Flow
 Status: Decided
-Title: Redirect option/button is part of the browser flow
+Title: Forward navigation stays inside LinkLook
 Decision:
-The redirect option/button is part of the browser flow, not a separate product mode.
+The standard forward path stays inside LinkLook. There is no general "Open in other
+browser" option in v1. External handoff is limited to OS-required destination types.
 Source: Apple Entitlement Feedback / LinkLook Browser Requirements; user clarification
 Date: 2026-03-10
 
@@ -1064,12 +1066,10 @@ Date: 2026-03-10
 MDL-087
 Subject: Product Risk
 Status: Decided
-Title: Redirect-button misinterpretation and bypass risk must be treated explicitly
+Title: Unsafe override actions must be visually de-emphasized
 Decision:
-The redirect option/button must be presented carefully so it is not mistaken for a safety
-approval. Its wording, placement, and explanation should make clear that redirecting
-sends the link elsewhere and does not automatically mean the destination is considered
-safe by LinkLook.
+Potentially risky forward actions must never look like approval. On inform and warn
+screens, Go Back stays primary and Go to Site remains smaller and secondary.
 Source: Decision Log Reconciliation Chat
 Date: 2026-03-10
 
@@ -1290,21 +1290,17 @@ Date: 2026-03-10
 MDL-104
 Subject: UX / Settings
 Status: Decided
-Title: User-configurable browser preference for safe-link redirect
+Title: User-configurable safe-link display preference
 Target version: V1
 Decision:
-LinkLook is a safety-driven browser that the user sets as their default. When a
-link passes LinkLook's safety checks, it opens in the user's preferred browsing
-app. Safari is the default redirect browser out of the box. The user can change
-this preference in a Settings screen accessible from the main screen. Only
-browsers that are installed on the device are shown. LinkLook itself is never
-listed as a redirect target. If the chosen browser is later removed from the
-device, LinkLook falls back to Safari. The preference is stored on-device using
+LinkLook is a safety-driven browser that the user may set as their default. When
+a link passes LinkLook's safety checks, it opens in LinkLook itself. The user can
+choose whether safe links always show a brief safe result screen first or
+auto-open directly in LinkLook. "Always show result" is the default. PROTECTED
+profile enforces that mode. The preference is stored on-device using
 UserDefaults, consistent with the privacy-first two-data-flow separation
-(MDL-100). All redirect paths — result screen actions and the in-app browser
-toolbar — route through this preference. Supported browsers at launch: Safari,
-Chrome, Firefox, Edge, Opera, Brave, DuckDuckGo. Browser availability is
-detected via LSApplicationQueriesSchemes and canOpenURL.
+(MDL-100). Exception handling for OS-required destination types is policy-driven,
+not controlled by a general browser preference.
 Source: Cowork session 2026-03-11
 Date: 2026-03-11
 
@@ -1325,7 +1321,7 @@ preferences. Profile 1 (adult child installer) expects Settings-level controls.
 PROTECTED profile's locked block mode belongs at device configuration level.
 
 In-app settings screen:
-- Default handoff browser (MDL-104, Safari default)
+- Safe-link display preference (MDL-109, always show result by default)
 - Whitelist management
 - Notification preferences
 - Foundation donation tier display (read-only)
@@ -1672,7 +1668,7 @@ browser plus Network Extension for v1. Replaced in Product Requirements and Arch
 
 A-003 | Status: Done (this sync pass)
 Action: Set the canonical v1 wording to: straightforward, security-driven browser with
-redirect option/button. Applied in Product Requirements and Architecture docs.
+in-LinkLook forward navigation. Applied in Product Requirements and Architecture docs.
 
 A-003b | Status: Done (this sync pass)
 Action: Replace older three-state wording with the canonical four-state outcome model
@@ -1723,21 +1719,20 @@ The current canonical direction is:
 14. The repo should have one source of truth for decisions — this log, governed by the
     canonical master decision log.
 15. App Store rejection risk and browser entitlement risk are accepted showstopper risks.
-16. User confusion, misuse risk, and redirect-button misinterpretation must be managed
-    explicitly.
+16. User confusion and unsafe override risk must be managed explicitly.
 17. Proactive notification when previously cleared links are later reclassified as
     malicious — honesty principle in action.
 18. Domain reputation database as a future data platform with public API and tiered
     B2B pricing.
 19. Localization-ready from V1: reason codes language-neutral, UI uses Swift
     localized strings, Dutch + English from launch.
-20. User-configurable browser preference: safe links open in the user's chosen
-    browsing app. Safari is the default. LinkLook is never a redirect target.
-    Preference stored on-device.
+20. User-configurable safe-link display preference: safe links either show a
+    brief safe result first or auto-open inside LinkLook. Default is "Always
+    show result". Preference stored on-device.
 21. Preferences split: device-level settings (profile type, response mode) in
-    iOS Settings bundle; user-experience settings (handoff browser, whitelist,
-    notifications, donation tier) in the in-app settings screen. All preferences
-    sync to shared App Group container for Network Extension access.
+    iOS Settings bundle; user-experience settings (safe-link display preference,
+    whitelist, notifications, donation tier) in the in-app settings screen. All
+    preferences sync to shared App Group container for Network Extension access.
 22. Recent checks history on by default, local only, clearable and disableable.
     Stores URL, verdict, reason code, timestamp — no page content. Supports
     Proof of Activity (PRD 5.5). Part of personal trust data (MDL-100).

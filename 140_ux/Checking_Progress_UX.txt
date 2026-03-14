@@ -63,14 +63,11 @@ state and show a neutral fallback screen. It must NOT spin indefinitely.
     - "Retry"             — re-run the safety check from scratch
     - "Go back"           — return to the previous screen (start page or
                             referring page)
-    - "Open elsewhere"    — open the URL in the preferred browser
-      OR "Continue anyway" — depending on policy and route:
-        · If the URL came via default-browser handoff → "Continue anyway"
-          (the user intended to visit this link)
-        · If the URL was entered manually in the omnibox → "Open elsewhere"
-          (safer to redirect than to load in LinkLook without a verdict)
-        · PROTECTED profile → "Continue anyway" is NOT available;
-          only "Retry" and "Go back" are shown
+    - "Go to Site"        — continue inside LinkLook only when policy allows
+        · PROTECTED profile may remove the forward action depending on
+          policy
+        · There is NO "Open elsewhere" option — LinkLook IS the browser
+          (CLAUDE.md rule 10)
 
   4.3 TIMEOUT RULES
 

@@ -1,13 +1,16 @@
 LinkLook Core User Flows
-Version: v3.0
-Date: 2026-03-10
+Version: v4.0
+Date: 2026-03-14
 Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
+       + primary browser pivot 2026-03-14
 
-Canonical alignment note (2026-03-10)
-LinkLook is a straightforward, security-driven browser for iOS. The canonical
-outcome model is: allow (transparent) / inform / warn / block. Redirect is
-part of the browser flow, not a separate product mode. The minimal-browser
-fallback direction has been superseded (MDL-007).
+Canonical alignment note (2026-03-14)
+LinkLook is the user's primary and only browser for iOS. The canonical
+outcome model is: allow (transparent) / inform / warn / block. There is no
+"open in other browser" option — users stay inside LinkLook at all times.
+LinkLook must look and feel like Safari. The safety check is the differentiator,
+not the browser chrome. Edge cases (DigiD, iDEAL, OAuth) are handled via
+automatic silent system handoff, not user-facing buttons.
 
 Canonical UX flows
 
@@ -17,11 +20,17 @@ Canonical UX flows
 - one field does everything: URLs, domains, and search
 
 Layout (top to bottom):
-- omnibox: back arrow (when applicable), unified address/search field
-  ("Enter website or search") — browser-style, establishes LinkLook as a
-  real browser. No settings gear in the top bar (accessible via tab bar).
-- app identity: "LinkLook" heading + tagline (see CLAUDE.md rule 17) —
-  centered, only visible on start page
+- omnibox: back chevron (when applicable), unified address/search field
+  ("Search or link") — browser-style, establishes LinkLook as a real browser.
+  Chevron size scales with text size setting (Small 16pt, Medium 18pt,
+  Large 22pt). No settings gear in the top bar (tab bar only).
+- "or" label + QR button: green "or" text below omnibox (scales with text
+  size setting), then "Scan QR code" capsule button — two clear entry points
+- app identity: LinkLook SVG logo (eyes version, creamy white bg) + tagline
+  "A safety-driven browser" in Theme.logoGreen (#2E7D4F) — vertically centered
+  in remaining space, only visible on start page. Tagline scales with text size.
+- verdict stats card: "X links checked" at bottom of page (when history exists),
+  text scales with text size setting
 - tab bar: Home, Recent, Settings — persists across all screens
   NOTE: Recent sites are NOT shown on the Home/start page. History is only
   accessible from the Recent tab. The Home screen stays clean and focused.
@@ -37,12 +46,15 @@ Omnibox input classification:
 - Search text (everything else) → convert to Google search URL
 All three cases go through the same safety check → result → browsing flow.
 
-When browsing, a bottom toolbar appears with four buttons:
-- Back, Forward, Reload/Stop, Open in preferred browser (shows browser icon)
+When browsing, a bottom toolbar appears matching Safari's layout:
+- Back, Forward, Share (share menu: Copy Link, Share…, Add to Favorites),
+  Tabs (tab overview grid)
+- No "Open in other browser" button anywhere in the toolbar
 
 Visual style: white background, generous spacing, rounded card elements,
-light grey secondary text. No news, ads, bookmarks, or search suggestions.
-No "paste from clipboard" button — users paste directly into the omnibox.
+light grey secondary text. No news, ads, or search suggestions. Favorites grid shown below omnibox
+(like Safari's start page). No "paste from clipboard" button — users paste
+directly into the omnibox.
 
 When iOS hands LinkLook a URL via default-browser handoff, the start page
 is never shown — the check flow begins immediately.
@@ -61,8 +73,8 @@ Visual reference: 140_ux/Start_Page_Mockup.html
 - no fake percentages, no technical jargon
 - protection mode shown separately: "Basic protection" (Free) or
   "AI-enhanced protection" (Pro)
-- if no result within 8 seconds → timeout screen with Retry / Go back /
-  Open elsewhere (or Continue anyway depending on policy)
+- if no result within 8 seconds → timeout screen with Retry / Go back
+  (no "open elsewhere" — LinkLook is the browser, see CLAUDE.md rule 10)
 - never auto-mark a link safe on timeout, never spin indefinitely
 - full spec: 140_ux/Checking_Progress_UX.txt
 
@@ -72,8 +84,10 @@ Result screen rules (apply to all verdict screens):
   the result screen. The result screen shows only: verdict, explanation,
   primary action, and secondary action if applicable.
 - Button order: On all non-allow screens (inform, warn, block), "Go Back"
-  is always the large primary button and "Go to Site" / "Open Anyway" is
-  always the small secondary button. The safe choice is always prominent.
+  is always the large primary button and "Open" is always the small
+  secondary button. The safe choice is always prominent.
+- There is NO "Open in other browser" button on any verdict screen. All
+  forward paths open in LinkLook. The user stays protected at all times.
 
 1. Allow flow (transparent)
 - user taps a link
@@ -94,7 +108,7 @@ Result screen rules (apply to all verdict screens):
 - clear but calm warning
 - explain uncertainty without panic
 - safe action is primary
-- continue anyway remains available if policy allows
+- Go to Site remains available if policy allows
 
 4. Block flow (known phishing / malicious)
 - clear warning with explanation
@@ -121,32 +135,26 @@ Result screen rules (apply to all verdict screens):
 - explain in plain language why a link is risky
 - help users learn scam patterns over time
 
-9. Redirect flow
-- user chooses redirect option/button
-- redirect sends the link to another browser
-- wording and placement must make clear this does not mean LinkLook considers
-  the destination safe (MDL-087)
-- Safari redirect: iOS does not allow apps to force-open Safari when another
-  browser is the system default. LinkLook uses SFSafariViewController (Safari's
-  engine, presented in-app) to guarantee Safari. See CLAUDE.md rule 10.
+9. Smart system handoff flow (edge cases only)
+- LinkLook automatically detects flows that require system handoff:
+  DigiD authentication, iDEAL/banking payment redirects, OAuth flows
+- Handoff is automatic and invisible — no user-facing button
+- Uses UIApplication.shared.open(url) or ASWebAuthenticationSession
+- Maintained via an allowlist of domains/patterns in the engine
+- This is NOT a general "open in other browser" feature — it is a narrow
+  compatibility fix for specific payment/authentication flows
 
-10. Settings flow (MDL-104, MDL-105)
+10. Settings flow (MDL-105)
 
 In-app settings (Settings tab in tab bar):
-- user picks which browser safe links should open in (default: LinkLook).
-  "LinkLook" is always the first option — it means "stay in LinkLook's
-  built-in browser, no redirect." When LinkLook is selected, the redirect
-  button is hidden from the browser toolbar entirely.
-  The browser list MUST show all installed browsers on the device, not just
-  Safari and Default. Use LSApplicationQueriesSchemes in Info.plist to declare
-  supported URL schemes (googlechromes, firefox, brave, microsoft-edge, opera,
-  ddgQuickLink, arc) and check availability at runtime with canOpenURL().
-  Only show browsers that are actually installed. See CLAUDE.md rule 9.
+- NO browser picker setting — LinkLook IS the browser. All pages open in
+  LinkLook. There is no option to redirect to Safari, Chrome, or any other
+  browser.
 - user picks safe-link display mode (MDL-109, "always show result" by default):
   — "always show result": safe result screen shown briefly for reassurance,
-    then page loads in minimal browser
+    then page loads in LinkLook's browser
   — "auto-open safe links": safe links skip the result screen and load
-    directly in the minimal browser
+    directly in LinkLook's browser
   — PROTECTED profile: always show result is enforced, cannot be changed
   — STANDARD profile: user can choose either mode
   — inform, warn, block verdicts always show their screens regardless
@@ -160,10 +168,7 @@ In-app settings (Settings tab in tab bar):
   — when enabled, anonymous domain-level signals may be submitted
   — toggle is off by default because data leaves the device
 - foundation donation tier shown read-only
-- LinkLook is always the first browser option (means "stay in built-in browser")
-- preferences stored on-device, respected by all redirect paths
-  (result screen, in-app browser toolbar)
-- if the chosen browser is later removed, LinkLook falls back to Safari
+- preferences stored on-device
 
 11. History flow (MDL-106)
 - every link check is recorded locally: URL, verdict, reason code, timestamp
@@ -181,6 +186,22 @@ iOS Settings bundle (device-level):
 - profile type (PROTECTED / STANDARD)
 - response mode (block / warn)
 - set during setup or by an adult child installer
+
+11. Safari Extension flow (second defense layer)
+- user has Safari Web Extension enabled in iOS Settings → Apps → Safari → Extensions
+- user searches in Safari (e.g. Google "Feenstra monteur")
+- extension reads search result page, sends domains to LinkLook engine
+- suspicious results get visual warning badges inline
+- user visits a suspicious page → extension injects warning banner at top
+- user taps "Open in LinkLook" button → launches LinkLook with URL → full
+  two-stage safety flow runs
+- separately: Content Blocker hard-blocks confirmed malicious domains
+  (user never sees the page, Safari blocks it before loading)
+- extension does NOT replace LinkLook-as-browser — it is a bridge for users
+  who haven't switched yet and an additional safety net for those who have
+- activation: user must enable extension manually in iOS Settings. LinkLook
+  onboarding includes step-by-step guide with screenshots.
+- see CLAUDE.md rules 62–74 for full spec
 
 Acceptance-test note
 Each canonical user flow should map to one or more automated acceptance tests

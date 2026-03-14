@@ -24,7 +24,7 @@ Key points to preserve
 - it evaluates URLs and destination risk before presenting results
 - it minimizes data collection
 - it does not need broad browsing-history retention to perform its security role
-- redirect option/button is part of the browser flow (MDL-077)
+- forward navigation stays inside LinkLook after verdict (MDL-077)
 
 Entitlement risk posture
 Browser entitlement approval risk is an accepted showstopper risk. The project
@@ -33,7 +33,7 @@ direction will need reassessment — but the minimal-browser fallback concept
 is no longer the active contingency path.
 
 Strategic rule
-- preferred path: straightforward, security-driven browser with redirect option
+- preferred path: straightforward, security-driven browser with built-in forward navigation
 - entitlement refusal requires strategic reassessment, not automatic fallback
 - all paths must preserve honest product claims and privacy-first analysis
 

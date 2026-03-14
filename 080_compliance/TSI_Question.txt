@@ -2,7 +2,20 @@ LINKLOOK — TSI QUESTION
 Version 2 — February 2026
 
 ================================================================================
-STATUS
+⚠️  SUPERSEDED — HISTORICAL DRAFT ONLY. DO NOT FILE OR REUSE EXTERNALLY.
+================================================================================
+
+This document describes an earlier architecture where LinkLook forwarded links
+to an external browser and had no browser UI. LinkLook has since pivoted to a
+primary browser model: all pages open inside LinkLook (WKWebView), there is no
+redirect to external browsers, and the app looks and feels like Safari.
+
+This file is kept for historical reference only. DO NOT reuse this text for
+Apple communications. The current architecture is documented in CLAUDE.md and
+080_compliance/App_Review_Notes.txt.
+
+================================================================================
+STATUS (HISTORICAL)
 ================================================================================
 
 Final — ready to file after PoC is confirmed working on physical device.

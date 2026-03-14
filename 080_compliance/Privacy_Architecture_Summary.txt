@@ -19,7 +19,7 @@ Straightforward, security-driven browser design
 - The browser receives the destination URL before navigation.
 - The destination is evaluated for safety signals.
 - The canonical outcome model is: allow (transparent), inform, warn, block.
-- Redirect is part of the browser flow, not a separate mode.
+- Forward navigation remains inside LinkLook, not as a separate mode or handoff product.
 - LinkLook does not act as a VPN or general traffic proxy in v1.
 
 Two-data-flow separation (MDL-100, MDL-108)

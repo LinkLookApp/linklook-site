@@ -10,15 +10,15 @@ LinkLook is a minimal, safety-driven browser for iOS with a built-in preventive
 security gate. Its purpose is to help users recognize malicious or suspicious
 destinations before harm occurs. The browser part must be real enough to support
 the product direction, but kept as small and straightforward as possible.
-LinkLook combines a minimal browser experience with a protective security layer
-and a redirect option/button when appropriate. It is not positioned as a full-feature browser.
+LinkLook combines a minimal browser experience with a protective security layer.
+Users remain in LinkLook for normal forward navigation.
 
 Primary v1 characteristics:
 - minimal, safety-driven browser with preventive security gate
 - plain-English verdicts using four-state outcome model
 - privacy-first analysis pipeline
 - visible but calm proof that the product is active
-- redirect option/button as part of the browser flow
+- built-in browsing flow inside LinkLook after a verdict is reached
 
 LinkLook v1 is a minimal, safety-driven browser. The first version centers on
 clear browser flows, link-risk evaluation, transparent safe handling, and
@@ -57,8 +57,7 @@ When a user taps a link that routes through LinkLook:
 2. LinkLook normalizes and inspects inputs, collects available safety signals.
 3. LinkLook determines the outcome.
 4. The result is presented clearly to the user.
-5. LinkLook then either continues transparently, informs, warns, blocks, or
-   allows redirect when appropriate.
+5. LinkLook then either continues transparently, informs, warns, or blocks.
 
 Core product sentence:
 “LinkLook checks links before they open.”
@@ -66,17 +65,17 @@ Core product sentence:
 Canonical outcome model:
 The LinkLook MVP outcome model is: allow (transparent), inform, warn, and block.
 Inform, warn, and block must include an explanation. Allow should remain
-low-friction and transparent. Redirect is part of the browser flow, not a
-separate product mode.
+low-friction and transparent. Forward navigation happens inside LinkLook.
+External handoff is reserved for OS-required destination types and is not a
+general browser option.
 
 Routing requirements
 - allow: low-friction, transparent continuation
 - inform: brief explanation, user proceeds easily
 - warn: clear warning with explanation before navigation
 - block: stopped by default with explanation
-- redirect option/button: presented carefully so it is not mistaken for a safety
-  approval; wording and placement must make clear that redirecting sends the link
-  elsewhere and does not mean the destination is considered safe by LinkLook
+- forward navigation stays inside LinkLook; result-screen wording must make
+  clear when the user is staying in LinkLook versus going back
 
 ================================================================================
 5. UX REQUIREMENTS
@@ -123,7 +122,7 @@ Where appropriate after a high-confidence suspicious event, the UX may support
 subtle sharing or educational follow-up. Any such mechanism must remain calm and
 credibly framed. No celebratory or self-congratulatory tone.
 
-5.7 PREFERENCES ARCHITECTURE (MDL-104, MDL-105)
+5.7 PREFERENCES ARCHITECTURE (MDL-105, MDL-109)
 
 Preference storage is split between iOS Settings bundle and the in-app settings
 screen based on the nature of each setting.
@@ -136,7 +135,6 @@ installer (Profile 1). PROTECTED profile's locked block mode belongs at the
 device configuration level.
 
 In-app settings screen (user-experience preferences):
-- default handoff browser (MDL-104, Safari default)
 - safe-link display preference (MDL-109, always show result by default)
 - whitelist management
 - notification preferences
@@ -147,18 +145,16 @@ Rationale: decisions made in context by active users. Safety net for elderly
 STANDARD profile users who may not navigate to iOS Settings reliably —
 confirmed or adjusted based on TestFlight behavioural data.
 
-Browser preference requirements (MDL-104):
-- Settings screen accessible from the main screen via a gear icon
-- only installed browsers are shown in the list
-- LinkLook itself is never a redirect target
-- Safari is the default redirect browser out of the box
-- preference is stored on-device (aligns with privacy-first principle, MDL-100)
-- all redirect paths respect the preference: result screen action, in-app
-  browser toolbar button
-- if the preferred browser is uninstalled, LinkLook falls back to Safari
-- supported browsers at launch: Safari, Chrome, Firefox, Edge, Opera, Brave,
-  DuckDuckGo
-- browser detection uses LSApplicationQueriesSchemes in Info.plist
+Browser model (updated 2026-03-14):
+- LinkLook IS the browser. There is no browser-picker setting and no
+  "Open in other browser" button anywhere in the app.
+- All pages open in LinkLook's built-in browser (WKWebView).
+- The toolbar offers: Back, Forward, Reload/Stop, Share (share menu with
+  "Copy link", "Share…", "Add to Favorites"), and Tabs.
+- No external browser button. Users stay inside LinkLook at all times.
+- Edge cases (DigiD, iDEAL, OAuth) are handled via automatic silent system
+  handoff — not a user-facing button. See CLAUDE.md rule 11.
+- MDL-104 (browser preference) is superseded by the primary browser model.
 
 Crowdsourced threat contribution opt-in (MDL-108, V2):
 - toggle in the in-app settings screen, OFF by default
@@ -319,8 +315,8 @@ direction, but kept as small and straightforward as possible.
 
 The primary v1 flow is: receive URL, normalize and inspect inputs, collect
 available safety signals, determine outcome, present result clearly, then
-either continue transparently, inform, warn, block, or allow redirect.
-Redirect is part of the browser flow, not a separate product mode.
+either continue transparently, inform, warn, or block. Forward navigation
+remains inside LinkLook.
 
 12.1 MUST HAVE
 
@@ -345,18 +341,20 @@ Redirect is part of the browser flow, not a separate product mode.
    - block screen with plain language
    - consistent buttons and wording
 
-4. Open elsewhere option
-   For allowed situations, the user must be able to continue in another browser.
-   This supports the product direction of a minimal browser with a security gate
-   instead of a full-feature browser. The destination browser is controlled by
-   the user's browser preference setting (see 5.7, MDL-104).
+4. No "open elsewhere" option
+   LinkLook IS the browser. There is no "Open in other browser" button
+   anywhere. All pages open in LinkLook's built-in browser. Edge cases
+   (DigiD, iDEAL, OAuth) are handled via automatic silent system handoff,
+   not user-facing buttons. See CLAUDE.md rule 10.
 
 5. Minimal essential navigation controls
    The browser must include only the controls needed to make it credible and
    usable.
    - back
+   - forward
    - reload
-   - open elsewhere
+   - share (Copy Link, Share…, Add to Favorites)
+   - tabs
    - clear indication of current page or domain
 
 6. Core decision engine separated from iOS UI

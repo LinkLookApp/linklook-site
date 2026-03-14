@@ -21,3 +21,9 @@ credentials.json
 # ===== IDE =====
 .idea/
 .vscode/
+
+# ===== macOS ZIP artifacts =====
+__MACOSX/
+
+# ===== Claude / AI tools =====
+.claude/settings.local.json

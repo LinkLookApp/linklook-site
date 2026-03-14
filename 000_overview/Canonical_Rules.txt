@@ -1,0 +1,110 @@
+LinkLook — Canonical Rules Summary
+Version: 1.0
+Date: 2026-03-14
+
+This file summarises the enforceable rules from CLAUDE.md (the single source of
+truth in the LinkLook-App repository). It exists so that the LinkLook-Docs
+package is self-contained — reviewers do not need access to the app repository
+to understand the canonical model.
+
+When this file and CLAUDE.md conflict, CLAUDE.md wins.
+
+================================================================================
+1. PRIMARY BROWSER MODEL
+================================================================================
+
+LinkLook is the user's primary and only browser. Users stay inside LinkLook at
+all times. There is NO "Open in other browser" option — not on verdict screens,
+not in the toolbar, not anywhere.
+
+Design target: Safari. LinkLook must look and feel like Safari on iPhone. Same
+navigation patterns, same toolbar placement, same gestures.
+
+================================================================================
+2. TWO-STEP SAFETY FLOW
+================================================================================
+
+Every entered or tapped URL is handled in two steps:
+  (1) Check the destination.
+  (2) Let the user explicitly choose what happens next.
+
+Users never land on a URL automatically. LinkLook always shows a verdict first.
+Only after that does the user decide to go back or open the page in LinkLook.
+
+================================================================================
+3. NO-PRELOAD PRINCIPLE
+================================================================================
+
+LinkLook NEVER loads, fetches, or renders the destination page before the user
+explicitly taps "Open" / "Go to Site". The verdict screen shows only information
+derived from the URL itself (structural analysis, GSB lookup, AI model).
+
+================================================================================
+4. VERDICT SCREENS
+================================================================================
+
+OK:      One large "Open" button. No "Go Back" button.
+INFORM:  One large "Go Back" button. One medium "Check Message Context" (Pro).
+         One small "Go to Site" button.
+WARN:    One large "Go Back" button. One medium "Check Message Context" (Pro).
+         One very small "Go to Site" button (extra confirmation tap).
+BLOCK:   One large "Go Back" button only. No forward path.
+UNKNOWN: "Go Back" only, with retry option.
+
+All forward paths open in LinkLook. There is NO option to open in another
+browser. The user stays protected at all times.
+
+================================================================================
+5. SMART SYSTEM HANDOFF (EDGE CASES ONLY)
+================================================================================
+
+Some flows do not work well inside WKWebView: DigiD authentication, iDEAL
+payment redirects, and OAuth flows. LinkLook detects these automatically by
+matching known domains and hands off to the system. This is NOT a user-facing
+button — it is automatic, invisible, and limited to a maintained allowlist.
+
+================================================================================
+6. BROWSER TOOLBAR (DURING BROWSING)
+================================================================================
+
+Bottom toolbar: Back, Forward, Reload/Stop, Share, Tabs.
+Share menu: Copy Link, Share…, Add to Favorites.
+No "Open in other browser" button anywhere in the toolbar.
+
+================================================================================
+7. CHECK PIPELINE
+================================================================================
+
+Run in parallel:
+  (a) LinkLook structural analysis (always)
+  (b) GSB Lookup API query (with API key)
+  (c) On-device AI URL analysis (Pro only)
+Combine results. Highest severity wins.
+Severity order: OK < INFORM < WARN < BLOCK.
+
+No safe-URL caching — a fresh check runs every time.
+
+================================================================================
+8. FREE / PRO TIERS
+================================================================================
+
+Phase 1 (Early Access): All features unlocked. Pro features show "Free during
+Early Access" badge.
+
+Phase 2 (Pro launch): Pro features gated behind StoreKit subscription. Free
+users see Pro features as visible but locked.
+
+Always Free: entire two-step safety flow, structural analysis, GSB checks, all
+verdict screens, all entry points, full browser features, history.
+
+Pro: context analysis, screenshot analysis, on-device AI URL analysis.
+
+================================================================================
+9. REFERENCES
+================================================================================
+
+Full enforceable rules with exact values: CLAUDE.md (in LinkLook-App repository)
+UX specs: 140_ux/Two_Stage_Rocket_UX.md, 140_ux/Core_User_Flows.txt
+Policy: 060_security/Policy_Table.md
+Test specs: 100_testing/Decision_UX_Test_Specification.txt,
+            100_testing/Minimal_Browser_Test_Specification.txt

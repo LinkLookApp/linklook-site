@@ -12,11 +12,31 @@ Every entered or tapped URL in LinkLook is handled in two steps:
 2. **Let the user explicitly choose what happens next.**
 
 Users never land on a URL automatically. LinkLook always shows a verdict first.
-Only after that does the user decide to go back, continue in LinkLook, or open
-the destination in their preferred browser.
+Only after that does the user decide to go back or open the page — always inside
+LinkLook. There is no option to open in another browser.
 
-LinkLook is not "a browser that also checks links." It is a browser built around
-a safety decision point. The pause IS the product.
+LinkLook is not "a browser that also checks links." It is the user's **primary
+and only browser** — built around a safety decision point. The pause IS the
+product. If users leave LinkLook, they lose protection.
+
+### Primary browser model
+
+LinkLook keeps users in at all times. There is no "Open in other browser" button
+anywhere in the app — not on verdict screens, not in the toolbar, not in menus.
+The reasoning: if a user opens a link in Safari and gets scammed, the blame lands
+on LinkLook ("I thought I was protected"). The only indirect escape is "Copy link"
+in the share menu — high enough friction that nobody does it by accident.
+
+For edge cases where WKWebView doesn't work (DigiD, iDEAL payments, OAuth),
+LinkLook detects these flows automatically and hands off to the system silently.
+This is not a user-facing option — it is invisible smart handoff.
+
+### Safari look and feel
+
+LinkLook must look and feel like Safari on iPhone. Same navigation patterns, same
+toolbar placement, same gestures (swipe-to-go-back, pull-to-refresh, long-press
+context menus). Users switching from Safari should feel at home immediately. The
+safety check is the differentiator, not the browser chrome.
 
 ### Why this works
 
@@ -27,6 +47,9 @@ a safety decision point. The pause IS the product.
   clearly nudges the safer choice without fully removing user control.
 - **It separates two very different actions cleanly.** Link visiting and web
   searching go through different paths. That makes the omnibox understandable.
+- **Users stay protected.** Because there is no exit to another browser, every
+  link the user encounters is checked. This is especially important for threats
+  that come via search results and ads (e.g. fake service company websites).
 
 ---
 
@@ -45,7 +68,6 @@ The user provides input via the omnibox. LinkLook determines what it is:
 - No scheme, no dots, or clearly a search phrase (multiple words, question format)
 
 → Open search results in LinkLook's built-in browser. No verdict screen.
-  The user can redirect to another browser from the toolbar.
 
 ### Entry points (priority order)
 All entry points feed into Step 1 identically. The flow after entry is always
@@ -70,7 +92,7 @@ tap a button. There is no auto-proceed, no timeout-to-navigation, no bypass.
 ### No-Preload Principle
 
 LinkLook NEVER loads, fetches, or renders the destination page before the user
-explicitly taps "Continue in LinkLook" or "Open in {browser}". The verdict screen
+explicitly taps "Open". The verdict screen
 is a neutral pre-open checkpoint showing only information derived from the URL
 itself and safe external lookups (GSB hash-prefix queries):
 
@@ -89,11 +111,12 @@ level of context for the user's decision. This principle is non-negotiable.
 | Action               | Label                          | Code action     |
 |----------------------|--------------------------------|-----------------|
 | Go back to safety    | **Go Back**                    | `.goBack`       |
-| Open in LinkLook     | **Continue in LinkLook**       | `.openInApp`    |
-| Open in other browser| **Open in {preferred browser}**| `.openInBrowser` |
+| Open the page        | **Open**                       | `.openInApp`    |
 
-These exact labels are used everywhere. "Continue in LinkLook" removes all
-ambiguity about what "Continue" means.
+These exact labels are used everywhere. "Open" is simple and unambiguous —
+LinkLook is the browser, so "Open" naturally means "open here." There is no
+`.openInBrowser` action. The old "Continue in LinkLook" / "Open in Browser"
+split has been removed.
 
 ---
 
@@ -114,20 +137,18 @@ The link passed all checks.
 │  └──────────────────────────────────┘│
 │   (domain large, full URL small)     │
 │                                      │
-│  ┌────────────────┐ ┌─────────────┐ │
-│  │  Continue in   │ │  Open in    │ │
-│  │   LinkLook     │ │  Chrome     │ │
-│  └────────────────┘ └─────────────┘ │
-│       (small)          (small)       │
+│  ┌──────────────────────────────────┐│
+│  │             OPEN                 ││
+│  └──────────────────────────────────┘│
+│           (large button)             │
 │                                      │
 └──────────────────────────────────────┘
 ```
 
-- Two **small, equal-weight** buttons side by side.
-- "Continue in LinkLook" → opens in LinkLook's built-in browser.
-- "Open in {browser}" → opens in the user's preferred browser from Settings.
-- **No "Go Back" button.** Both options move forward. The Home tab serves as the
-  back path if the user changes their mind.
+- One **large** "Open" button. Opens the page in LinkLook.
+- **No "Go Back" button.** The Home tab serves as the back path if the user
+  changes their mind.
+- **No "Open in other browser" button.** LinkLook is the browser.
 - Visual treatment: green accent, positive tone.
 - **Important:** The OK screen must still feel like a checkpoint — fast, clean,
   reassuring — not friction for friction's sake.
@@ -163,11 +184,10 @@ Minor concerns — the user should be aware but can proceed.
 │  └──────────────────────────────────┘│
 │       (medium, outlined, Pro)        │
 │                                      │
-│  ┌────────────────┐ ┌─────────────┐ │
-│  │  Continue in   │ │  Open in    │ │
-│  │   LinkLook     │ │  Chrome     │ │
-│  └────────────────┘ └─────────────┘ │
-│       (small)          (small)       │
+│  ┌──────────────────────────────────┐│
+│  │             Open                 ││
+│  └──────────────────────────────────┘│
+│            (small)                   │
 │                                      │
 │   Share verdict with…                │
 │                                      │
@@ -177,7 +197,7 @@ Minor concerns — the user should be aware but can proceed.
 - **Large "Go Back"** button — visually dominant, the recommended path.
 - **Medium "Check Message Context"** — outlined style, Pro feature badge. Opens
   the context analysis flow (see below).
-- Two **small** buttons: "Continue in LinkLook" and "Open in {browser}".
+- One **small** "Open" button — opens in LinkLook.
 - Visual treatment: **blue/informational** accent. Calm, not alarming.
 - Signal badges visible (up to 3).
 
@@ -212,8 +232,8 @@ Significant concerns — the user is strongly nudged away.
 │  └──────────────────────────────────┘│
 │       (medium, outlined, Pro)        │
 │                                      │
-│   Continue in LinkLook  Open in Chrome│
-│       (very small)     (very small)  │
+│            Open                      │
+│        (very small)                  │
 │                                      │
 │   Share verdict with…                │
 │   This doesn't look right            │
@@ -223,9 +243,11 @@ Significant concerns — the user is strongly nudged away.
 
 - Same button structure as INFORM but with **orange/caution** visual treatment.
 - Colors, icons, and wording must **clearly distinguish WARN from INFORM**.
-  The button layout is identical; the surrounding context does the differentiating.
-- WARN forward buttons are **very small** (0.6x font, light color) to make
-  "Go Back" clearly dominant. INFORM forward buttons are **small** (0.7x).
+  The button layout is similar; the surrounding context does the differentiating.
+- WARN "Open" button is **very small** (0.6x font, light color) to make
+  "Go Back" clearly dominant. INFORM "Open" button is **small** (0.7x).
+- On WARN, tapping "Open" requires an **extra confirmation tap** ("Are you sure?
+  This link has warning signs.") to add friction before proceeding.
 - Signal badges visible (up to 3).
 
 ### Verdict: BLOCK (Link Blocked)
@@ -382,10 +404,10 @@ gates. Pro features display a small **"Free during Early Access"** badge.
 │  │         Free during Early Access ││
 │  └──────────────────────────────────┘│
 │                                      │
-│  ┌────────────────┐ ┌─────────────┐ │
-│  │  Continue in   │ │  Open in    │ │
-│  │   LinkLook     │ │  Chrome     │ │
-│  └────────────────┘ └─────────────┘ │
+│  ┌──────────────────────────────────┐│
+│  │             Open                 ││
+│  └──────────────────────────────────┘│
+│            (small)                   │
 │                                      │
 └──────────────────────────────────────┘
 ```
@@ -427,10 +449,10 @@ INFORM / WARN verdict screen (Free user, Phase 2):
 │  │        [ Upgrade ]               ││
 │  └──────────────────────────────────┘│
 │                                      │
-│  ┌────────────────┐ ┌─────────────┐ │
-│  │  Continue in   │ │  Open in    │ │
-│  │   LinkLook     │ │  Chrome     │ │
-│  └────────────────┘ └─────────────┘ │
+│  ┌──────────────────────────────────┐│
+│  │             Open                 ││
+│  └──────────────────────────────────┘│
+│            (small)                   │
 │                                      │
 └──────────────────────────────────────┘
 ```
@@ -442,17 +464,19 @@ means users never discover it.
 
 ### What is always Free
 
-The entire core safety product:
+The entire core safety product and browser:
 
-- Two-step safety flow (enter link → verdict → choose action)
+- Two-step safety flow (enter link → verdict → open in LinkLook)
 - Structural analysis + Google Safe Browsing checks
 - All verdict screens (OK, INFORM, WARN, BLOCK)
 - All entry points (omnibox, QR, clipboard, Share Sheet)
-- Browser redirect to preferred browser
+- Full browser features: tabs, favorites, reader mode, downloads
 - History and Recent tab
 - Voice input
+- Password AutoFill (via iOS system keychain — no code needed)
 
-**The safety check is what makes people install the app. It is never paywalled.**
+**The safety check and the browser are what makes people install and stay.
+Both are never paywalled.**
 
 ### What is Pro
 
@@ -636,9 +660,9 @@ access to previously visited URLs while still running a fresh check every time.
 
 1. **The forced pause is the product.** Never shortcut Step 2.
 2. **Button hierarchy communicates risk without words.** A screen with one giant
-   button vs. two small ones is universally understood.
+   button vs. one small one is universally understood.
 3. **Colors and context differentiate verdicts, not button layout.** INFORM and
-   WARN have the same buttons; the visual treatment tells the story.
+   WARN have similar buttons; the visual treatment tells the story.
 4. **Every entry point converges on the same flow.** QR, clipboard, share sheet,
    voice — they all feed into Step 1. The experience after entry is identical.
 5. **Respect the user's ability to decide.** Even on WARN, offer a path forward.
@@ -646,6 +670,10 @@ access to previously visited URLs while still running a fresh check every time.
 6. **Design for the elderly audience.** Large tap targets, clear labels, no
    jargon, no ambiguity. When in doubt, make it bigger and simpler.
 7. **OK must feel like a checkpoint, not a speed bump.** Fast, clean, reassuring.
+8. **Look like Safari.** Users should feel at home. The safety check is the
+   differentiator, not the browser chrome.
+9. **Keep users in.** No exit to other browsers. Protection only works if
+   LinkLook handles every link.
 
 ---
 
@@ -654,9 +682,9 @@ access to previously visited URLs while still running a fresh check every time.
 > **Two-step safety flow:** Every entered or tapped URL in LinkLook is handled
 > in two steps: (1) check the destination, (2) let the user explicitly choose
 > what happens next. Users never land on a URL automatically. LinkLook always
-> shows a verdict first. Only after that does the user decide to go back,
-> continue in LinkLook, or open the destination in their preferred browser.
-> This is clearer, safer, and more distinctive than a normal browser flow.
+> shows a verdict first. Only after that does the user decide to go back or
+> open the page — always inside LinkLook. There is no option to open in another
+> browser. This keeps users protected at all times.
 
 ---
 
@@ -665,7 +693,51 @@ access to previously visited URLs while still running a fresh check every time.
 To keep the product focused, LinkLook does **not** include:
 
 - VPN functionality (different product category, dilutes the message)
-- Password manager (well-served by Keychain and third-party apps)
+- Its own password manager (iOS system keychain + third-party managers work
+  automatically in WKWebView — no code needed)
 - Full ad/tracker blocking (shifts positioning to "content blocker")
 - Automatic background scanning of all browsing (invasive, battery-draining;
   the two-step model is better because it's intentional and user-initiated)
+- An "Open in other browser" option (users must stay in LinkLook for protection
+  to work; edge cases like DigiD/iDEAL are handled via automatic system handoff)
+
+---
+
+## Safari Extension: Second Defense Layer
+
+LinkLook's primary protection requires being the default browser. But not every
+user will switch immediately. For users still browsing in Safari, LinkLook
+provides a **Safari Web Extension** and a **Content Blocker** as a second line
+of defense.
+
+### What the Safari extension does
+
+The Web Extension runs inside Safari and provides:
+
+- **Search result warnings** — marks suspicious links on Google/Bing result pages
+- **Landing page banners** — warning banner on pages with suspicious domains
+- **"Open in LinkLook" button** — sends the URL to LinkLook for a full check
+- **Domain reputation badges** — small safety indicator on every page
+
+The Content Blocker provides hard-block rules for confirmed malicious domains.
+It runs independently (Safari applies the rules — the blocker never sees which
+pages the user visits).
+
+### How it connects to the two-step flow
+
+The extension is NOT a replacement for LinkLook-as-browser. It is a bridge:
+
+1. User browses in Safari (not yet switched to LinkLook)
+2. Extension warns about suspicious search results or pages
+3. User taps "Open in LinkLook" → enters the full two-step safety flow
+4. Over time, users learn to trust LinkLook and switch their default browser
+
+The extension creates awareness and builds trust. The browser is the product.
+
+### Activation challenge
+
+Users must manually enable the extension in iOS Settings → Apps → Safari →
+Extensions. This is a significant friction point, especially for elderly users.
+LinkLook's onboarding must include a clear, step-by-step activation guide.
+
+Full spec: `CLAUDE.md` rules 62–74.

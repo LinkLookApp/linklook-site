@@ -121,18 +121,22 @@ a gentle reminder card between the primary action card and the recent
 sites section:
 
   ┌──────────────────────────────────────────────────────────────────┐
-  │  LinkLook isn't receiving links yet.                             │
-  │  Make sure it's set as your default browser.                     │
+  │  LinkLook hasn't processed links yet.                            │
+  │  If you didn't already set LinkLook as your default browser,     │
+  │  go to:                                                          │
+  │  ⚙ Settings → Apps → Default Apps → Browser                     │
   │                                                                  │
-  │  [Open Settings]                                                 │
+  │                                                          [×]     │
   └──────────────────────────────────────────────────────────────────┘
 
   - Card style: same as primary action card, but with a subtle
     amber/warm background to distinguish it from the green theme
-  - The card disappears permanently once hasReceivedDefaultBrowserHandoff
-    becomes true
-  - The card can be dismissed manually (small × button), but reappears
-    on next app launch until the heuristic confirms activation
+  - A gear icon (⚙ gearshape.fill) precedes the "Settings → ..." path
+  - The card disappears when ANY of these conditions is met:
+    (a) hasReceivedDefaultBrowserHandoff becomes true (URL handoff received)
+    (b) History has entries (any link has been checked, regardless of entry method)
+    (c) User dismisses it manually (× button) — per-session only
+  - Conditions (a) and (b) are permanent; condition (c) resets on next launch
 
 ================================================================================
 6. SETTINGS SCREEN STATUS ROW

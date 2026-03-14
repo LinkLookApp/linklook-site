@@ -46,7 +46,7 @@ These cover the most important product risk:
  3. Inform URL → no auto-load
  4. Block URL → never loads
  5. Continue from warn → opens in minimal browser
- 6. Open elsewhere → correct handoff to preferred browser
+ 6. Go to Site → correct in-LinkLook open
  7. Back / forward / reload
  8. Redirect to unsafe destination
  9. Timeout / backend unavailable
@@ -110,10 +110,9 @@ MB-G2-01 | Continue from warn opens inside LinkLook browser
 MB-G2-02 | Continue from inform opens inside LinkLook browser
          | Same as above for inform verdict.
          |
-MB-G2-03 | Open elsewhere works
-         | User chooses external browser. Correct URL is handed off to
-         | the user's preferred browser (MDL-104). No corrupted or
-         | truncated URL.
+MB-G2-03 | Go to Site opens the approved URL inside LinkLook
+         | User chooses Go to Site. The approved URL opens in LinkLook.
+         | No corrupted, truncated, or rewritten URL.
          |
 MB-G2-04 | Back from decision screen works
          | User can leave safely without accidental page load.
@@ -126,7 +125,7 @@ MB-G2-06 | Decision screen state survives slow interaction
          | If user waits on warn/inform screen, app state stays correct.
          |
 MB-G2-07 | Repeated tap protection
-         | Fast double-tap on continue/open elsewhere does not cause
+         | Fast double-tap on Go to Site / Continue does not cause
          | race conditions.
 
 ================================================================================
@@ -204,8 +203,8 @@ MB-G4-02 | Unsafe redirect after initial safe URL
          | Browser handles post-load redirect safely according to the
          | decision model.
          |
-MB-G4-03 | Open elsewhere preserves user intent
-         | Only the approved URL is handed off. No hidden rewritten URL.
+MB-G4-03 | Forward action preserves user intent
+         | Only the approved URL is opened. No hidden rewritten URL.
          |
 MB-G4-04 | Phishing-like domain display
          | Browser UI shows enough of the URL/domain for user
@@ -268,7 +267,7 @@ For LinkLook, these are not optional.
 ID       | Title
 ---------|--------------------------------------------------------------
 MB-G6-01 | Buttons are understandable
-         | Continue, Back, Open elsewhere are clear.
+         | Go to Site, Go Back, and Retry are clear where shown.
          |
 MB-G6-02 | No ambiguous dual continue buttons
          | Warn/inform screens must not confuse user.
@@ -435,11 +434,12 @@ MB-G7-24 | Recent sites limited to 3-5 items
 
 ID       | Title
 ---------|--------------------------------------------------------------
-MB-G7-25 | Browser toolbar shows redirect button
-         | When browsing, the bottom toolbar's rightmost button shows the
-         | universal SF Symbol `arrow.up.forward.app`. Accessibility label
-         | reads "Open in {browser name}" (CLAUDE.md rule 18). Tapping it
-         | opens the current page in the user's preferred browser.
+MB-G7-25 | Browser toolbar shows share and tabs buttons
+         | When browsing, the bottom toolbar shows a share button
+         | (square.and.arrow.up) and a tabs button (square.on.square).
+         | Share opens a menu with: Copy Link, Share…, Add to Favorites.
+         | Tabs opens the tab overview grid. There is NO "Open in other
+         | browser" button (CLAUDE.md rule 10).
 
 --- 7H: Accessibility ---
 
@@ -450,7 +450,7 @@ MB-G7-26 | VoiceOver labels on all interactive elements
          | "Back", "Enter website or search", "Home", "Recent sites",
          | "Settings", "{domain}, {status}" for recent site rows.
          | Browser toolbar: "Back", "Forward", "Reload", "Stop loading",
-         | "Open in {browser name}".
+         | "Share", "Show all tabs".
          |
 MB-G7-27 | Touch targets meet minimum size
          | All tappable elements (arrows, omnibox, toolbar buttons,
@@ -473,8 +473,8 @@ ALIGNMENT
 - Group 4 (MB-G4-01) is the test expression of the core rule: no web
   content before verdict.
 - MB-G1-08 aligns with MDL-107: domain trust alone never approves a URL.
-- MB-G2-03 aligns with MDL-104: open elsewhere uses the user's preferred
-  browser setting.
+- MB-G2-03 verifies that the forward action opens the approved URL inside
+  LinkLook.
 - Group 7 covers Start_Page_Design.txt layout and states, tab bar
   navigation, address field interaction, nav arrow states, clipboard
   paste, recent sites, and accessibility.

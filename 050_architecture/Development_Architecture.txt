@@ -109,7 +109,7 @@ Development discipline
 - do not bury routing logic inside UI controllers
 
 Platform-risk resilience
-The development architecture should preserve maximum reuse if the preferred browser-entitlement route changes.
+The development architecture should preserve maximum reuse if the browser-entitlement route changes.
 Decision logic, UX mapping, fixtures, and routing tests must remain reusable across:
 - browser interception mode
 - Network Extension-assisted mode

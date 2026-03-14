@@ -12,7 +12,7 @@ Changelog v2.0 (2026-03-12):
 - Omnibox replaces paste-only model: one field for URLs, domains, and search
 - Settings gear removed from top bar (accessible via tab bar only)
 - "Paste from clipboard" card removed (user can paste into omnibox directly)
-- Bottom browser toolbar shows preferred browser icon as redirect button
+- Bottom browser toolbar shows Share + Tabs buttons (no external browser button)
 - Fixed search engine: Google (v1, no settings)
 - Input classification: full URL / domain / search text
 
@@ -33,19 +33,29 @@ never shown. The check flow begins immediately.
 
   ┌──────────────────────────────────────────────────────────────────────┐
   │  OMNIBOX (top bar)                                                   │
-  │  ←   [ Enter website or search                                 ]     │
-  │  back arrow (when applicable), unified address/search field          │
+  │  ←   [ Search or link                                          ]     │
+  │  back chevron (when applicable), unified address/search field        │
   └──────────────────────────────────────────────────────────────────────┘
 
+                                 or
+                         [ Scan QR code ]
+
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  APP IDENTITY (centered)                                             │
+  │  APP IDENTITY (vertically centered in remaining space)               │
   │                                                                      │
-  │                         LinkLook                                     │
-  │              A safety-driven browser          │
+  │                    [ LINK LOOK logo ]                                 │
+  │                    (SVG with eyes, creamy white bg)                   │
+  │              A safety-driven browser                                  │
+  │              (green text, Theme.logoGreen, scales with text size)     │
   └──────────────────────────────────────────────────────────────────────┘
 
   (No recent sites on the Home screen. History is shown only in the
    Recent tab, keeping the Home screen clean and focused.)
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  VERDICT STATS CARD (at bottom, when history has entries)            │
+  │  "X links checked" — text scales with text size setting              │
+  └──────────────────────────────────────────────────────────────────────┘
 
   ┌──────────────────────────────────────────────────────────────────────┐
   │  TAB BAR (bottom, three items)                                       │
@@ -58,9 +68,12 @@ never shown. The check flow begins immediately.
   ┌──────────────────────────────────────────────────────────────────────┐
   │  BROWSER TOOLBAR (bottom, when browsing)                             │
   │                                                                      │
-  │     ←         →         ↻ / ✕        [browser icon]                 │
-  │    back     forward   reload/stop   open in preferred browser        │
-  │                                     (shows icon of chosen browser)   │
+  │     ←         →         ↻ / ✕        ↑          ▢                   │
+  │    back     forward   reload/stop  share      tabs                  │
+  │                                    (Copy Link, (tab overview        │
+  │                                    Share…,     grid)                │
+  │                                    Add to                           │
+  │                                    Favorites)                       │
   └──────────────────────────────────────────────────────────────────────┘
 
 ================================================================================
@@ -73,10 +86,13 @@ never shown. The check flow begins immediately.
   for Apple App Review. This is the single entry point for all navigation.
 
   Elements:
-  - Back arrow (←) — shown when not in browsing mode; greyed out on the
-    start page since there is no browsing history yet. During browsing,
-    back/forward move to the bottom browser toolbar.
-  - Omnibox field — placeholder text: "Enter website or search"
+  - Back chevron (←) — a plain chevron.left icon, shown when not in browsing
+    mode; greyed out on the start page since there is no browsing history yet.
+    During browsing, back/forward move to the bottom browser toolbar. Its size
+    scales with the user's text size setting (prefStore.fontSize.backButtonSize):
+    Small = 16pt, Medium = 18pt, Large = 22pt. Consistent with standard
+    browser conventions — no text label, just the chevron.
+  - Omnibox field — placeholder text: "Search or link"
     Keyboard type: .webSearch (gives the user a space bar for search text).
     Font size: large enough for elderly users to read comfortably without
     glasses. Exact minimum defined in CLAUDE.md (rule 14). The field must
@@ -113,15 +129,33 @@ never shown. The check flow begins immediately.
 
   Fixed search engine for v1: Google. No search-engine settings.
 
-  After classification and normalization, all three cases go through the
-  same LinkLook safety check → result → browsing flow.
+  After classification and normalization:
+  - URL and domain inputs go through the safety check → verdict → browsing flow.
+  - Search queries skip the safety check entirely and open Google results
+    directly in LinkLook's built-in browser. No verdict screen (CLAUDE.md rule 7).
+
+  2.1b "OR" SEPARATOR + QR BUTTON
+  ─────────────────────────────────
+  Directly below the omnibox, a small green "or" label
+  (prefStore.fontSize.orLabelSize: Small 14pt, Medium 16pt, Large 19pt)
+  connects the omnibox to the QR code scanner button below it. This makes
+  the two entry points (type/paste vs scan) visually connected.
+
+  The QR button is a green capsule: icon (24pt) + "Scan QR code" (18pt).
 
   2.2 APP IDENTITY
   ─────────────────
-  Centered below the top bar. Two lines of text:
-  - "LinkLook" — app name, large bold text
-  - Tagline — smaller, lighter text. Exact wording defined in
-    CLAUDE.md (rule 17).
+  Vertically centered in the remaining space below the QR button (using
+  GeometryReader, minHeight = 45% of visible area). Two elements:
+  - LinkLook logo — the SVG "eyes" version (LINK on top, LOOK below with
+    chain-link eyes on the OO letters). Rendered from the LinkLookLogo
+    image asset (separate from AppIcon). Creamy white background (#FAF8F4)
+    matching Theme.creamyWhite. No tagline in the SVG.
+    Displayed at 220×150pt with .renderingMode(.original).
+  - Tagline — "A safety-driven browser" (CLAUDE.md rule 18), rendered as
+    separate SwiftUI text in Theme.logoGreen (#2E7D4F). Scales with
+    text size setting (prefStore.fontSize.taglineSize: Small 18pt,
+    Medium 20pt, Large 24pt).
 
   This section is only visible on the start page. It disappears when
   browsing begins.
@@ -172,9 +206,7 @@ never shown. The check flow begins immediately.
     The Home button must never be a no-op. It always navigates.
   - Recent — opens the full history screen
   - Settings — opens in-app settings. The Settings tab icon is always
-    the standard gear icon — never changes. The redirect button in the
-    browser toolbar (§2.6) uses `arrow.up.forward.app` with the browser
-    name as label. See CLAUDE.md rule 18.
+    the standard gear icon — never changes. See CLAUDE.md rule 19.
 
   The tab bar persists across all screens.
 
@@ -186,14 +218,12 @@ never shown. The check flow begins immediately.
   - Back (chevron.left) — go back in web history, or exit browsing
   - Forward (chevron.right) — go forward in web history
   - Reload/Stop (arrow.clockwise / xmark) — reload page or stop loading
-  - Open in preferred browser — uses the universal SF Symbol
-    `arrow.up.forward.app` for all browsers. The button label reads
-    "Open in {browser name}" (e.g. "Open in Chrome"). The label
-    identifies the browser, the icon signals "open in another app."
-    When LinkLook is selected as the preferred browser (the default),
-    this button is hidden entirely — the user stays in LinkLook's
-    built-in browser with no redirect option shown.
-    See CLAUDE.md rules 9 and 18 for the full spec.
+  - Share (square.and.arrow.up) — opens share menu with: Copy Link,
+    Share…, Add to Favorites. No "Open in other browser" option.
+  - Tabs (square.on.square) — opens tab overview grid (Safari-style).
+    See CLAUDE.md rules 19, 49 for the full spec.
+  NOTE: There is NO "Open in other browser" button. LinkLook IS the
+  browser. Users stay in LinkLook at all times. See CLAUDE.md rule 10.
 
   Keyboard behavior: when the keyboard appears (user taps the omnibox
   to type a new URL while browsing), the browser toolbar shifts up to
@@ -236,10 +266,11 @@ never shown. The check flow begins immediately.
 
   Location         SF Symbol name           Fallback    Color       Size    Notes
   ─────────────────────────────────────────────────────────────────────────────────
-  Top bar: back    chevron.left             ←           #2E7D4F     20pt    Disabled (opacity 0.35)
-                                                                            on start page, enabled
-                                                                            when browsing history
-                                                                            exists
+  Top bar: back    chevron.left               ←           #2E7D4F     16/18/  Plain chevron icon only.
+                                                                    22pt    Size from backButtonSize
+                                                                    (S/M/L) (Small/Medium/Large).
+                                                                            Disabled (opacity 0.35)
+                                                                            on start page.
 
   Top bar: Go      arrow.right              →           white on    28pt    Circular green button
                                                         #4CAF76     touch   at right end of omnibox.
@@ -258,10 +289,12 @@ never shown. The check flow begins immediately.
   Toolbar: stop    xmark                    ✕           system      44pt    Shown while page is
                                                                     frame   loading
 
-  Toolbar: open    arrow.up.forward.app     —           system      44pt    Universal "open in app"
-                                                                    frame   icon for all browsers.
-                                                                            Label: "Open in {name}".
-                                                                            See CLAUDE.md rule 18.
+  Toolbar: share   square.and.arrow.up      ↑           system      44pt    Share menu: Copy Link,
+                                                                    frame   Share…, Add to Favorites.
+                                                                            No external browser option.
+
+  Toolbar: tabs    square.on.square         ▢           system      44pt    Tab overview grid
+                                                                    frame   (Safari-style).
 
   Tab: Home        house                    ⌂           #4CAF76     22pt    Active state: #4CAF76
                                                         (active)            Inactive: #9E9E9E
@@ -298,8 +331,8 @@ never shown. The check flow begins immediately.
   - Toolbar: forward:      "Forward"
   - Toolbar: reload:       "Reload"
   - Toolbar: stop:         "Stop loading"
-  - Toolbar: open:         "Open in {browser name}" (e.g. "Open in Chrome")
-                           For System Default: "Open in Browser"
+  - Toolbar: share:        "Share"
+  - Toolbar: tabs:         "Show all tabs"
 
   Accessibility:
   - All text must pass WCAG AA contrast ratio
@@ -338,7 +371,7 @@ never shown. The check flow begins immediately.
   4.5 BROWSING (WebView active)
   - Omnibox shows current URL (or search query text if search-originated)
   - Page content fills the area between omnibox and browser toolbar
-  - Bottom browser toolbar visible: back, forward, reload/stop, browser icon
+  - Bottom browser toolbar visible: back, forward, reload/stop, share, tabs
 
 ================================================================================
 5. DESIGN PRINCIPLES

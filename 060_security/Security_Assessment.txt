@@ -20,7 +20,7 @@ It is not marketing. It is not aspirational. It describes LinkLook as it
 actually is today and what it needs to become.
 
 Summary position:
-  "LinkLook can be made highly trustworthy within the browser-handoff path
+  "LinkLook can be made highly trustworthy within the browser path
    it controls, but it does not cover all URL entry paths on iOS and
    therefore should be positioned as a focused preventive layer, not
    total device-wide protection."
@@ -125,17 +125,16 @@ boundaries:
   V1 status:    Not applicable (policy bundled in app binary).
   Reference:    Backend_Policy_Specification.txt section 3
 
-  BOUNDARY 3: LinkLook → External browser (open elsewhere)
-  ────────────────────────────────────────────────────────
+  BOUNDARY 3: LinkLook decision layer → LinkLook browser renderer
+  ──────────────────────────────────────────────────────────────────
   Trust level:  Medium
-  Risk:         When LinkLook says "safe enough" and hands off to Safari
-                or another browser, the user leaves LinkLook's protection.
-                The other browser may not apply the same checks. The
-                handoff itself is a moment where the URL could be
-                intercepted or modified (low probability on iOS).
-  Controls:     Clear UX messaging that the user is leaving LinkLook.
-                MDL-109 controls whether safe links auto-open or always
-                show the result screen first.
+  Risk:         Once LinkLook decides to proceed, untrusted web content
+                begins rendering inside LinkLook. The main risk is not
+                browser handoff but the integrity of the decision gate
+                and the transition from verdict to render.
+  Controls:     No pre-load before verdict, explicit user action for
+                non-allow paths, safe-link display preference, WKWebView
+                hardening, clear URL/domain visibility.
 
   BOUNDARY 4: User → App (user input and bypass)
   ───────────────────────────────────────────────
@@ -232,13 +231,13 @@ Threats are ordered by estimated impact, highest first.
                 clear and distinct visual hierarchy between inform,
                 warn, and block screens.
 
-  THREAT 6: Dangerous "open elsewhere" handoff
-  ─────────────────────────────────────────────
+  THREAT 6: Unsafe forward action is misread as approval
+  ──────────────────────────────────────────────────────
   Impact:       Medium
-  Description:  After LinkLook says "allowed", the user opens the URL
-                in Safari or another browser. The destination page may
-                have changed between check and load, or the other
-                browser may not enforce the same protections.
+  Description:  After LinkLook shows allow / inform / warn, the user may
+                interpret the forward action as a guarantee of safety.
+                The main risk is UX misinterpretation, not browser
+                handoff.
   V1 exposure:  Medium (this is the default flow for allowed links).
   Mitigations:  MDL-109 safe-link display preference, time-limited
                 cache entries, no persistent "always safe" without
@@ -390,7 +389,7 @@ To move from "security-promising" to "security-proven", LinkLook needs:
 
   6.2 Penetration test
   A focused pentest on the policy fetch chain (V2), cache handling,
-  and the "open elsewhere" handoff path.
+  and the smart system handoff path (DigiD/iDEAL/OAuth).
 
   6.3 Formal test coverage report
   Documented coverage of every path in Policy_Evaluation_Precedence.txt,
