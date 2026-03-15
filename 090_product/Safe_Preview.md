@@ -113,6 +113,62 @@ iOS App                  LinkLook Proxy              Urlbox
 | Sandbox is disposable | Each render uses a fresh environment |
 | No URL logging | Proxy discards URL immediately after returning screenshot |
 
+### Claude Analysis Layer (SLM Training Data)
+
+**Status:** Implemented (2026-03-15)
+**Purpose:** Generate labeled training data for an on-device Small Language Model (SLM).
+
+The iOS app calls `POST /analyze` on the backend for every URL check — not just
+previews. This ensures training data is collected across all verdicts (OK, INFORM,
+WARN, BLOCK). The call is fire-and-forget: it never blocks the verdict screen.
+
+**How it works:**
+
+1. User checks any URL → iOS app receives verdict immediately.
+2. In parallel, iOS fires `POST /analyze` to the backend (fire-and-forget).
+3. Backend fetches the page HTML via httpx + trafilatura text extraction.
+4. Text is sent to Claude (Sonnet) with a structured prompt requesting a full
+   threat profile in JSON format.
+5. Claude's analysis is stored in both SQLite (for querying) and JSONL (for
+   direct use in SLM training pipelines).
+6. The `/preview` endpoint also triggers analysis (so preview URLs are analyzed too).
+
+**Analysis schema:**
+
+Each analysis record contains: threat classification (phishing, malware, scam,
+legitimate + confidence), content analysis (login forms, payment fields, urgency
+score, pressure tactics, authority impersonation, emotional manipulation, grammar
+anomalies), brand analysis (target brand, impersonation detection), page metadata
+(category, form count, input field types), risk indicators, safe indicators, overall
+risk score (0.0–1.0), and a human-readable summary.
+
+**Storage:**
+
+- SQLite database at `/data/analysis.db` (persistent volume on Fly.io).
+  Indexed columns for efficient querying: url, analyzed_at, is_phishing, risk_score,
+  category. WAL mode for concurrent read/write.
+- JSONL file at `/data/analysis.jsonl` for easy export and direct use in training
+  pipelines. One JSON object per line.
+
+**Endpoints (JWT-protected):**
+
+- `POST /analyze` — submit a URL for background analysis (returns 202 Accepted).
+  Called by iOS on every URL check. Fire-and-forget.
+- `GET /analysis/stats` — summary statistics (total, phishing count, scam count,
+  legitimate count, average risk score).
+- `GET /analysis/recent?limit=50&offset=0` — paginated recent analyses.
+
+**Key properties:**
+
+- Non-blocking: analysis runs in a background asyncio task after the screenshot
+  is already returned.
+- Graceful degradation: if the Anthropic API key is not set, analysis is silently
+  skipped. If page fetch or Claude analysis fails, a minimal "empty analysis" record
+  is stored with the skip reason.
+- Content truncation: pages longer than 50,000 characters are truncated before
+  sending to Claude.
+- Cost control: uses Claude Sonnet (not Opus) and limits response to 2,000 tokens.
+
 ### Infrastructure
 
 | Component | Choice |
@@ -122,9 +178,11 @@ iOS App                  LinkLook Proxy              Urlbox
 | Region | ams (Amsterdam) — GDPR data residency |
 | TLS | Automatic via Fly.io — HTTPS enforced |
 | Screenshot service | Urlbox Starter plan (~€18/month) |
+| Analysis | Claude Sonnet via Anthropic API |
+| Training data storage | SQLite + JSONL on Fly.io persistent volume (1 GB) |
 | Authentication | JWT (HS256) signed with shared secret |
 | Rate limiting | 20 requests/minute per IP via slowapi |
-| Monthly cost | ~€21–25 total (Fly.io + Urlbox) |
+| Monthly cost | ~€25–35 total (Fly.io + Urlbox + Claude API) |
 
 ### Proxy codebase
 
@@ -132,14 +190,17 @@ Repository: `linklook-preview/` (inside the LinkLook monorepo).
 
 ```
 linklook-preview/
-├── main.py            — FastAPI app, routes, rate limiting
+├── main.py            — FastAPI app, routes, rate limiting, background analysis
 ├── config.py          — Settings via pydantic-settings + .env
 ├── auth.py            — JWT bearer token verification (iss/aud validated)
 ├── validator.py       — URL validation, private IP blocking (SSRF defense)
 ├── preview.py         — Urlbox API client, HMAC signing, stub mode
+├── content_fetcher.py — Page HTML fetcher + trafilatura text extraction
+├── analyzer.py        — Claude API integration for structured threat profiling
+├── storage.py         — SQLite + JSONL dual storage for training data
 ├── requirements.txt
 ├── Dockerfile         — Python 3.12-slim, Pillow deps, uvicorn (2 workers)
-├── fly.toml           — Fly.io deployment config (ams region, scale-to-zero)
+├── fly.toml           — Fly.io deployment config (ams region, persistent volume)
 ├── .dockerignore      — Keeps secrets and test files out of image
 ├── .env.example       — Template for local development
 ├── test_deployed.sh   — Smoke test script for deployed instance
@@ -155,7 +216,8 @@ linklook-preview/
 | URL | `https://linklook-preview.fly.dev` |
 | Fly.io org | `linklook` |
 | Region | `ams` (Amsterdam) |
-| Machines | 2 × shared-CPU, 256 MB (scale-to-zero enabled) |
+| Machines | 2 × shared-CPU, 512 MB (scale-to-zero enabled) |
+| Persistent volume | `linklook_data` mounted at `/data` (1 GB) |
 | Stub mode | Off — real Urlbox screenshots active |
 
 ```bash
@@ -165,8 +227,17 @@ brew install flyctl && fly auth login
 # Create the app (first time only)
 fly launch --name linklook-preview --region ams --org linklook
 
+# Create persistent volume for training data (first time only)
+fly volumes create linklook_data --region ams --size 1
+
 # Set secrets
-fly secrets set URLBOX_API_KEY=xxx URLBOX_SECRET=xxx JWT_SECRET=xxx STUB_MODE=false
+fly secrets set \
+  URLBOX_API_KEY=xxx \
+  URLBOX_SECRET=xxx \
+  JWT_SECRET=xxx \
+  ANTHROPIC_API_KEY=xxx \
+  STUB_MODE=false \
+  ANALYSIS_ENABLED=true
 
 # Deploy
 fly deploy
@@ -186,6 +257,8 @@ curl https://linklook-preview.fly.dev/health
 | `URLBOX_SECRET` | Secret key from Urlbox dashboard (HMAC signing) |
 | `JWT_SECRET` | Generate with: `openssl rand -base64 32` |
 | `STUB_MODE` | `false` for production, `true` for development without Urlbox |
+| `ANTHROPIC_API_KEY` | API key from console.anthropic.com |
+| `ANALYSIS_ENABLED` | `true` for production, `false` to disable Claude analysis |
 
 **Graceful degradation:** If the proxy is unreachable or Urlbox returns an error,
 the iOS app falls back to showing only the verdict screen (no preview). Never
@@ -194,7 +267,7 @@ failure — the Swift client treats any non-200 as a fallback trigger.
 
 ### Privacy & GDPR
 
-**Data processing summary:**
+**Data processing summary — Screenshot preview:**
 
 | Item | Detail |
 |------|--------|
@@ -206,12 +279,26 @@ failure — the Swift client treats any non-200 as a fallback trigger.
 | Default state | Off — user must opt in via onboarding consent screen |
 | Withdrawal | Settings → Privacy → Safe preview — can be disabled at any time |
 
+**Data processing summary — Claude analysis (training data):**
+
+| Item | Detail |
+|------|--------|
+| Data collected | Sanitized URL (query params/fragments stripped), extracted page text, Claude's structured threat analysis |
+| Association | Not linked to account, device ID, or any personal identifier |
+| Retention | 90-day FIFO sliding window (configurable via `RETENTION_DAYS` env var; set to 0 to keep indefinitely). Records auto-purged on every insert. |
+| Third-party processor | Anthropic (anthropic.com) — DPA required under Article 28 GDPR |
+| Purpose | Training an on-device SLM for offline threat detection |
+| Legal basis (EEA/UK) | Legitimate interest (Article 6(1)(f) GDPR) — improving security |
+| Data minimization | URLs are sanitized before storage: query parameters, fragments, and userinfo are stripped (PII such as email addresses and tokens removed). Only extracted text (no raw HTML, images, or scripts) is sent to Claude. No user identifiers, device info, or session data is included. Page titles containing email patterns are redacted. A SHA-256 hash of the original URL is stored for deduplication only. |
+
 **Actions required before launch:**
 
 1. Sign Urlbox Data Processing Agreement (available from Urlbox support).
-2. Update LinkLook privacy policy with the approved copy below.
-3. Implement onboarding consent screen using the approved copy below.
-4. Verify server logs contain zero URL content (spot-check after first deploy).
+2. Sign Anthropic Data Processing Agreement (available from Anthropic).
+3. Update LinkLook privacy policy with the approved copy below.
+4. Implement onboarding consent screen using the approved copy below.
+5. Verify server logs contain zero URL content (spot-check after first deploy).
+6. Review training data retention policy and establish a data lifecycle.
 
 ### Approved copy
 
@@ -307,10 +394,12 @@ The backend proxy acts as a shield between the user and the destination.
 | Week 1 | Server foundation: sign up Urlbox, test API with curl, scaffold FastAPI proxy, deploy to Fly.io EU, verify TLS and zero URL logging. | ~5 days | Done (2026-03-15) |
 | Week 2 | iOS integration: Swift client (submit URL, receive screenshot), preview pane in verdict screen, loading/timeout/error states, fallback. | ~5 days | Done (2026-03-14) |
 | Week 3 | Hardening: URL validation (private IP blocking), rate limiting, JWT auth, self-penetration test with Proxyman. | ~4 days | Done (2026-03-14) |
-| Week 4 | Privacy & legal: sign Urlbox DPA, update privacy policy, add onboarding consent screen. | ~2 days | Pending |
-| Week 5 | Testing: XCUITest for preview flow, fallback, consent gate. Test with PhishTank URLs, malformed URLs, redirect chains. | ~4 days | Pending |
+| Week 3b | Claude analysis layer: content fetcher (trafilatura), Claude API analyzer, SQLite + JSONL storage, background task, query endpoints. | ~2 days | Done (2026-03-15) |
+| Week 4 | Privacy & legal: sign Urlbox DPA, sign Anthropic DPA, update privacy policy, add onboarding consent screen. | ~2 days | Pending |
+| Week 5 | Testing: XCUITest for preview flow, fallback, consent gate. Test with PhishTank URLs, malformed URLs, redirect chains. Backend pytest suite. | ~4 days | Pending |
+| Week 6 | Deployment: create persistent volume, set Anthropic API key, deploy, validate training data collection, begin SLM dataset curation. | ~2 days | Pending |
 
-**Total estimated effort: 9–12 working days.**
+**Total estimated effort: 11–14 working days.**
 
 ### Future: self-hosted rendering (v2)
 
