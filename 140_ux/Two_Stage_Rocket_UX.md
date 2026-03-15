@@ -197,7 +197,7 @@ Minor concerns — the user should be aware but can proceed.
 - **Medium "Check Message Context"** — outlined style, Pro feature badge. Opens
   the context analysis flow (see below).
 - One **small** "Open" button — opens in LinkLook.
-- Visual treatment: **blue/informational** accent. Calm, not alarming.
+- Visual treatment: **dark yellow/advisory** accent (#C89400). Clearly distinct from WARN orange.
 - Signal badges visible (up to 3).
 
 ### Verdict: WARN (Be Careful)
