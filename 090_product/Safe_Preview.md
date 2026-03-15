@@ -1,8 +1,8 @@
 # Safe Preview — Screenshot-Only Page Preview
 
-**Status:** Planned (engineering handover complete)
-**Date:** 2026-03-14
-**Phase:** Post-launch, Pro feature
+**Status:** Deployed (live on Fly.io — Amsterdam)
+**Date:** 2026-03-15
+**Phase:** Early Access (all features unlocked per CLAUDE.md rule 34)
 **Handover:** `LinkLook_SafePreview_Handover.docx` (March 2026)
 
 ## Problem
@@ -128,46 +128,64 @@ iOS App                  LinkLook Proxy              Urlbox
 
 ### Proxy codebase
 
-Repository: `linklook-preview` (private, to be created).
+Repository: `linklook-preview/` (inside the LinkLook monorepo).
 
 ```
 linklook-preview/
-├── main.py          — FastAPI app, routes, rate limiting
-├── config.py        — Settings via pydantic-settings + .env
-├── auth.py          — JWT bearer token verification
-├── validator.py     — URL validation, private IP blocking (SSRF defense)
-├── preview.py       — Urlbox API client, HMAC signing
+├── main.py            — FastAPI app, routes, rate limiting
+├── config.py          — Settings via pydantic-settings + .env
+├── auth.py            — JWT bearer token verification (iss/aud validated)
+├── validator.py       — URL validation, private IP blocking (SSRF defense)
+├── preview.py         — Urlbox API client, HMAC signing, stub mode
 ├── requirements.txt
-├── fly.toml         — Fly.io deployment config
-└── .env             — Secrets (never commit)
+├── Dockerfile         — Python 3.12-slim, Pillow deps, uvicorn (2 workers)
+├── fly.toml           — Fly.io deployment config (ams region, scale-to-zero)
+├── .dockerignore      — Keeps secrets and test files out of image
+├── .env.example       — Template for local development
+├── test_deployed.sh   — Smoke test script for deployed instance
+└── tests/             — Unit and integration tests
 ```
-
-**Known issue to fix before first deploy:** In `preview.py` the `hmac` import
-creates a naming collision with the module. Fix: `import hmac as hmac_module`.
 
 ### Deployment
 
+**Current deployment (live since 2026-03-15):**
+
+| Item | Value |
+|------|-------|
+| URL | `https://linklook-preview.fly.dev` |
+| Fly.io org | `linklook` |
+| Region | `ams` (Amsterdam) |
+| Machines | 2 × shared-CPU, 256 MB (scale-to-zero enabled) |
+| Stub mode | Off — real Urlbox screenshots active |
+
 ```bash
-# 1. Authenticate
+# Authenticate
 brew install flyctl && fly auth login
 
-# 2. Create the app (first time only)
-fly launch --name linklook-preview --region ams
+# Create the app (first time only)
+fly launch --name linklook-preview --region ams --org linklook
 
-# 3. Set secrets
-fly secrets set URLBOX_API_KEY=xxx URLBOX_SECRET=xxx JWT_SECRET=xxx
+# Set secrets
+fly secrets set URLBOX_API_KEY=xxx URLBOX_SECRET=xxx JWT_SECRET=xxx STUB_MODE=false
 
-# 4. Deploy
+# Deploy
 fly deploy
+
+# Verify
+curl https://linklook-preview.fly.dev/health
+
+# Full smoke test
+./test_deployed.sh https://linklook-preview.fly.dev "<jwt-secret>"
 ```
 
-**Environment variables:**
+**Environment variables (set via `fly secrets`):**
 
 | Variable | Notes |
 |----------|-------|
-| `URLBOX_API_KEY` | From Urlbox dashboard — set via `fly secrets` |
-| `URLBOX_SECRET` | From Urlbox dashboard — set via `fly secrets` |
-| `JWT_SECRET` | Generate with: `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `URLBOX_API_KEY` | Publishable key from Urlbox dashboard |
+| `URLBOX_SECRET` | Secret key from Urlbox dashboard (HMAC signing) |
+| `JWT_SECRET` | Generate with: `openssl rand -base64 32` |
+| `STUB_MODE` | `false` for production, `true` for development without Urlbox |
 
 **Graceful degradation:** If the proxy is unreachable or Urlbox returns an error,
 the iOS app falls back to showing only the verdict screen (no preview). Never
@@ -259,6 +277,10 @@ failure — the Swift client treats any non-200 as a fallback trigger.
    zoom could be added later.
 6. **Disclaimer** — Always show below the image: "Preview only — page not loaded
    on your device."
+9. **Greyscale on WARN** — On WARN verdict screens, the preview screenshot is
+   displayed desaturated (greyscale) to reinforce caution. On INFORM screens,
+   the preview is shown in full color. This provides a visual severity ladder
+   without hiding information.
 7. **Pro feature** — Safe Preview requires backend infrastructure and compute
    cost. It is a Pro feature.
 8. **Consent required** — User must opt in via onboarding consent screen before
@@ -280,13 +302,13 @@ The backend proxy acts as a shield between the user and the destination.
 
 ### Build plan
 
-| Week | Work | Effort |
-|------|------|--------|
-| Week 1 | Server foundation: sign up Urlbox, test API with curl, scaffold FastAPI proxy, deploy to Fly.io EU, verify TLS and zero URL logging. | ~5 days |
-| Week 2 | iOS integration: Swift client (submit URL, receive screenshot), preview pane in verdict screen, loading/timeout/error states, fallback. | ~5 days |
-| Week 3 | Hardening: URL validation (private IP blocking), rate limiting, JWT auth, self-penetration test with Proxyman. | ~4 days |
-| Week 4 | Privacy & legal: sign Urlbox DPA, update privacy policy, add onboarding consent screen. | ~2 days |
-| Week 5 | Testing: XCUITest for preview flow, fallback, consent gate. Test with PhishTank URLs, malformed URLs, redirect chains. | ~4 days |
+| Week | Work | Effort | Status |
+|------|------|--------|--------|
+| Week 1 | Server foundation: sign up Urlbox, test API with curl, scaffold FastAPI proxy, deploy to Fly.io EU, verify TLS and zero URL logging. | ~5 days | Done (2026-03-15) |
+| Week 2 | iOS integration: Swift client (submit URL, receive screenshot), preview pane in verdict screen, loading/timeout/error states, fallback. | ~5 days | Done (2026-03-14) |
+| Week 3 | Hardening: URL validation (private IP blocking), rate limiting, JWT auth, self-penetration test with Proxyman. | ~4 days | Done (2026-03-14) |
+| Week 4 | Privacy & legal: sign Urlbox DPA, update privacy policy, add onboarding consent screen. | ~2 days | Pending |
+| Week 5 | Testing: XCUITest for preview flow, fallback, consent gate. Test with PhishTank URLs, malformed URLs, redirect chains. | ~4 days | Pending |
 
 **Total estimated effort: 9–12 working days.**
 
@@ -302,7 +324,8 @@ API calls to local Playwright rendering. The iOS client is unaffected.
 | Item | Detail |
 |------|--------|
 | Product owner | Bas — all architectural and product decisions |
-| Urlbox account | To be created — register at urlbox.io |
-| Fly.io account | To be created or added as collaborator — fly.io |
+| Urlbox account | Active — urlbox.io (Publishable Key + Secret Key in Fly secrets) |
+| Fly.io account | Active — org `linklook`, app `linklook-preview` |
 | Apple Developer | Active membership held by Bas |
-| Repo | To be created: `linklook-preview` (private) |
+| Repo | `linklook-preview/` directory in LinkLook monorepo |
+| Live URL | `https://linklook-preview.fly.dev` |
