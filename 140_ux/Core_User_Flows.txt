@@ -191,17 +191,36 @@ iOS Settings bundle (device-level):
 - user has Safari Web Extension enabled in iOS Settings → Apps → Safari → Extensions
 - user searches in Safari (e.g. Google "Feenstra monteur")
 - extension reads search result page, sends domains to LinkLook engine
+  via nativeMessaging → ExtensionMessageRouter → DecisionEngine (structural
+  analysis only — no GSB API calls in extension context, CLAUDE.md rule 71)
 - suspicious results get visual warning badges inline
 - user visits a suspicious page → extension injects warning banner at top
-- user taps "Open in LinkLook" button → launches LinkLook with URL → full
-  two-stage safety flow runs
+- user taps "Open in LinkLook" button → launches LinkLook via custom URL
+  scheme (linklook://check?url=<encoded>) → full two-stage safety flow runs
 - separately: Content Blocker hard-blocks confirmed malicious domains
   (user never sees the page, Safari blocks it before loading)
 - extension does NOT replace LinkLook-as-browser — it is a bridge for users
   who haven't switched yet and an additional safety net for those who have
-- activation: user must enable extension manually in iOS Settings. LinkLook
-  onboarding includes step-by-step guide with screenshots.
-- see CLAUDE.md rules 62–74 for full spec
+- non-HTTP schemes (tel:, mailto:, etc.) intercepted by the extension are
+  passed through as "allow" — only HTTP(S) URLs are analyzed
+
+Activation:
+- user must enable extension manually in iOS Settings (no API to do it)
+- LinkLook provides an in-app step-by-step guide (SafariExtensionGuideView)
+  accessible from Settings → Safari Protection and from the start page
+  status indicator
+- 6 numbered steps with system icons, elderly-friendly language, large text
+- "Open Settings" button takes user to LinkLook's iOS Settings section
+
+Status detection:
+- extension writes timestamp to App Group UserDefaults on each message
+  (key: "safariExtensionLastActive")
+- start page shows status indicator (SafariExtensionStatusView):
+  green "Safari protection active" or grey "Safari protection not set up"
+- Settings tab shows "Safari Protection" row with NavigationLink to guide
+
+Full activation spec: 140_ux/Safari_Extension_Activation_Flow.txt
+See CLAUDE.md rules 62–74 for extension and content blocker rules
 
 Acceptance-test note
 Each canonical user flow should map to one or more automated acceptance tests

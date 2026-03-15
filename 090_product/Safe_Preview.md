@@ -153,7 +153,8 @@ risk score (0.0–1.0), and a human-readable summary.
 **Endpoints (JWT-protected):**
 
 - `POST /analyze` — submit a URL for background analysis (returns 202 Accepted).
-  Called by iOS on every URL check. Fire-and-forget.
+  Called by iOS on every URL check. Fire-and-forget. Optionally includes a
+  `client_verdict` object (see Client Verdict Submission below).
 - `GET /analysis/stats` — summary statistics (total, phishing count, scam count,
   legitimate count, average risk score).
 - `GET /analysis/recent?limit=50&offset=0` — paginated recent analyses.
@@ -168,6 +169,96 @@ risk score (0.0–1.0), and a human-readable summary.
 - Content truncation: pages longer than 50,000 characters are truncated before
   sending to Claude.
 - Cost control: uses Claude Sonnet (not Opus) and limits response to 2,000 tokens.
+
+### Client Verdict Submission (Calibration Data)
+
+**Status:** Implemented (2026-03-15)
+**Purpose:** Compare on-device verdicts with backend Claude analysis for engine calibration.
+
+The iOS app now sends its on-device verdict alongside the URL when calling `POST /analyze`.
+This allows the backend to compare "what LinkLook decided locally" against "what Claude
+decided on the backend" — critical data for calibrating the on-device engine and training
+the future SLM.
+
+**Request body:**
+
+```json
+{
+  "url": "https://example-shop.xyz/offer",
+  "client_verdict": {
+    "decision": "warn",
+    "reason_code": "suspicious_tld",
+    "confidence": 0.72,
+    "signals": ["newTLD", "brandMismatch", "pathKeywords"],
+    "engine_version": "1.0",
+    "entry_source": "omnibox"
+  }
+}
+```
+
+The `client_verdict` field is optional. Old app versions that don't send it still work —
+the backend treats the field as null and stores no client verdict data. This ensures
+backward compatibility during the rollout.
+
+**Client verdict payload fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `decision` | string | On-device verdict: "allow", "inform", "warn", "block", "unknown" |
+| `reason_code` | string | Primary reason code from the decision engine (e.g. "safe_destination", "suspicious_tld") |
+| `confidence` | float | Engine confidence score (0.0–1.0) |
+| `signals` | string[] | Names of all signals that fired during structural analysis |
+| `engine_version` | string | LinkLookCore engine version (e.g. "1.0") |
+| `entry_source` | string | How the URL entered the pipeline: "omnibox", "clipboard", "qrScanner", "shareSheet", "appIntent", "unknown" |
+
+**iOS integration (LinkCheckViewModel):**
+
+After the on-device verdict is rendered (line 130: `lastResult = result`), the ViewModel
+captures a `ClientVerdictPayload` snapshot on the main actor, then passes it to the
+fire-and-forget `submitForBackendAnalysis` call. The payload is built from:
+
+- `result.decision.rawValue` → decision
+- `result.reasonCode.rawValue` → reason_code
+- `result.confidence` → confidence
+- `result.trace.signals.map { $0.name }` → signals
+- `result.engineVersion` → engine_version
+- `currentEntrySource.rawValue` → entry_source
+
+**Backend storage:**
+
+The client verdict is stored in six dedicated SQLite columns on the `page_analyses` table:
+`client_decision`, `client_reason_code`, `client_confidence`, `client_signals` (JSON array),
+`client_engine_version`, `client_entry_source`. Existing databases are migrated
+automatically (ALTER TABLE on first connection).
+
+The client verdict is also attached to the JSONL export as a `client_verdict` object
+inside each analysis record — available for direct use in training pipelines.
+
+**Calibration logging:**
+
+On every store with a client verdict present, the backend logs a comparison:
+
+- **Agreement:** `INFO Verdict agreement: client=allow backend=safe url=...`
+- **Disagreement:** `WARNING Verdict DISAGREEMENT: client=warn(suspicious) backend=safe url=... client_confidence=0.72 client_signals=[newTLD, brandMismatch]`
+
+The mapping from client decisions to backend categories:
+
+| Client decision | Maps to |
+|----------------|---------|
+| block | dangerous |
+| warn | suspicious |
+| inform | advisory |
+| allow | safe |
+| unknown | unknown |
+
+Disagreements are the most valuable training signals — they indicate where the on-device
+engine and Claude diverge, which informs feature vector selection and rule calibration.
+
+**Privacy:**
+
+The client verdict contains no user identifiers, no device info, and no personal data.
+It is purely a machine-generated technical signal. The same sanitization rules apply:
+URLs are stripped of query parameters and fragments before storage.
 
 ### Infrastructure
 
@@ -395,6 +486,7 @@ The backend proxy acts as a shield between the user and the destination.
 | Week 2 | iOS integration: Swift client (submit URL, receive screenshot), preview pane in verdict screen, loading/timeout/error states, fallback. | ~5 days | Done (2026-03-14) |
 | Week 3 | Hardening: URL validation (private IP blocking), rate limiting, JWT auth, self-penetration test with Proxyman. | ~4 days | Done (2026-03-14) |
 | Week 3b | Claude analysis layer: content fetcher (trafilatura), Claude API analyzer, SQLite + JSONL storage, background task, query endpoints. | ~2 days | Done (2026-03-15) |
+| Week 3c | Client verdict submission: iOS sends on-device verdict to /analyze, backend stores and logs calibration comparison. | ~0.5 days | Done (2026-03-15) |
 | Week 4 | Privacy & legal: sign Urlbox DPA, sign Anthropic DPA, update privacy policy, add onboarding consent screen. | ~2 days | Pending |
 | Week 5 | Testing: XCUITest for preview flow, fallback, consent gate. Test with PhishTank URLs, malformed URLs, redirect chains. Backend pytest suite. | ~4 days | Pending |
 | Week 6 | Deployment: create persistent volume, set Anthropic API key, deploy, validate training data collection, begin SLM dataset curation. | ~2 days | Pending |

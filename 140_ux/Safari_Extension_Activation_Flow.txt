@@ -1,0 +1,306 @@
+LinkLook — Safari Extension Activation Flow
+Version: v1.0
+Date: 2026-03-15
+Origin: Safari extension quick-wins implementation pass
+References: CLAUDE.md rules 62–74, Core_User_Flows.txt (Flow 11),
+            Default_Browser_Activation_Flow.txt,
+            Two_Stage_Rocket_UX.md (Safari Extension section)
+
+================================================================================
+1. PURPOSE
+================================================================================
+
+LinkLook's Safari Web Extension and Content Blocker provide a second defense
+layer for users who browse in Safari — either because they haven't switched
+to LinkLook as their default browser yet, or because they use Safari
+alongside LinkLook.
+
+iOS does not enable Safari extensions automatically. The user must navigate
+to iOS Settings → Apps → Safari → Extensions → LinkLook and flip several
+switches. This is more friction than the default browser change (which is
+one setting). For LinkLook's elderly target audience, the path is confusing.
+
+This document defines:
+  - How LinkLook guides users through extension activation
+  - How LinkLook detects whether the extension is active
+  - How the status is surfaced on the start page and in Settings
+
+================================================================================
+2. CORE PROBLEM
+================================================================================
+
+Apple requires users to enable Safari extensions manually. The path is:
+
+  iOS Settings → Apps → Safari → Extensions → LinkLook → toggle on
+  → "Allow on All Websites"
+
+This is six taps through system UI that looks nothing like LinkLook. There
+is no API to enable the extension programmatically, no deep link to the
+specific settings pane, and no way to check extension status directly.
+
+For elderly users who did not install the app themselves (family installer
+scenario), this step is likely to be missed entirely unless the installer
+is explicitly guided.
+
+================================================================================
+3. ACTIVATION GUIDE (in-app)
+================================================================================
+
+LinkLook provides a step-by-step activation guide accessible from:
+  - Settings tab → Safari Protection section
+  - Start page status card (when extension is not active)
+
+The guide is a single scrollable screen with numbered steps and visual
+hints. It does NOT open iOS Settings automatically — opening the correct
+deep-link pane is unreliable across iOS versions.
+
+View: SafariExtensionGuideView.swift
+
+--------------------------------------------------------------------------------
+3.1 GUIDE SCREEN LAYOUT
+--------------------------------------------------------------------------------
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │  🛡  Safari Protection                                          │
+  │                                                                  │
+  │  LinkLook can also protect you when you browse in Safari.        │
+  │  Follow these steps to enable it:                                │
+  │                                                                  │
+  │  ┌────────────────────────────────────────────────────────────┐  │
+  │  │  1.  Open the Settings app on your iPhone                 │  │
+  │  │      (gear icon: ⚙)                                       │  │
+  │  │                                                            │  │
+  │  │  2.  Tap "Apps"                                           │  │
+  │  │      (grid icon)                                           │  │
+  │  │                                                            │  │
+  │  │  3.  Tap "Safari"                                         │  │
+  │  │      (compass icon)                                        │  │
+  │  │                                                            │  │
+  │  │  4.  Tap "Extensions"                                     │  │
+  │  │                                                            │  │
+  │  │  5.  Tap "LinkLook" and turn it on                        │  │
+  │  │                                                            │  │
+  │  │  6.  Tap "Allow" under "All Websites"                     │  │
+  │  │      This lets LinkLook see which sites you visit in       │  │
+  │  │      Safari so it can warn you about dangerous ones.       │  │
+  │  └────────────────────────────────────────────────────────────┘  │
+  │                                                                  │
+  │  [          Open Settings           ]  (green button)            │
+  │                                                                  │
+  │  When you're done, come back to LinkLook.                        │
+  │  The status on the home screen will update automatically.        │
+  └──────────────────────────────────────────────────────────────────┘
+
+  Design rules:
+  - Large text (scales with text size setting)
+  - Each step has a system icon hint (gearshape.fill, square.grid.2x2,
+    safari, puzzlepiece.extension, checkmark.shield)
+  - "Open Settings" button calls UIApplication.shared.open(
+    URL(string: UIApplication.openSettingsURLString)!) — this opens
+    the LinkLook section in iOS Settings, not the Safari section.
+    The user must navigate from there, but it's the closest reliable
+    deep link Apple provides.
+  - Elderly-friendly: no jargon, no abbreviations, numbered steps
+  - No blocking gate — the user can leave and return at any time
+
+================================================================================
+4. EXTENSION STATUS DETECTION
+================================================================================
+
+iOS does not provide a public API to query whether a Safari extension is
+enabled. LinkLook uses a heuristic:
+
+  4.1 HEURISTIC
+  The Safari Web Extension's background.js calls nativeMessaging to the
+  host app on activation. The SafariWebExtensionHandler writes a timestamp
+  to the App Group shared container:
+
+    Key:   "safariExtensionLastActive"
+    Store: UserDefaults(suiteName: "group.com.linklook.app")
+    Value: Date (ISO 8601)
+
+  When the extension routes any message (checkURL, checkURLs, getStatus),
+  it updates this timestamp.
+
+  Status logic:
+  - If safariExtensionLastActive exists AND is within 24 hours → ACTIVE
+  - If safariExtensionLastActive exists but older than 24 hours → STALE
+    (extension was active but may have been disabled)
+  - If safariExtensionLastActive does not exist → NOT_SET
+
+  4.2 LIMITATIONS
+  - The heuristic requires the user to actually browse in Safari after
+    enabling the extension. If the extension is enabled but never used,
+    the timestamp is never written and status stays NOT_SET.
+  - The heuristic cannot detect immediate disable — it relies on the
+    timestamp aging out (24 hours).
+  - This is acceptable for V1. A more robust approach (periodic extension
+    heartbeat via getStatus polling) can be explored later.
+
+================================================================================
+5. START PAGE STATUS INDICATOR
+================================================================================
+
+The start page shows a Safari extension status indicator between the
+Favorites grid and the default browser reminder. This is a subtle status
+row, not a prominent card — it should not compete with the omnibox.
+
+View: SafariExtensionStatusView.swift
+Location: TabContentView.startPageContent (between Favorites and
+          default browser reminder)
+
+  If ACTIVE:
+    ┌──────────────────────────────────────────────────────────────┐
+    │  🛡 Safari protection active                                 │
+    └──────────────────────────────────────────────────────────────┘
+    Style: green tint, small text (caption2), checkmark.shield icon
+    Not tappable — purely informational.
+
+  If NOT_SET or STALE:
+    ┌──────────────────────────────────────────────────────────────┐
+    │  Safari protection not set up                                │
+    └──────────────────────────────────────────────────────────────┘
+    Style: grey text (Theme.textLight, caption2), shield.slash icon
+    Tappable → navigates to SafariExtensionGuideView
+
+  Rules:
+  - Never show on first launch (avoid overwhelming the user)
+  - Show only after onboarding is complete
+  - The indicator reads from App Group UserDefaults on appear
+  - Subtle — must not alarm the user or compete with primary UI
+
+================================================================================
+6. SETTINGS SCREEN ROW
+================================================================================
+
+The Settings tab includes a "Safari Protection" section:
+
+  Section: "Safari Protection"
+  Position: after "Text Size" section, before "About" section
+
+  Row content:
+    Label: "Safari Protection"
+    Icon: safari (system icon)
+    Disclosure: chevron.right (NavigationLink)
+    Tapping → pushes SafariExtensionGuideView
+
+  The settings row does NOT show current status (active/not set).
+  Status is shown on the start page. The settings row is always
+  a navigation link to the guide — even if the extension is active,
+  the user may want to review the steps.
+
+View: SettingsView.swift (Safari Protection section)
+
+================================================================================
+7. EXTENSION ICONS
+================================================================================
+
+The Safari extension uses branded icons that match LinkLook's identity:
+
+  Sizes: 48×48, 96×96, 128×128 (per Apple's extension icon requirements)
+  Design: Green circle (#4CAF76) with white shield polygon and green
+          checkmark — same visual language as LinkLook's app icon
+  Location: LinkLookSafariExtension/Resources/images/icon-*.png
+  Referenced in: manifest.json → icons → { "48", "96", "128" }
+
+  The icons are generated programmatically (Pillow) to ensure consistent
+  geometry across sizes. The shield polygon matches the app's brand.
+
+================================================================================
+8. NON-HTTP SCHEME HANDLING
+================================================================================
+
+The Safari extension's ExtensionMessageRouter evaluates URLs sent by
+content scripts. Some URLs intercepted in Safari are non-web schemes
+(tel:, mailto:, sms:, facetime:, ftp:, etc.).
+
+  Rule: Non-HTTP(S) schemes pass through as "allow" with reasonCode
+        "non_web_scheme" and confidence 1.0.
+
+  Rationale: The Safari extension's analysis scope is limited to web URLs.
+  Non-web schemes are legitimate iOS system links that don't need URL
+  structural analysis. Attempting to analyze them would produce false
+  positives (the engine flags non-standard URL structures).
+
+  This bypass happens in ExtensionMessageRouter.handleCheckURL before
+  the URL reaches the DecisionEngine. Signals array is empty.
+
+================================================================================
+9. CONTENT BLOCKER COMPANION
+================================================================================
+
+Alongside the Safari Web Extension, LinkLook ships a Content Blocker
+extension target. The Content Blocker operates independently:
+
+  - Uses a static blockerList.json (WebKit Content Rule List format)
+  - Hard-blocks confirmed malicious domains only (CLAUDE.md rule 66)
+  - Cannot see user browsing data (Apple architecture guarantee)
+  - Ships with app updates — no over-the-air updates in v1.x
+
+  The Content Blocker is a separate iOS extension target
+  (LinkLookContentBlocker) and requires its own activation toggle in
+  iOS Settings → Apps → Safari → Extensions → LinkLook Content Blocker.
+
+  The activation guide (section 3) should mention both extensions:
+  step 5 covers the Web Extension, and a note mentions the Content
+  Blocker as a bonus protection layer.
+
+  See CLAUDE.md rules 66–69 for full Content Blocker spec.
+
+================================================================================
+10. FAMILY INSTALLER SCENARIO
+================================================================================
+
+For the primary use case (adult child installs LinkLook for elderly parent):
+
+  - The installer follows the activation guide during setup
+  - Both the Web Extension and Content Blocker should be enabled
+  - The start page status indicator confirms activation
+  - If the extension is later disabled (e.g. iOS update resets it),
+    the STALE status will appear on the start page after 24 hours
+
+  Future enhancement: push notification to the installer's device if
+  the extension becomes inactive (requires paired device feature, V2+).
+
+================================================================================
+11. METRICS TO TRACK LATER
+================================================================================
+
+These are not MVP requirements, but should be planned for:
+
+  - Extension activation rate (percentage of installs that reach ACTIVE)
+  - Time from install to first extension message
+  - Extension retention (24h / 7d / 30d active rate)
+  - Content Blocker activation rate
+  - Correlation: users with extension active vs. default browser active
+
+================================================================================
+12. RELATIONSHIP TO OTHER DOCS
+================================================================================
+
+  Default_Browser_Activation_Flow.txt  Sister document — covers default
+                                       browser activation. Same pattern
+                                       (heuristic detection, start page
+                                       reminder, settings row), different
+                                       iOS setting.
+
+  Core_User_Flows.txt                  Flow 11 describes the Safari
+                                       extension user journey at a high
+                                       level. This doc details the
+                                       activation mechanics.
+
+  Two_Stage_Rocket_UX.md               Safari Extension section describes
+                                       the "why" and strategic purpose.
+                                       This doc covers the "how".
+
+  CLAUDE.md rules 62–74                Enforceable rules with exact values.
+                                       This doc explains the UX intent.
+
+  Safe_Preview.md                      Backend architecture — the extension
+                                       does NOT call the backend directly
+                                       (rule 71). It uses structural
+                                       analysis only.
+
+================================================================================
+END OF DOCUMENT
+================================================================================
