@@ -118,8 +118,10 @@ DefaultBrowserStatus model.
 
     true → false (user switched away from LinkLook):
       Show a calm, non-blocking banner on the start page:
-        "LinkLook is no longer your default browser."
-        Secondary action: "Open Settings" (opens iOS Settings)
+        "LinkLook is not your default browser."
+        Bold: "To stay protected against unsafe links, use the
+        Apple Settings button to make LinkLook the default browser."
+        Full-width green "Apple Settings" button (same style as onboarding).
       - Banner appears at most ONCE per app-foreground cycle.
       - No modals, no alerts, no interstitials. Apple constrains
         this API to prevent nagging behavior. Respect that.

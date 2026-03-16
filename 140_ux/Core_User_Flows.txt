@@ -208,15 +208,19 @@ Activation:
 - user must enable extension manually in iOS Settings (no API to do it)
 - LinkLook provides an in-app step-by-step guide (SafariExtensionGuideView)
   accessible from Settings → Safari Protection and from the start page
-  status indicator
+  Safari card
 - 6 numbered steps with system icons, elderly-friendly language, large text
 - "Open Settings" button takes user to LinkLook's iOS Settings section
 
 Status detection:
 - extension writes timestamp to App Group UserDefaults on each message
   (key: "safariExtensionLastActive")
-- start page shows status indicator (SafariExtensionStatusView):
-  green "Safari protection active" or grey "Safari protection not set up"
+- start page shows Safari extension card (SafariExtensionStatusView):
+  - Not active: prominent card "Do you use Safari?" with explanation that
+    LinkLook-only is safest + green "Set Up Safari Protection" button.
+    No dismiss (×) — disappears only when extension becomes active.
+    Hidden when the default browser reminder card is visible.
+  - Active: compact green row "Safari protection is active"
 - Settings tab shows "Safari Protection" row with NavigationLink to guide
 
 Full activation spec: 140_ux/Safari_Extension_Activation_Flow.txt

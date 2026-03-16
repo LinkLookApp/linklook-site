@@ -226,7 +226,7 @@ Minor concerns — the user should be aware but can proceed easily.
 - **Headline:** "This link may be unfamiliar"
 - **Subtext:** "Continue only if you trust this site."
 - **Forward button:** small "Continue →" text link (`.openInApp`).
-- Visual treatment: **warm yellow/advisory** accent (#D4A017).
+- Visual treatment: **bright yellow/advisory** accent (#FEBC2E).
 
 ### Verdict: WARN — Strong Warning
 
@@ -235,7 +235,7 @@ Significant concerns — the user is strongly nudged away.
 - **Headline:** "This page shows warning signs"
 - **Subtext:** "Going back is recommended."
 - **Forward button:** very small "Continue Anyway" text (`.openInApp`, 0.6x font, light color). Tapping requires an **extra confirmation tap** ("Are you sure? This link has warning signs.").
-- Visual treatment: **orange/caution** accent (#E67300).
+- Visual treatment: **orange/caution** accent (#FF9500).
 - Colors, icons, and wording must **clearly distinguish WARN from INFORM**.
 
 ### Verdict: BLOCK — Hard Block
@@ -509,8 +509,8 @@ is GSB result caching (5 minutes) to avoid redundant API calls.
    pattern used by Safari and Chrome.
 3. **Button hierarchy communicates risk without words.** A screen with one giant
    "Go Back" vs. one tiny "Continue Anyway" is universally understood.
-4. **Colors and context differentiate verdicts.** INFORM (yellow #D4A017) and
-   WARN (orange #E67300) have similar layouts; visual treatment tells the story.
+4. **Colors and context differentiate verdicts.** INFORM (yellow #FEBC2E) and
+   WARN (orange #FF9500) have similar layouts; visual treatment tells the story.
 5. **Every entry point converges on the same flow.** QR, clipboard, share sheet,
    voice — they all feed into the same pipeline.
 6. **Respect the user's ability to decide.** Even on WARN, offer a path forward
