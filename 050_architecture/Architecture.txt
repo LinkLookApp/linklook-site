@@ -222,7 +222,7 @@ which covers universal-link verification for partner apps. MDL-102 covers the
 broader strategic direction of opening reputation intelligence as a service.
 
 ================================================================================
-12. PREFERENCES ARCHITECTURE (MDL-105, MDL-109)
+12. PREFERENCES ARCHITECTURE (MDL-105)
 ================================================================================
 
 Preference storage is split based on the nature of the setting.
@@ -232,7 +232,7 @@ iOS Settings bundle (Settings.bundle, values via UserDefaults.standard):
 - Response mode (block / warn)
 
 In-app settings screen:
-- Safe-link display preference (always show result by default) (MDL-109, always show result by default)
+- Text size setting
 - Whitelist management
 - Notification preferences
 - Recent checks history toggle and clear (MDL-106, on by default)
@@ -254,14 +254,12 @@ is off, no outbound signal data leaves the device — the two-data-flow separati
 (MDL-100) is fully respected. V1 ships without the backend but must keep the
 architectural separation clean so the toggle can be wired in V2.
 
-Safe-link display preference (MDL-109):
-Two modes for the allow verdict path: "always show result" (default) shows the
-safe result screen briefly for reassurance before loading the page; "auto-open
-safe links" skips the result screen and loads the page directly. PROTECTED
-profile enforces "always show result" — the preference cannot be changed.
-STANDARD profile users can choose. Only the allow path is affected — inform,
-warn, and block always show their respective screens regardless of this setting.
-The core rule is preserved: no web content loads before the allowed state.
+Safe-link behavior (canonical):
+- OK always opens directly in LinkLook with a brief non-blocking toast.
+- INFORM and WARN always show their interstitials before any page loads.
+- BLOCK and UNKNOWN never proceed automatically.
+- There is no user preference for showing a separate safe-result screen.
+- The core rule is preserved: no web content loads before the allowed state.
 
 App Group sync constraint (hard):
 The Network Extension runs as a separate process and cannot read UserDefaults

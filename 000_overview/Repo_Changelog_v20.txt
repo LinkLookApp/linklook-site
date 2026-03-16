@@ -16,7 +16,7 @@ Updated
 - 050_architecture/Development_Architecture.txt
 - 080_compliance/Apple_Default_Browser_Entitlement_Strategy.txt
 - 090_product/Product_Requirements.txt
-- 110_decisions/Decision_Log.txt
+- 110_decisions/LinkLook_Master_Decision_Log_2026-03-10.txt
 - 140_ux/Core_User_Flows.txt
 - 010_governance/Risk_Log.txt
 - 000_overview/Document_Index.txt

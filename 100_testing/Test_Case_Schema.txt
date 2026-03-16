@@ -1,7 +1,7 @@
 LinkLook Test Case Schema
 Version: v2.0
 Date: 2026-03-11
-Origin: ChatGPT, updated to align with minimal browser model
+Origin: ChatGPT, updated to align with primary browser model
 
 Goal
 Use a human-readable and machine-runnable schema from the start.
@@ -40,7 +40,7 @@ Typical expected fields
 - user_message_key
 - page_load_state (not_loaded | loaded_after_verdict)
 - browser_chrome_visible (true | false)
-- open_elsewhere_available (true | false)
+- external_browser_option_available (true | false)   # canonical: false
 
 Core rule reminder
 No web content may load before LinkLook has reached the allowed state for that specific URL.

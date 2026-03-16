@@ -6,24 +6,21 @@ Origin: ChatGPT, updated to align with Canonical Master Decision Log 2026-03-10
 1. PRODUCT SUMMARY
 ================================================================================
 
-LinkLook is a minimal, safety-driven browser for iOS with a built-in preventive
-security gate. Its purpose is to help users recognize malicious or suspicious
-destinations before harm occurs. The browser part must be real enough to support
-the product direction, but kept as small and straightforward as possible.
-LinkLook combines a minimal browser experience with a protective security layer.
+LinkLook is a safety-driven browser for iOS with a built-in preventive security
+layer. Its purpose is to help users recognize malicious or suspicious
+destinations before harm occurs. The browser must be real, usable, and familiar
+for everyday browsing while remaining focused on LinkLook's safety promise.
 Users remain in LinkLook for normal forward navigation.
 
 Primary v1 characteristics:
-- minimal, safety-driven browser with preventive security gate
-- plain-English verdicts using four-state outcome model
+- safety-driven browser with preventive link checking
+- plain-English verdicts using a four-state outcome model
 - privacy-first analysis pipeline
 - visible but calm proof that the product is active
 - built-in browsing flow inside LinkLook after a verdict is reached
 
-LinkLook v1 is a minimal, safety-driven browser. The first version centers on
-clear browser flows, link-risk evaluation, transparent safe handling, and
-understandable protective actions. Action extension support is planned for V2.
-Network Extension is planned for V3.
+LinkLook v1 centers on clear browser flows, link-risk evaluation,
+low-friction safe handling, and understandable protective actions.
 
 App Store rejection risk and browser entitlement approval risk are accepted
 showstopper risks.
@@ -122,7 +119,7 @@ Where appropriate after a high-confidence suspicious event, the UX may support
 subtle sharing or educational follow-up. Any such mechanism must remain calm and
 credibly framed. No celebratory or self-congratulatory tone.
 
-5.7 PREFERENCES ARCHITECTURE (MDL-105, MDL-109)
+5.7 PREFERENCES ARCHITECTURE (MDL-105)
 
 Preference storage is split between iOS Settings bundle and the in-app settings
 screen based on the nature of each setting.
@@ -135,7 +132,7 @@ installer (Profile 1). PROTECTED profile's locked block mode belongs at the
 device configuration level.
 
 In-app settings screen (user-experience preferences):
-- safe-link display preference (MDL-109, always show result by default)
+- Text size setting
 - whitelist management
 - notification preferences
 - recent checks history toggle and clear (MDL-106, on by default)
@@ -171,26 +168,13 @@ Crowdsourced threat contribution opt-in (MDL-108, V2):
   separation so the toggle can be wired in V2 without refactoring
 - the toggle state is personal trust data (MDL-100) and stays on-device
 
-Safe-link display preference (MDL-109):
-- controls what happens when the engine verdict is "allow"
-- two modes:
-  - "Always show result" (default): the safe result screen is displayed briefly
-    so the user sees LinkLook checked the link and confirmed it is safe. This
-    provides reassurance, especially for the primary audience (elderly users,
-    PROTECTED profile). The page then loads in the minimal browser.
-  - "Auto-open safe links": safe links pass through silently and load in the
-    minimal browser without showing the safe result screen. Intended for power
-    users on STANDARD profile who trust LinkLook and want less friction.
-- default is "always show result" because reassurance is a core trust-building
-  feature — users need to see that LinkLook is working for them
-- PROTECTED profile: "always show result" is enforced and cannot be changed to
-  auto-open, because the adult child installer set up LinkLook for reassurance
-- STANDARD profile: user can choose either mode
-- this preference is stored on-device (personal trust data, MDL-100)
-- inform, warn, and block verdicts are NEVER auto-opened regardless of this
-  setting — only the allow path is affected
-- this preference does not affect the core rule: no web content may load before
-  LinkLook has reached the allowed state for that specific URL
+Safe-link behavior (canonical):
+- When the verdict is OK, the page opens immediately in LinkLook with a brief,
+  non-blocking confirmation toast.
+- INFORM and WARN always show their interstitials before any page loads.
+- BLOCK never offers a forward path.
+- There is no user-facing setting that switches safe links between a separate
+  result screen and auto-open mode.
 
 App Group sync constraint (hard, MDL-105):
 The Network Extension runs as a separate process and cannot read UserDefaults

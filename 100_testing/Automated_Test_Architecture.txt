@@ -17,19 +17,19 @@ Testing layers
 - redirect resolution
 - reputation adapter failures
 - timeout behavior
-- decision screen to minimal browser handoff
+- decision routing to LinkLook browser
 
 3. End-to-end tests
 - receive link
 - analyze
-- safe path: verdict first, then page loads inside LinkLook browser
+- safe path: verdict computed first, then page opens directly inside LinkLook with OK toast
 - inform / warn path: no auto-load, user sees decision screen first
 - block path: no web content loads at all
-- continue from inform/warn: opens in minimal browser, no double-open
+- continue from INFORM/WARN: opens in LinkLook browser, no double-open
 - forward action: explicit user action opens correct URL inside LinkLook
 - page render, navigation, URL display, HTTPS handling
 - background/foreground recovery
-- minimal browser tests (see Minimal_Browser_Test_Specification.txt):
+- browser-gate tests (see LinkLook_Browser_Test_Specification.txt):
   gate behavior, decision-to-browser handoff, browser functionality,
   security-sensitive cases, failure/recovery, UX/accessibility
 
@@ -54,7 +54,7 @@ TDD enforcement
 - core decision logic should be developed test-first
 - every new detector or rule starts with a failing test
 - every important bug starts with a failing regression test
-- minimal browser gate behavior must be covered by automated tests
+- browser-gate behavior must be covered by automated tests
 - forward action path must be testable without live platform dependency
 
 Required test coverage areas

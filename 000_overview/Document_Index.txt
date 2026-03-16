@@ -84,7 +84,7 @@ Origin: Updated to include all files as of 2026-03-14
 090_product/Certified_API_Program.txt
 090_product/Distribution_and_Discovery_Strategy.txt
 090_product/LinkLook_Foundation_Model.txt
-090_product/Milestones/Milestone_1_Execution_Plan_2026-03-08.txt
+090_product/Milestones/Milestone_1_Execution_Plan_2026-03-08_HISTORICAL.txt
 090_product/Model_Strategy.txt
 090_product/Product_Requirements.txt
 090_product/Safe_Preview.md
@@ -101,7 +101,7 @@ Origin: Updated to include all files as of 2026-03-14
 100_testing/Human_Usability_Test_Plan.txt
 100_testing/Initial_30_Phishing_Test_Fixtures.txt
 100_testing/Initial_30_Phishing_Test_Fixtures.yaml
-100_testing/Minimal_Browser_Test_Specification.txt
+100_testing/LinkLook_Browser_Test_Specification.txt
 100_testing/Policy_Test_Matrix.md
 100_testing/Regression_Test_Policy.txt
 100_testing/TestFlight_Launch_Plan.md
@@ -129,5 +129,5 @@ Origin: Updated to include all files as of 2026-03-14
 140_ux/Start_Page_Design.txt
 140_ux/Start_Page_Mockup.html
 140_ux/Trust_Visibility_Design.txt
-140_ux/Two_Stage_Rocket_UX.md
+140_ux/Safety_Flow_UX.md
 140_ux/UX_Principles.txt

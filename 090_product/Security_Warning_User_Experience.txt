@@ -1,9 +1,10 @@
 Security Warning User Experience
 Generated: 2026-03-08
-Updated: 2026-03-14
+Updated: 2026-03-16
 
 Purpose
-Define how LinkLook should communicate SAFE, SUSPICIOUS, and BLOCK decisions without confusing or overwhelming the user.
+Define how LinkLook should communicate OK, INFORM, WARN, and BLOCK decisions
+without confusing or overwhelming the user.
 
 Principles
 - plain language first
@@ -11,33 +12,37 @@ Principles
 - avoid panic wording
 - let the user understand what happened
 - reserve hard blocking for high-confidence risk
+- keep friction proportional to risk
 
 Example states
-SAFE (OK)
-- Message: This link looks safe.
-- Action: One large "Open" button. Opens page in LinkLook's built-in browser.
-- Display mode (MDL-109): "always show result" (default) shows the safe screen
-  briefly for reassurance; "auto-open safe links" skips the screen and loads
-  directly in LinkLook. PROTECTED profile enforces always show result.
+OK
+- Message: brief non-blocking toast: "Looks OK — opening"
+- Action: no blocking screen; the page opens immediately in LinkLook's built-in browser
 - There is no "Open in other browser" button. LinkLook IS the browser.
 
-SUSPICIOUS (INFORM / WARN)
-- Message: This link has warning signs.
+INFORM
+- Message: This link may be unfamiliar.
 - Explain one or two reasons such as new domain, hidden destination, or brand imitation.
-- Action: Large "Go Back" button (dominant). Small "Open" button (opens in
-  LinkLook). On WARN, "Open" requires an extra confirmation tap.
+- Action: large "Go Back" button (dominant). Small "Continue →" button (opens in LinkLook).
+- "Check Message Context" button available (Pro feature).
+
+WARN
+- Message: This page shows warning signs.
+- Explain the strongest reason available without overclaiming certainty.
+- Action: large "Go Back" button (dominant). Very small "Continue Anyway" button.
+- "Continue Anyway" requires an extra confirmation tap.
 - "Check Message Context" button available (Pro feature).
 
 BLOCK
 - Message: This link appears dangerous and was blocked.
 - Explain the strongest reason available.
-- Action: Large "Go Back" button only. No forward path.
+- Action: large "Go Back" button only. No forward path.
 
-Browser model (updated 2026-03-14)
-LinkLook is the user's primary and only browser. There is no browser-picker
-setting and no redirect to an external browser. All pages open in LinkLook.
-Edge cases (DigiD, iDEAL, OAuth) are handled via automatic silent system
-handoff. See CLAUDE.md rules 10-11.
+Browser model
+LinkLook is the user's primary browser. There is no browser-picker setting and
+no redirect to an external browser for normal browsing. All pages open in
+LinkLook. Edge cases (DigiD, iDEAL, OAuth) are handled via automatic silent
+system handoff. See CLAUDE.md rules 10-11.
 
 Special cases
 - QR-origin links

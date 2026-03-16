@@ -39,12 +39,13 @@ For edge cases where WKWebView doesn't work (DigiD, iDEAL payments, OAuth),
 LinkLook detects these flows automatically and hands off to the system silently.
 This is not a user-facing option — it is invisible smart handoff.
 
-### Safari look and feel
+### Familiar iPhone browser patterns
 
-LinkLook must look and feel like Safari on iPhone. Same navigation patterns, same
-toolbar placement, same gestures (swipe-to-go-back, pull-to-refresh, long-press
-context menus). Users switching from Safari should feel at home immediately. The
-safety check is the differentiator, not the browser chrome.
+LinkLook should use familiar iPhone browser patterns so Safari users feel at
+home immediately: recognizable navigation, familiar toolbar placement, and
+standard gestures such as swipe-to-go-back, pull-to-refresh, and long-press
+context menus. The safety check is the differentiator, not copycat branding.
+LinkLook should remain clearly identifiable as LinkLook.
 
 ---
 
@@ -517,8 +518,9 @@ is GSB result caching (5 minutes) to avoid redundant API calls.
    (with extra friction). Only BLOCK removes the choice entirely.
 7. **Design for the elderly audience.** Large tap targets, clear labels, no
    jargon, no ambiguity.
-8. **Look like Safari.** Users should feel at home. The safety check is the
-   differentiator, not the browser chrome.
+8. **Use familiar iPhone browser patterns.** Users should feel at home, but
+   LinkLook should remain clearly identifiable. The safety check is the
+   differentiator, not copycat browser chrome.
 9. **Keep users in.** No exit to other browsers. Protection only works if
    LinkLook handles every link.
 10. **Core safety never depends on Pro.** Free users get full verdicts, reasons,

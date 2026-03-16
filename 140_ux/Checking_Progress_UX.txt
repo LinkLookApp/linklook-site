@@ -61,9 +61,9 @@ state and show a neutral fallback screen. It must NOT spin indefinitely.
     Available actions on the timeout screen (order = visual priority):
 
     - "Retry"             — re-run the safety check from scratch
-    - "Go back"           — return to the previous screen (start page or
+    - "Go Back"           — return to the previous screen (start page or
                             referring page)
-    - "Go to Site"        — continue inside LinkLook only when policy allows
+    - "Continue"          — continue inside LinkLook only when policy allows
         · PROTECTED profile may remove the forward action depending on
           policy
         · There is NO "Open elsewhere" option — LinkLook IS the browser

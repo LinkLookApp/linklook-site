@@ -48,6 +48,6 @@ Analytical uses
 
 Relationship to other documents
 - AASA_Crawling_Architecture.txt
-- Universal_Links_Strategy.txt
+- 060_security/Universal_Link_Bypass_Mitigation.txt
 - Network_Extension_Signal_Model.txt
 - Certified_API_Program.txt

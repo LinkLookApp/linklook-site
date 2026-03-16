@@ -1,18 +1,21 @@
 LINKLOOK — APP REVIEW NOTES
-Version: 2026-03-14
-Updated to match primary browser model
+Version: 2026-03-16
+Updated to match canonical direct-open OK flow
 
 ================================================================================
 APP REVIEW NOTE (paste into App Store Connect)
 ================================================================================
 
-LinkLook is a safety-driven browser that checks links before you open them.
+LinkLook is a safety-driven browser that checks links before they open.
 
 How it works:
 When a user taps a link in Messages, Mail, or any other app, iOS delivers the
 URL to LinkLook (registered as the default browser). LinkLook runs a safety
-check BEFORE loading the page and shows one of four verdicts: Safe, Caution,
-Warning, or Blocked.
+check BEFORE loading the page and then routes by verdict:
+- OK: opens immediately in LinkLook with a brief non-blocking confirmation toast
+- INFORM: shows a light warning interstitial with Go Back and Continue
+- WARN: shows a stronger warning interstitial with Go Back and Continue Anyway
+- BLOCK: shows a blocking warning with no forward path
 
 The safety check combines:
 - Structural URL analysis (domain patterns, brand lookalike detection, TLD
@@ -20,16 +23,15 @@ The safety check combines:
 - Google Safe Browsing API (hash-prefix lookup for known malware, phishing,
   social engineering, and unwanted software)
 
-After seeing the verdict, the user chooses what to do: go back or open the
-page in LinkLook's built-in browser. All browsing happens inside LinkLook —
-LinkLook is the user's primary browser. LinkLook never loads a page without
-explicit user action.
+All normal browsing happens inside LinkLook — LinkLook is the user's primary
+browser. LinkLook does not present a user-facing "Open in other browser"
+option. LinkLook never loads a page before the relevant allowed state is
+reached.
 
 Entry points:
 - Omnibox (type or paste a URL)
 - Default browser handoff (links from other apps)
 - QR code scanner (built-in camera scanner)
-- Clipboard detection (prompts when a URL is on the clipboard)
 - Share Sheet ("Check with LinkLook" from any app)
 
 LinkLook does not act as a VPN or proxy. It evaluates URLs locally on-device
@@ -38,10 +40,10 @@ A local check history is stored on-device and can be cleared or disabled by
 the user at any time.
 
 Test instructions:
-1. Open the app and type "apple.com" — should show Safe verdict
-2. Type "bit.ly/test" — should show Caution (URL shortener)
+1. Open the app and type "apple.com" — the page should open in LinkLook and show a brief OK toast
+2. Type "bit.ly/test" — should show INFORM or WARN depending on current policy
 3. Tap "Go Back" — returns to start page
-4. Tap "Open" on a safe link — opens in LinkLook's built-in browser
+4. From an INFORM screen, tap "Continue →" — opens in LinkLook's built-in browser
 5. Home button returns to start page from any state
 
 No login required. No demo account needed.

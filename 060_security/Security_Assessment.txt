@@ -132,9 +132,9 @@ boundaries:
                 begins rendering inside LinkLook. The main risk is not
                 browser handoff but the integrity of the decision gate
                 and the transition from verdict to render.
-  Controls:     No pre-load before verdict, explicit user action for
-                non-allow paths, safe-link display preference, WKWebView
-                hardening, clear URL/domain visibility.
+  Controls:     No pre-load before verdict, direct-open OK path only
+                after verdict, explicit user action for INFORM and WARN,
+                WKWebView hardening, clear URL/domain visibility.
 
   BOUNDARY 4: User → App (user input and bypass)
   ───────────────────────────────────────────────
@@ -225,11 +225,11 @@ Threats are ordered by estimated impact, highest first.
                 rather than a considered choice.
   V1 exposure:  Medium (depends on rule tuning — too many inform/warn
                 screens will train users to dismiss them).
-  Mitigations:  Tuned signal weights (avoid false positives), allow
-                verdict shows minimal friction (MDL-109), PROTECTED
-                profile enforces block mode for vulnerable users,
-                clear and distinct visual hierarchy between inform,
-                warn, and block screens.
+  Mitigations:  Tuned signal weights (avoid false positives), OK verdict
+                uses a brief non-blocking toast instead of a blocking safe
+                screen, PROTECTED profile still enforces safer policy
+                defaults for vulnerable users, clear and distinct visual
+                hierarchy between inform, warn, and block screens.
 
   THREAT 6: Unsafe forward action is misread as approval
   ──────────────────────────────────────────────────────
@@ -239,10 +239,10 @@ Threats are ordered by estimated impact, highest first.
                 The main risk is UX misinterpretation, not browser
                 handoff.
   V1 exposure:  Medium (this is the default flow for allowed links).
-  Mitigations:  MDL-109 safe-link display preference, time-limited
-                cache entries, no persistent "always safe" without
-                re-evaluation, clear UX that the user is leaving
-                LinkLook.
+  Mitigations:  clear toast and interstitial wording that a link has
+                been checked, time-limited cache entries, no persistent
+                "always safe" without re-evaluation, and clear UX that
+                forward navigation stays inside LinkLook.
 
   THREAT 7: Privacy and logging mistakes
   ───────────────────────────────────────

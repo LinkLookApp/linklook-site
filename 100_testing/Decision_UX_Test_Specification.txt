@@ -36,24 +36,18 @@ Canonical mappings to verify
 1. allow
 - calm confirmation tone
 - no alarming language
-- page loads inside LinkLook browser only after this verdict is reached
+- page loads inside LinkLook browser only after the OK verdict is reached
 - no web content is visible before the allowed state
 - browser chrome (address bar, back/forward, reload) becomes active
 - no external-browser button available
-- safe-link display preference (MDL-109) affects this path:
-  - "always show result" (default): safe result screen shown briefly, then
-    page loads. Test must verify screen appears before page render.
-  - "auto-open safe links": page loads directly without result screen.
-    Test must verify verdict was still computed before page load.
-  - PROTECTED profile: always show result is enforced regardless of setting
-  - both modes must preserve the core rule: no web content before allowed state
+- a brief non-blocking toast confirms the check while the page is loading
 
 2. inform
 - subtle caution tone
 - explanation of incomplete or low-confidence risk
 - no auto-load: page is NOT loaded yet
 - user sees inform screen first
-- Go to Site opens the page inside LinkLook when policy allows
+- Continue → opens the page inside LinkLook when policy allows
 - no external-browser button available
 - back button available
 
@@ -63,7 +57,7 @@ Canonical mappings to verify
 - no auto-load: page is NOT loaded yet
 - user sees warning screen first
 - override (continue) is available only when policy allows
-- Go to Site opens page in LinkLook's built-in browser, no double-open
+- Continue Anyway opens the page in LinkLook's built-in browser, no double-open
 - no external-browser button available
 - back button available
 
@@ -129,5 +123,5 @@ Failure examples to catch
 - web content visible before verdict is reached (core rule violation)
 - page auto-loads on inform or warn screen
 - double browser instance opened on continue tap
-- Go to Site opens the wrong or rewritten URL inside LinkLook
+- Continue opens the wrong or rewritten URL inside LinkLook
 - blocked URL loads content in background

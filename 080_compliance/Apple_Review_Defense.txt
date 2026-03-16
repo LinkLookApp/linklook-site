@@ -34,7 +34,8 @@ Reviewer concerns to pre-answer
    browsing history. The user can clear or disable it. No check history data
    leaves the device.
 3. Does the app break normal browsing?
-   No. Safe links open in LinkLook’s built-in browser. Suspicious links are
-   explained in plain language. The user always chooses whether to proceed.
+   No. Safe links open directly in LinkLook with a brief confirmation toast.
+   Suspicious links are explained in plain language before any page loads.
+   INFORM and WARN require an explicit proceed action; BLOCK has no forward path.
 4. Does LinkLook claim perfect safety?
    No. Public language is about warning and risk reduction, not guarantees.

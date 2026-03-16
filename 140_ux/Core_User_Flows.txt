@@ -8,8 +8,7 @@ Canonical alignment note (2026-03-14)
 LinkLook is the user's primary and only browser for iOS. The canonical
 outcome model is: allow (transparent) / inform / warn / block. There is no
 "open in other browser" option — users stay inside LinkLook at all times.
-LinkLook must look and feel like Safari. The safety check is the differentiator,
-not the browser chrome. Edge cases (DigiD, iDEAL, OAuth) are handled via
+LinkLook should use familiar iPhone browser patterns so Safari users feel at home immediately, while remaining clearly identifiable as LinkLook. The safety check is the differentiator, not the browser chrome. Edge cases (DigiD, iDEAL, OAuth) are handled via
 automatic silent system handoff, not user-facing buttons.
 
 Canonical UX flows
@@ -83,32 +82,32 @@ Result screen rules (apply to all verdict screens):
   already navigates back to the start page. Redundant navigation clutters
   the result screen. The result screen shows only: verdict, explanation,
   primary action, and secondary action if applicable.
-- Button order: On all non-allow screens (inform, warn, block), "Go Back"
-  is always the large primary button and "Open" is always the small
-  secondary button. The safe choice is always prominent.
+- Button order: On all non-OK screens, "Go Back" is always the large primary button. INFORM uses a small "Continue →" forward action; WARN uses a very small "Continue Anyway" forward action; BLOCK has no forward action.
 - There is NO "Open in other browser" button on any verdict screen. All
   forward paths open in LinkLook. The user stays protected at all times.
 
 1. Allow flow (transparent)
 - user taps a link
-- LinkLook checks quickly (checking progress screen shown briefly)
-- link is safe — user continues with minimal friction
+- LinkLook checks quickly (checking progress screen may appear briefly)
+- link is safe — page opens immediately inside LinkLook
+- a brief non-blocking toast confirms: "Looks OK — opening"
 - user barely notices LinkLook on the fast trusted path
 
 2. Inform flow ("Heads Up")
 - link has something worth noting but risk is low
 - brief explanation shown
 - primary action: "Go Back" (large button, return to start page)
-- secondary action: "Go to Site" (small button, proceed to page)
+- secondary action: "Continue →" (small button, proceed to page)
 - Go Back is always the prominent action on inform, warn, and block screens.
-  Go to Site is always the smaller secondary option. This keeps the safe
-  choice visually dominant across all non-allow verdict screens.
+  Continue is always the smaller secondary option. This keeps the safe
+  choice visually dominant across all non-OK verdict screens.
 
 3. Warn flow (suspicious / uncertain)
 - clear but calm warning
 - explain uncertainty without panic
 - safe action is primary
-- Go to Site remains available if policy allows
+- forward action label: "Continue Anyway" (very small, extra confirmation tap required)
+- Continue Anyway remains available if policy allows
 
 4. Block flow (known phishing / malicious)
 - clear warning with explanation
@@ -150,14 +149,9 @@ In-app settings (Settings tab in tab bar):
 - NO browser picker setting — LinkLook IS the browser. All pages open in
   LinkLook. There is no option to redirect to Safari, Chrome, or any other
   browser.
-- user picks safe-link display mode (MDL-109, "always show result" by default):
-  — "always show result": safe result screen shown briefly for reassurance,
-    then page loads in LinkLook's browser
-  — "auto-open safe links": safe links skip the result screen and load
-    directly in LinkLook's browser
-  — PROTECTED profile: always show result is enforced, cannot be changed
-  — STANDARD profile: user can choose either mode
-  — inform, warn, block verdicts always show their screens regardless
+- there is NO safe-link display preference toggle
+- OK always opens directly with a brief confirmation toast
+- inform, warn, and block verdicts always show their respective screens
 - user picks text size: Small, Medium (default), or Large. Affects the
   omnibox and result screens (titles, messages, buttons). Exact point sizes
   defined in CLAUDE.md rule 14. Stored on-device.

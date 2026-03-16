@@ -34,13 +34,13 @@ Test pyramid
 - inform path: user sees inform screen, no auto-load, may continue into browser
 - warning path: user sees warning screen, no auto-load, may continue into browser
 - blocked path: no web content loads at all
-- continue from inform/warn: opens in minimal browser, no double-open,
+- continue from inform/warn: opens in LinkLook browser, no double-open,
   pre-load gate verified
 - forward action: explicit user action, correct approved URL opened inside
   LinkLook, no hidden rewrite
-- minimal browser: page render, navigation, URL display, HTTPS handling,
+- LinkLook browser: page render, navigation, URL display, HTTPS handling,
   background/foreground recovery
-  (see Minimal_Browser_Test_Specification.txt for full test set)
+  (see LinkLook_Browser_Test_Specification.txt for full test set)
 
 4. UX tests
 - copy clarity

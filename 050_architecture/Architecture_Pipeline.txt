@@ -46,8 +46,10 @@ ON-DEVICE RESPONSIBILITIES (v1)
 - Capture user input (omnibox, QR, clipboard, Share Sheet)
 - Normalize and classify input (URL vs search query)
 - Run the full check pipeline (see below)
-- Display verdict screen with appropriate buttons
-- Let the user choose: go back or open in LinkLook (no external browser option)
+- Route by verdict after the decision is computed
+- OK opens directly in LinkLook with a brief non-blocking toast
+- INFORM and WARN show an interstitial before any page loads
+- BLOCK and UNKNOWN do not proceed automatically
 - Maintain history (Recent screen)
 
 OPTIONAL BACKEND
@@ -190,20 +192,21 @@ Step 1 — Input and Check:
 
 Step 2 — Verdict and Action:
 
-  Show verdict screen. User MUST tap a button. No auto-proceed.
+  Route by verdict after the decision is computed.
       ↓
   OK verdict:
-    One large "Open" button (opens in LinkLook)
+    Open immediately in LinkLook
+    Show brief non-blocking toast: "Looks OK — opening"
       ↓
   INFORM verdict:
     Large "Go Back" button (dominant)
     Medium "Check Message Context" button (Pro feature)
-    Small "Open" button (opens in LinkLook)
+    Small "Continue →" button (opens in LinkLook)
       ↓
   WARN verdict:
     Large "Go Back" button (dominant)
     Medium "Check Message Context" button (Pro feature)
-    Very small "Open" button (opens in LinkLook, requires extra confirmation)
+    Very small "Continue Anyway" button (opens in LinkLook, requires extra confirmation)
       ↓
   BLOCK verdict:
     Large "Go Back" button only. No forward path.

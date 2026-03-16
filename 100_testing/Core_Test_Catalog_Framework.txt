@@ -1,7 +1,7 @@
 LinkLook Core Test Catalog Framework
 Version: v2.0
 Date: 2026-03-11
-Origin: ChatGPT, updated to align with minimal browser model and Canonical Master Decision Log 2026-03-10
+Origin: ChatGPT, updated to align with primary browser model and Canonical Master Decision Log 2026-03-10
 
 Purpose
 Define the canonical structure for LinkLook v1 core test coverage so test design starts with the highest-risk user and threat flows instead of expanding randomly.
@@ -59,7 +59,7 @@ Use an initial 35-case package as the minimum strong starting point:
 Safe-path cases should include
 - well-known HTTPS domain: page loads in LinkLook browser after safe verdict
 - legitimate login page on trusted brand domain: page loads after verdict
-- ordinary informational link: verdict first, then browser renders page
+- ordinary informational link: verdict computed first, then page opens directly in LinkLook
 - safe shortened link after expansion: expanded URL evaluated, then loads
 - safe link from different source apps: same gate behavior regardless of source
 

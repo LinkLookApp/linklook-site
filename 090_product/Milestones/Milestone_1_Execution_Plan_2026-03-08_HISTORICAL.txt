@@ -1,3 +1,14 @@
+================================================================================
+HISTORICAL / SUPERSEDED
+================================================================================
+
+This plan reflects the pre-pivot architecture from 2026-03-08.
+It does NOT describe the current product direction.
+Current direction: LinkLook is the primary browser, safe links open inside
+LinkLook, and there is no user-facing external-browser handoff.
+
+Keep this file only as historical planning context.
+
 Milestone 1 Execution Plan
 Date: 2026-03-08
 Project: LinkLook

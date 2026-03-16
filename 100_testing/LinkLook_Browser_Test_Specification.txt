@@ -1,14 +1,17 @@
-LinkLook — Minimal Browser Test Specification
-Version: 1.0
-Date: 2026-03-11
-Origin: ChatGPT design session, documented in Cowork
+LinkLook — Browser Test Specification
+Version: 1.1
+Date: 2026-03-16
+Origin: ChatGPT design session, updated for the canonical primary browser model
+
+Legacy MB- test IDs are retained for stability; they now refer to the browser-gate
+family, not a separate "LinkLook browser" product mode.
 
 ================================================================================
 PURPOSE
 ================================================================================
 
 This specification covers the test cases required when the empty browser shell
-is replaced by a real minimal browser. The key change: we are no longer only
+is replaced by a real LinkLook browser. The key change: we are no longer only
 testing "decision + screen" — we are now testing "decision + controlled page
 load + basic browser behavior."
 
@@ -20,7 +23,7 @@ No web content may load before LinkLook has reached the allowed state for that
 specific URL.
 
 This rule must be tested everywhere because it is the core difference between
-the old empty browser and the new minimal browser.
+LinkLook's safety gate and ordinary browser navigation.
 
 ================================================================================
 TEST LAYERS
@@ -41,12 +44,12 @@ AUTOMATE FIRST (TOP 10)
 
 These cover the most important product risk:
 
- 1. Safe URL → load only after safe verdict
+ 1. Safe URL → OK verdict computed, then direct open
  2. Warn URL → no auto-load
  3. Inform URL → no auto-load
  4. Block URL → never loads
- 5. Continue from warn → opens in minimal browser
- 6. Go to Site → correct in-LinkLook open
+ 5. Continue from WARN → opens in LinkLook browser
+ 6. Continue → correct in-LinkLook open
  7. Back / forward / reload
  8. Redirect to unsafe destination
  9. Timeout / backend unavailable
@@ -95,7 +98,7 @@ MB-G1-08 | Same-domain redirect to unsafe path
          | safety principle: domain trust alone never approves a URL.)
 
 ================================================================================
-GROUP 2: HANDOFF FROM DECISION SCREEN TO MINIMAL BROWSER
+GROUP 2: HANDOFF FROM DECISION SCREEN TO LINKLOOK BROWSER
 ================================================================================
 Priority: P0
 
@@ -110,8 +113,8 @@ MB-G2-01 | Continue from warn opens inside LinkLook browser
 MB-G2-02 | Continue from inform opens inside LinkLook browser
          | Same as above for inform verdict.
          |
-MB-G2-03 | Go to Site opens the approved URL inside LinkLook
-         | User chooses Go to Site. The approved URL opens in LinkLook.
+MB-G2-03 | Continue opens the approved URL inside LinkLook
+         | User chooses Continue. The approved URL opens in LinkLook.
          | No corrupted, truncated, or rewritten URL.
          |
 MB-G2-04 | Back from decision screen works
@@ -125,11 +128,11 @@ MB-G2-06 | Decision screen state survives slow interaction
          | If user waits on warn/inform screen, app state stays correct.
          |
 MB-G2-07 | Repeated tap protection
-         | Fast double-tap on Go to Site / Continue does not cause
+         | Fast double-tap on Continue / Continue does not cause
          | race conditions.
 
 ================================================================================
-GROUP 3: MINIMAL BROWSER FUNCTIONALITY
+GROUP 3: LINKLOOK BROWSER FUNCTIONALITY
 ================================================================================
 
 Apple will expect this to behave like a real browser.
@@ -267,7 +270,7 @@ For LinkLook, these are not optional.
 ID       | Title
 ---------|--------------------------------------------------------------
 MB-G6-01 | Buttons are understandable
-         | Go to Site, Go Back, and Retry are clear where shown.
+         | Continue, Go Back, and Retry are clear where shown.
          |
 MB-G6-02 | No ambiguous dual continue buttons
          | Warn/inform screens must not confuse user.
@@ -325,7 +328,7 @@ MB-G7-04 | History disabled hides recent sites
          | start page, then recent sites section is not visible.
          |
 MB-G7-05 | App identity not visible when browsing
-         | Given a page is loaded in the minimal browser, then the
+         | Given a page is loaded in the LinkLook browser, then the
          | "LinkLook" heading and tagline are not visible. They only
          | appear on the start page.
 
@@ -478,5 +481,5 @@ ALIGNMENT
 - Group 7 covers Start_Page_Design.txt layout and states, tab bar
   navigation, address field interaction, nav arrow states, clipboard
   paste, recent sites, and accessibility.
-- All test IDs use the MB- prefix (Minimal Browser) to distinguish from
-  existing TC- prefixed decision-engine tests.
+- All test IDs use the MB- prefix (legacy, retained for stability) to
+  distinguish from existing TC- prefixed decision-engine tests.

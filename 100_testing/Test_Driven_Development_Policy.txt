@@ -1,7 +1,7 @@
 LinkLook Test-Driven Development Policy
 Version: v2.0
 Date: 2026-03-11
-Origin: ChatGPT, updated to align with minimal browser model and Canonical Master Decision Log 2026-03-10
+Origin: ChatGPT, updated to align with primary browser model and Canonical Master Decision Log 2026-03-10
 
 Purpose
 Define LinkLook’s mandatory test-driven development policy for core logic, UX-critical flows, and regression control.
@@ -49,7 +49,7 @@ This policy applies especially to:
 - decision policy / rule engine
 - decision-to-UX mapping
 - warning / continue / back flows
-- minimal browser gate behavior (no web content before allowed state)
+- browser-gate behavior (no web content before allowed state)
 - forward action behavior inside LinkLook
 
 Non-goals

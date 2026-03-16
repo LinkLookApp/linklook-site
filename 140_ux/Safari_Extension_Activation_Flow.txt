@@ -4,7 +4,7 @@ Date: 2026-03-15
 Origin: Safari extension quick-wins implementation pass
 References: CLAUDE.md rules 62–74, Core_User_Flows.txt (Flow 11),
             Default_Browser_Activation_Flow.txt,
-            Two_Stage_Rocket_UX.md (Safari Extension section)
+            Safety_Flow_UX.md (Safari Extension section)
 
 ================================================================================
 1. PURPOSE
@@ -308,7 +308,7 @@ These are not MVP requirements, but should be planned for:
                                        level. This doc details the
                                        activation mechanics.
 
-  Two_Stage_Rocket_UX.md               Safari Extension section describes
+  Safety_Flow_UX.md               Safari Extension section describes
                                        the "why" and strategic purpose.
                                        This doc covers the "how".
 

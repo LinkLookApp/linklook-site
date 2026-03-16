@@ -1068,8 +1068,7 @@ Subject: Product Risk
 Status: Decided
 Title: Unsafe override actions must be visually de-emphasized
 Decision:
-Potentially risky forward actions must never look like approval. On inform and warn
-screens, Go Back stays primary and Go to Site remains smaller and secondary.
+Potentially risky forward actions must never look like approval. On INFORM and WARN screens, Go Back stays primary while the forward action remains smaller and secondary: Continue → on INFORM, Continue Anyway on WARN.
 Source: Decision Log Reconciliation Chat
 Date: 2026-03-10
 
@@ -1293,13 +1292,12 @@ Status: Decided
 Title: User-configurable safe-link display preference
 Target version: V1
 Decision:
-LinkLook is a safety-driven browser that the user may set as their default. When
-a link passes LinkLook's safety checks, it opens in LinkLook itself. The user can
-choose whether safe links always show a brief safe result screen first or
-auto-open directly in LinkLook. "Always show result" is the default. PROTECTED
-profile enforces that mode. The preference is stored on-device using
-UserDefaults, consistent with the privacy-first two-data-flow separation
-(MDL-100). Exception handling for OS-required destination types is policy-driven,
+See MDL-109 (superseded). The canonical behavior is now:
+- OK always opens directly in LinkLook with a brief non-blocking toast.
+- INFORM and WARN always show interstitials before any page loads.
+- BLOCK has no forward path.
+- There is no user-facing preference for a separate safe-result screen.
+Exception handling for OS-required destination types is policy-driven,
 not controlled by a general browser preference.
 Source: Cowork session 2026-03-11
 Date: 2026-03-11
@@ -1321,7 +1319,7 @@ preferences. Profile 1 (adult child installer) expects Settings-level controls.
 PROTECTED profile's locked block mode belongs at device configuration level.
 
 In-app settings screen:
-- Safe-link display preference (MDL-109, always show result by default)
+- Text size setting
 - Whitelist management
 - Notification preferences
 - Foundation donation tier display (read-only)
@@ -1475,40 +1473,28 @@ Date: 2026-03-11
 
 MDL-109
 Subject: UX / Preferences
-Status: Decided
-Title: Safe-link display preference — auto-open vs always show result
-Target version: V1
+Status: Superseded
+Title: Historical safe-link display preference (superseded by canonical direct-open OK path)
+Target version: Historical only
 Decision:
-When the engine verdict is "allow" (safe link), users can choose between two
-display modes via an in-app settings toggle:
+This earlier decision introduced a user preference between:
+- showing a brief safe-result screen for OK links, and
+- opening OK links directly.
 
-1. "Always show result" (DEFAULT): the safe result screen is displayed briefly
-   so the user sees that LinkLook checked the link and confirmed it is safe.
-   The page then loads in the minimal browser. This provides reassurance and
-   is critical for the primary audience (elderly users, PROTECTED profile).
+This decision is now superseded.
 
-2. "Auto-open safe links": safe links skip the result screen and load directly
-   in the minimal browser without any interstitial. Intended for power users
-   on STANDARD profile who trust LinkLook and want less friction.
+Canonical behavior:
+- OK always opens directly in LinkLook with a brief non-blocking toast.
+- INFORM and WARN always show interstitials before any page loads.
+- BLOCK has no forward path.
+- There is no user-facing preference for a separate safe-result screen.
 
-Constraints:
-- Default is "always show result" — reassurance is a core trust-building feature
-- PROTECTED profile: "always show result" is enforced and cannot be changed.
-  The adult child installer set up LinkLook for reassurance; removing it would
-  undermine the purpose of the protected setup.
-- STANDARD profile: user can choose either mode
-- Only the allow path is affected. Inform, warn, and block verdicts ALWAYS show
-  their respective screens regardless of this setting.
-- The core rule is preserved: no web content may load before LinkLook has
-  reached the allowed state for that specific URL. In "auto-open" mode the
-  verdict is still computed first — the page just loads without showing the
-  safe result screen.
-- Preference is stored on-device (personal trust data, MDL-100)
-- Preference is placed in the in-app settings screen (MDL-105), not the iOS
-  Settings bundle, because it is a friction-level UX choice made by active users.
+Reason for supersession:
+The direct-open OK path is the cleaner Apple-aligned behavior and removes a repo-wide
+source of contradiction across product, UX, architecture, testing, and compliance docs.
 
-Source: Cowork session 2026-03-11
-Date: 2026-03-11
+Source: 2026-03-16 doc reconciliation pass
+Date: 2026-03-16
 
 MDL-110
 Subject: Security / Entry Path Visibility
@@ -1747,9 +1733,8 @@ The current canonical direction is:
     metadata, defaults, signal weights/thresholds, rules, and overrides.
     Code = engine, policy = behavior. Fetched on launch and foreground, cached
     locally with 7-day grace period. Resolves MDL-027.
-26. Safe-link display preference: "always show result" (default, enforced for
-    PROTECTED) vs "auto-open safe links" (optional for STANDARD). Only the
-    allow path is affected. Core rule preserved — verdict computed first.
+26. Safe-link display preference: superseded. OK now opens directly in LinkLook
+    with a brief non-blocking toast. No user-facing toggle. See MDL-109.
 27. Entry path visibility: LinkLook receives URLs only via standard default-
     browser handoff. Universal links, custom schemes, App Clips, in-app
     browsers, and non-web content bypass LinkLook. Named limitations,

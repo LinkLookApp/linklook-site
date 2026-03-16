@@ -1,6 +1,6 @@
 LinkLook — Canonical Rules Summary
-Version: 1.0
-Date: 2026-03-14
+Version: 1.1
+Date: 2026-03-16
 
 This file summarises the enforceable rules from CLAUDE.md (the single source of
 truth in the LinkLook-App repository). It exists so that the LinkLook-Docs
@@ -13,46 +13,76 @@ When this file and CLAUDE.md conflict, CLAUDE.md wins.
 1. PRIMARY BROWSER MODEL
 ================================================================================
 
-LinkLook is the user's primary and only browser. Users stay inside LinkLook at
-all times. There is NO "Open in other browser" option — not on verdict screens,
-not in the toolbar, not anywhere.
+LinkLook is the user's primary browser. Users stay inside LinkLook for normal
+browsing. There is NO user-facing "Open in other browser" option — not on
+verdict screens, not in the toolbar, not anywhere.
 
-Design target: Safari. LinkLook must look and feel like Safari on iPhone. Same
-navigation patterns, same toolbar placement, same gestures.
+Design target: familiar iPhone browser patterns. LinkLook should feel familiar
+to Safari users while remaining clearly identifiable as LinkLook.
 
 ================================================================================
-2. TWO-STEP SAFETY FLOW
+2. RISK-PROPORTIONAL SAFETY FLOW
 ================================================================================
 
-Every entered or tapped URL is handled in two steps:
-  (1) Check the destination.
-  (2) Let the user explicitly choose what happens next.
+Every entered or tapped URL is checked before any page loads.
 
-Users never land on a URL automatically. LinkLook always shows a verdict first.
-Only after that does the user decide to go back or open the page in LinkLook.
+Routing after the verdict:
+- OK      → direct open in LinkLook + brief non-blocking toast
+- INFORM  → interstitial with a forward path
+- WARN    → stronger interstitial with extra-friction forward path
+- BLOCK   → hard block, no forward path
+- UNKNOWN → no forward path by default, retry allowed
+
+The verdict is always computed before page rendering. Safe links do NOT show a
+blocking interstitial.
 
 ================================================================================
 3. NO-PRELOAD PRINCIPLE
 ================================================================================
 
-LinkLook NEVER loads, fetches, or renders the destination page before the user
-explicitly taps "Open" / "Go to Site". The verdict screen shows only information
-derived from the URL itself (structural analysis, GSB lookup, AI model).
+LinkLook NEVER loads, fetches, or renders the destination page before the
+relevant allowed state is reached.
+
+- OK: allowed state is reached as soon as the verdict is computed, then the
+  page opens immediately in LinkLook.
+- INFORM / WARN: the page does not load until the user explicitly taps the
+  forward action.
+- BLOCK / UNKNOWN: no page load.
+
+Before open, the safety UI may show only information derived from the URL or
+from approved safety services: domain, full URL, verdict, reason, signal
+badges, and approved Safe Preview output.
 
 ================================================================================
-4. VERDICT SCREENS
+4. VERDICT UX
 ================================================================================
 
-OK:      One large "Open" button. No "Go Back" button.
-INFORM:  One large "Go Back" button. One medium "Check Message Context" (Pro).
-         One small "Go to Site" button.
-WARN:    One large "Go Back" button. One medium "Check Message Context" (Pro).
-         One very small "Go to Site" button (extra confirmation tap).
-BLOCK:   One large "Go Back" button only. No forward path.
-UNKNOWN: "Go Back" only, with retry option.
+OK:
+- No blocking screen
+- Page opens immediately in LinkLook
+- Brief non-blocking toast: "Looks OK — opening"
+
+INFORM:
+- One large "Go Back" button
+- One medium "Check Message Context" button (Pro)
+- One small "Continue →" button
+
+WARN:
+- One large "Go Back" button
+- One medium "Check Message Context" button (Pro)
+- One very small "Continue Anyway" button
+- Extra confirmation tap before proceeding
+
+BLOCK:
+- One large "Go Back" button only
+- No forward path
+
+UNKNOWN:
+- "Go Back" + retry option
+- No silent continue
 
 All forward paths open in LinkLook. There is NO option to open in another
-browser. The user stays protected at all times.
+browser.
 
 ================================================================================
 5. SMART SYSTEM HANDOFF (EDGE CASES ONLY)
@@ -94,8 +124,8 @@ Early Access" badge.
 Phase 2 (Pro launch): Pro features gated behind StoreKit subscription. Free
 users see Pro features as visible but locked.
 
-Always Free: entire two-step safety flow, structural analysis, GSB checks, all
-verdict screens, all entry points, full browser features, history.
+Always Free: structural analysis, GSB checks, all verdict routing, all entry
+points, full browser features, history.
 
 Pro: context analysis, screenshot analysis, on-device AI URL analysis.
 
@@ -104,7 +134,7 @@ Pro: context analysis, screenshot analysis, on-device AI URL analysis.
 ================================================================================
 
 Full enforceable rules with exact values: CLAUDE.md (in LinkLook-App repository)
-UX specs: 140_ux/Two_Stage_Rocket_UX.md, 140_ux/Core_User_Flows.txt
+UX specs: 140_ux/Safety_Flow_UX.md, 140_ux/Core_User_Flows.txt
 Policy: 060_security/Policy_Table.md
 Test specs: 100_testing/Decision_UX_Test_Specification.txt,
-            100_testing/Minimal_Browser_Test_Specification.txt
+            100_testing/LinkLook_Browser_Test_Specification.txt
