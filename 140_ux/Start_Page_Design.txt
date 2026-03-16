@@ -63,17 +63,26 @@ never shown. The check flow begins immediately.
   │         Home              Recent              Settings               │
   └──────────────────────────────────────────────────────────────────────┘
 
-  When browsing, a BROWSER TOOLBAR appears at the bottom (above tab bar):
+  When browsing, a BROWSER TOOLBAR appears at the bottom (above tab bar).
+  Safari-style 5-button layout:
 
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  BROWSER TOOLBAR (bottom, when browsing)                             │
+  │  BROWSER TOOLBAR (bottom, when browsing — Safari-style 5 buttons)    │
   │                                                                      │
-  │     ←         →         ↻ / ✕        ↑          ▢                   │
-  │    back     forward   reload/stop  share      tabs                  │
-  │                                    (Copy Link, (tab overview        │
-  │                                    Share…,     grid)                │
-  │                                    Add to                           │
-  │                                    Favorites)                       │
+  │     ←         →          ↑           📖          ▢                   │
+  │    back     forward    share      bookmarks    tabs                 │
+  │                       (Copy Link, (Favorites + (tab overview        │
+  │                       Share…)      Reading List  grid)              │
+  │                                    panel)                           │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  Reload/Stop and Reader Mode live in the COMPACT ADDRESS BAR (top):
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  COMPACT ADDRESS BAR (top, when browsing)                            │
+  │                                                                      │
+  │   [reader]     🔒 domain.com                        ↻ / ✕           │
+  │   (if article)                                   reload/stop        │
   └──────────────────────────────────────────────────────────────────────┘
 
 ================================================================================
@@ -213,15 +222,27 @@ never shown. The check flow begins immediately.
   2.6 BROWSER TOOLBAR (bottom, during browsing)
   ───────────────────────────────────────────────
   When the user is browsing (WebView active), a bottom toolbar appears
-  with four buttons, evenly spaced:
+  with five buttons matching Safari's iPhone layout, evenly spaced:
 
   - Back (chevron.left) — go back in web history, or exit browsing
   - Forward (chevron.right) — go forward in web history
-  - Reload/Stop (arrow.clockwise / xmark) — reload page or stop loading
   - Share (square.and.arrow.up) — opens share menu with: Copy Link,
-    Share…, Add to Favorites. No "Open in other browser" option.
+    Share…. No "Open in other browser" option.
+  - Bookmarks (book) — opens a Safari-style panel with segmented tabs
+    for Favorites and Reading List. See CLAUDE.md rules 50, 52.
   - Tabs (square.on.square) — opens tab overview grid (Safari-style).
     See CLAUDE.md rules 19, 49 for the full spec.
+
+  Reload/Stop and Reader Mode are NOT in the bottom toolbar. They live
+  in the compact address bar (top), matching Safari's design:
+  - Reload/Stop (arrow.clockwise / xmark) — right side of address bar.
+  - Reader Mode (doc.plaintext) — left side of address bar, shown only
+    on article-like pages. See CLAUDE.md rule 51.
+
+  The Tabs button only appears in the bottom toolbar during browsing.
+  On the start/idle screen, Tabs is shown in the top bar instead
+  (no duplication).
+
   NOTE: There is NO "Open in other browser" button. LinkLook IS the
   browser. Users stay in LinkLook at all times. See CLAUDE.md rule 10.
 
@@ -283,18 +304,24 @@ never shown. The check flow begins immediately.
   Toolbar: fwd     chevron.right            →           system      44pt    Bottom bar during
                                                                     frame   browsing
 
-  Toolbar: reload  arrow.clockwise          ↻           system      44pt    Shown when page is
-                                                                    frame   not loading
-
-  Toolbar: stop    xmark                    ✕           system      44pt    Shown while page is
-                                                                    frame   loading
-
   Toolbar: share   square.and.arrow.up      ↑           system      44pt    Share menu: Copy Link,
-                                                                    frame   Share…, Add to Favorites.
+                                                                    frame   Share…
                                                                             No external browser option.
+
+  Toolbar: bkmrk   book                    📖          system      44pt    Opens Bookmarks panel
+                                                                    frame   (Favorites + Reading List).
 
   Toolbar: tabs    square.on.square         ▢           system      44pt    Tab overview grid
                                                                     frame   (Safari-style).
+
+  Addr bar: reload arrow.clockwise          ↻           system      30pt    Shown in compact address
+                                                                    frame   bar when page is not loading.
+
+  Addr bar: stop   xmark                    ✕           system      30pt    Shown in compact address
+                                                                    frame   bar while page is loading.
+
+  Addr bar: reader doc.plaintext            ≡           system      30pt    Shown in compact address
+                                                                    frame   bar on article-like pages.
 
   Tab: Home        house                    ⌂           #4CAF76     22pt    Active state: #4CAF76
                                                         (active)            Inactive: #9E9E9E
@@ -329,10 +356,12 @@ never shown. The check flow begins immediately.
   - Recent site row:       "{domain}, {status}" (e.g. "bank.nl, Previously checked")
   - Toolbar: back:         "Back"
   - Toolbar: forward:      "Forward"
-  - Toolbar: reload:       "Reload"
-  - Toolbar: stop:         "Stop loading"
   - Toolbar: share:        "Share"
+  - Toolbar: bookmarks:    "Bookmarks"
   - Toolbar: tabs:         "Show all tabs"
+  - Addr bar: reload:      "Reload"
+  - Addr bar: stop:        "Stop loading"
+  - Addr bar: reader:      "Reader Mode"
 
   Accessibility:
   - All text must pass WCAG AA contrast ratio

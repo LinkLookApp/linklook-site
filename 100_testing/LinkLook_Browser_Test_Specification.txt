@@ -437,12 +437,14 @@ MB-G7-24 | Recent sites limited to 3-5 items
 
 ID       | Title
 ---------|--------------------------------------------------------------
-MB-G7-25 | Browser toolbar shows share and tabs buttons
-         | When browsing, the bottom toolbar shows a share button
-         | (square.and.arrow.up) and a tabs button (square.on.square).
-         | Share opens a menu with: Copy Link, Share…, Add to Favorites.
-         | Tabs opens the tab overview grid. There is NO "Open in other
-         | browser" button (CLAUDE.md rule 10).
+MB-G7-25 | Browser toolbar shows Safari 5-button layout
+         | When browsing, the bottom toolbar shows five buttons matching
+         | Safari: Back, Forward, Share (square.and.arrow.up), Bookmarks
+         | (book), and Tabs (square.on.square). Share opens a menu with:
+         | Copy Link, Share…. Bookmarks opens a panel with Favorites and
+         | Reading List tabs. Tabs opens the tab overview grid. Reload/Stop
+         | and Reader Mode are in the compact address bar. There is NO
+         | "Open in other browser" button (CLAUDE.md rule 10).
 
 --- 7H: Accessibility ---
 

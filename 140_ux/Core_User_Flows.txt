@@ -45,9 +45,10 @@ Omnibox input classification:
 - Search text (everything else) → convert to Google search URL
 All three cases go through the same safety check → result → browsing flow.
 
-When browsing, a bottom toolbar appears matching Safari's layout:
-- Back, Forward, Share (share menu: Copy Link, Share…, Add to Favorites),
-  Tabs (tab overview grid)
+When browsing, a bottom toolbar appears matching Safari's 5-button layout:
+- Back, Forward, Share (share menu: Copy Link, Share…),
+  Bookmarks (Favorites + Reading List panel), Tabs (tab overview grid)
+- Reload/Stop and Reader Mode live in the compact address bar (top)
 - No "Open in other browser" button anywhere in the toolbar
 
 Visual style: white background, generous spacing, rounded card elements,

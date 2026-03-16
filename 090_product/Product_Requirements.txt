@@ -146,8 +146,10 @@ Browser model (updated 2026-03-14):
 - LinkLook IS the browser. There is no browser-picker setting and no
   "Open in other browser" button anywhere in the app.
 - All pages open in LinkLook's built-in browser (WKWebView).
-- The toolbar offers: Back, Forward, Reload/Stop, Share (share menu with
-  "Copy link", "Share…", "Add to Favorites"), and Tabs.
+- The bottom toolbar offers five buttons matching Safari's layout: Back,
+  Forward, Share (share menu with "Copy link", "Share…"), Bookmarks
+  (Favorites + Reading List panel), and Tabs. Reload/Stop and Reader Mode
+  live in the compact address bar.
 - No external browser button. Users stay inside LinkLook at all times.
 - Edge cases (DigiD, iDEAL, OAuth) are handled via automatic silent system
   handoff — not a user-facing button. See CLAUDE.md rule 11.
@@ -336,9 +338,11 @@ remains inside LinkLook.
    usable.
    - back
    - forward
-   - reload
-   - share (Copy Link, Share…, Add to Favorites)
+   - share (Copy Link, Share…)
+   - bookmarks (Favorites + Reading List panel)
    - tabs
+   - reload/stop (in compact address bar)
+   - reader mode (in compact address bar, article pages only)
    - clear indication of current page or domain
 
 6. Core decision engine separated from iOS UI
