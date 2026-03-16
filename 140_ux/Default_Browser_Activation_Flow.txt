@@ -1,7 +1,7 @@
 LinkLook — Default Browser Activation Flow
-Version: v1.0
-Date: 2026-03-12
-Origin: Address-now hardening pass, item #2
+Version: v2.0
+Date: 2026-03-16
+Origin: Address-now hardening pass, item #2; updated with iOS 18.2 API
 References: Entry_Path_Visibility.txt, Start_Page_Design.txt,
             Coverage_Limits_Wording.txt, Core_User_Flows.txt
 
@@ -91,35 +91,138 @@ screen has a single "Continue" button at the bottom.
 4. DEFAULT BROWSER STATUS DETECTION
 ================================================================================
 
-iOS does not provide a public API to query which app is the default
-browser. LinkLook uses a heuristic:
+Since iOS 18.2 / iPadOS 18.2, Apple provides a direct API for browser
+apps to check their default status. For older iOS versions, LinkLook
+falls back to a heuristic. Both paths feed into a unified
+DefaultBrowserStatus model.
 
-  4.1 HEURISTIC
-  LinkLook tracks whether it has ever received a URL via the default-
-  browser handoff path (http/https scheme in LinkLookApp.onOpenURL).
+--------------------------------------------------------------------------------
+4.1 iOS 18.2+ — UIApplication.isDefault(.browser)
+--------------------------------------------------------------------------------
 
-  - If at least one URL has been received via handoff → status = ACTIVE
-  - If no URL has ever been received via handoff → status = UNKNOWN
-  - On first launch before any interaction → status = NOT_SET
+  API:      UIApplication.shared.isDefault(.browser) → Bool
+  Source:   Apple documentation for default-browser setup (iOS 18.2+)
 
-  The status is stored locally as a simple flag:
-    hasReceivedDefaultBrowserHandoff: Bool (UserDefaults)
+  WHEN TO CHECK:
+    - On app launch (application didFinishLaunching)
+    - Every time the app becomes active (sceneDidBecomeActive /
+      .scenePhase == .active)
 
-  4.2 LIMITATIONS
-  This heuristic cannot detect if the user later changes the default
-  browser away from LinkLook. It only knows LinkLook was default at
-  some point. This is acceptable for V1. A more robust approach (e.g.
-  periodic self-check via a custom URL) can be explored later.
+  HOW IT WORKS:
+    - Call isDefault(.browser) and compare against the stored last-known
+      state in UserDefaults (key: lastKnownDefaultBrowserState).
+    - The API is a status check, NOT a subscription. There is no
+      callback or notification when the user changes the setting.
+      Polling on didBecomeActive is the recommended approach.
+
+  STATE TRANSITIONS:
+
+    true → false (user switched away from LinkLook):
+      Show a calm, non-blocking banner on the start page:
+        "LinkLook is no longer your default browser."
+        Secondary action: "Open Settings" (opens iOS Settings)
+      - Banner appears at most ONCE per app-foreground cycle.
+      - No modals, no alerts, no interstitials. Apple constrains
+        this API to prevent nagging behavior. Respect that.
+
+    false → true (user set LinkLook as default):
+      - Update the Settings screen checkmark.
+      - Dismiss any active reminder banner.
+      - Optionally show a brief confirmation toast:
+        "LinkLook is your default browser ✓"
+
+    true → true / false → false (no change):
+      - No action needed.
+
+  WHAT THE API DOES NOT TELL YOU:
+    - Which other browser is the current default.
+    - The exact moment the user changed the setting (only detectable
+      on next didBecomeActive).
+
+  PRIVACY / APP REVIEW:
+    - The API is designed for browser apps. Using it is expected behavior.
+    - Do not call it in rapid loops or from background tasks.
+
+--------------------------------------------------------------------------------
+4.2 PRE-iOS 18.2 — HEURISTIC FALLBACK
+--------------------------------------------------------------------------------
+
+  On iOS versions before 18.2, isDefault(.browser) is unavailable.
+  LinkLook falls back to a handoff heuristic:
+
+  HEURISTIC:
+    LinkLook tracks whether it has ever received a URL via the default-
+    browser handoff path (http/https scheme in LinkLookApp.onOpenURL).
+
+    - If at least one URL has been received via handoff → status = ACTIVE
+    - If no URL has ever been received via handoff → status = UNKNOWN
+    - On first launch before any interaction → status = NOT_SET
+
+    The status is stored locally:
+      hasReceivedDefaultBrowserHandoff: Bool (UserDefaults)
+
+  LIMITATIONS:
+    This heuristic CANNOT detect if the user later changes the default
+    browser away from LinkLook. It only knows LinkLook was default at
+    some point.
+
+  FIRST-LAUNCH MESSAGE (pre-18.2 only):
+    Show a one-time informational message the first time the app opens
+    after install or update:
+
+      "Make sure LinkLook is your default browser to stay protected.
+       For the best experience, update to the latest iOS version."
+
+    Show once, then never again. Store flag:
+      hasShownPreiOS182DefaultMessage: Bool (UserDefaults)
+
+    This message is different from the iOS 18.2+ banner because:
+    - We cannot know for certain whether LinkLook is default.
+    - We want to gently encourage iOS updates for better detection.
+
+--------------------------------------------------------------------------------
+4.3 RUNTIME BRANCHING
+--------------------------------------------------------------------------------
+
+  Use `if #available(iOS 18.2, *)` to branch between the two paths:
+
+    if #available(iOS 18.2, *) {
+        // Use UIApplication.shared.isDefault(.browser)
+        let isDefault = UIApplication.shared.isDefault(.browser)
+        // Compare with stored state, update UI accordingly
+    } else {
+        // Fall back to handoff heuristic
+        // Use hasReceivedDefaultBrowserHandoff flag
+    }
+
+  Both paths produce a unified DefaultBrowserStatus enum:
+
+    enum DefaultBrowserStatus {
+        case isDefault          // Confirmed default (API or handoff received)
+        case notDefault         // Confirmed NOT default (API only, iOS 18.2+)
+        case unknown            // Cannot determine (pre-18.2, no handoff yet)
+        case notSet             // First launch, pre-onboarding
+    }
+
+  The rest of the app (start page, settings, onboarding, banners) reads
+  DefaultBrowserStatus without caring which detection method produced it.
 
 ================================================================================
 5. START PAGE REMINDER (not-default state)
 ================================================================================
 
-If LinkLook has never received a URL handoff (status = NOT_SET or
-UNKNOWN) and the onboarding has been completed, the start page shows
-a gentle reminder card between the primary action card and the recent
-sites section:
+The start page reminder adapts based on the detection method:
 
+  iOS 18.2+ (confirmed not-default):
+  ┌──────────────────────────────────────────────────────────────────┐
+  │  LinkLook is no longer your default browser.                     │
+  │  To stay protected, go to:                                       │
+  │  ⚙ Settings → Apps → Default Apps → Browser                     │
+  │                                                     [Open Settings]│
+  │                                                          [×]     │
+  └──────────────────────────────────────────────────────────────────┘
+
+  Pre-iOS 18.2 (uncertain, first launch / no handoff received):
   ┌──────────────────────────────────────────────────────────────────┐
   │  LinkLook hasn't processed links yet.                            │
   │  If you didn't already set LinkLook as your default browser,     │
@@ -129,14 +232,17 @@ sites section:
   │                                                          [×]     │
   └──────────────────────────────────────────────────────────────────┘
 
-  - Card style: same as primary action card, but with a subtle
-    amber/warm background to distinguish it from the green theme
+  Both variants:
+  - Card style: same as primary action card, subtle amber/warm background
   - A gear icon (⚙ gearshape.fill) precedes the "Settings → ..." path
-  - The card disappears when ANY of these conditions is met:
-    (a) hasReceivedDefaultBrowserHandoff becomes true (URL handoff received)
-    (b) History has entries (any link has been checked, regardless of entry method)
-    (c) User dismisses it manually (× button) — per-session only
-  - Conditions (a) and (b) are permanent; condition (c) resets on next launch
+  - Disappears when ANY of these conditions is met:
+    (a) DefaultBrowserStatus becomes .isDefault
+    (b) History has entries (any link checked, regardless of entry method)
+    (c) User dismisses manually (× button) — per-session only on pre-18.2,
+        persistent dismiss on iOS 18.2+ since we can re-show if status
+        changes again
+  - On iOS 18.2+: if the user dismisses and the status later changes
+    back to notDefault, show the banner again (max once per foreground)
 
 ================================================================================
 6. SETTINGS SCREEN STATUS ROW
@@ -146,14 +252,19 @@ The Settings tab gets a new row at the top of the settings list:
 
   Default browser status:
 
-  If ACTIVE:
+  If .isDefault:
     "Default browser    LinkLook ✓"
     (green checkmark, no action needed)
 
-  If NOT_SET or UNKNOWN:
+  If .notDefault (iOS 18.2+ only):
     "Default browser    Not set"
     (tappable → opens iOS Settings)
     Subtitle: "Tap to open Settings and select LinkLook"
+
+  If .unknown (pre-18.2):
+    "Default browser    Check Settings"
+    (tappable → opens iOS Settings)
+    Subtitle: "Make sure LinkLook is selected"
 
 ================================================================================
 7. FAMILY INSTALLER SCENARIO
@@ -170,25 +281,43 @@ parent), the onboarding serves double duty:
   - The start page with status confirmation (if set correctly)
   - Or the gentle reminder (if the installer forgot)
 
+  On iOS 18.2+: the installer can verify immediately via the Settings
+  screen that the green checkmark appears. On older iOS, they rely on
+  the onboarding flow and can test by tapping a link in Messages.
+
   Future enhancement: the device-level profile settings (PROTECTED /
   STANDARD) from Architecture.txt should integrate with this flow,
   but that is out of scope for this document.
 
 ================================================================================
-8. METRICS TO TRACK LATER
+8. MINIMUM DEPLOYMENT TARGET CONSIDERATIONS
+================================================================================
+
+  - LinkLook's minimum deployment target should be iOS 17.0 or later
+    (to be confirmed per project requirements).
+  - The isDefault(.browser) API requires iOS 18.2. This means a
+    significant portion of users (on iOS 17.x–18.1) will use the
+    heuristic fallback for at least one year after launch.
+  - As iOS 18.2+ adoption grows, the heuristic code path will
+    naturally phase out. Do not remove it until the minimum deployment
+    target is raised to iOS 18.2.
+
+================================================================================
+9. METRICS TO TRACK LATER
 ================================================================================
 
 These are not MVP requirements, but should be planned for:
 
   - Install → default browser activation rate
-    (percentage of installs that reach hasReceivedDefaultBrowserHandoff = true)
-  - Time from install to first URL handoff
-  - Default browser retention
-    (requires periodic self-check, not in V1)
+    (percentage of installs that reach .isDefault state)
+  - Time from install to first confirmed default status
+  - Default browser retention (now possible on iOS 18.2+ via the API)
+  - Rate of true→false state changes (users switching away)
   - Onboarding completion rate (if analytics are added)
+  - iOS version distribution (to track isDefault API availability)
 
 ================================================================================
-9. RELATIONSHIP TO OTHER DOCS
+10. RELATIONSHIP TO OTHER DOCS
 ================================================================================
 
   Entry_Path_Visibility.txt        Why default browser status matters —
@@ -205,6 +334,9 @@ These are not MVP requirements, but should be planned for:
 
   TSI_Question.txt                 Apple's default browser entitlement
                                    requirements.
+
+  CLAUDE.md (rules 76–81)          Enforceable rules for default browser
+                                   detection. CLAUDE.md wins on conflicts.
 
 ================================================================================
 END OF DOCUMENT
