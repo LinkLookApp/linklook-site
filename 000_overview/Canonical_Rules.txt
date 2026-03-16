@@ -98,7 +98,7 @@ button — it is automatic, invisible, and limited to a maintained allowlist.
 ================================================================================
 
 Bottom toolbar (Safari 5-button layout): Back, Forward, Share, Bookmarks, Tabs.
-Share menu: Copy Link, Share….
+Share menu: Copy Link, Share…, Add to Favorites, Add to Reading List.
 Bookmarks: opens panel with Favorites + Reading List tabs.
 Reload/Stop and Reader Mode live in the compact address bar.
 No "Open in other browser" button anywhere in the toolbar.

@@ -28,8 +28,9 @@ Layout (top to bottom):
 - app identity: LinkLook SVG logo (eyes version, creamy white bg) + tagline
   "A safety-driven browser" in Theme.logoGreen (#2E7D4F) — vertically centered
   in remaining space, only visible on start page. Tagline scales with text size.
-- verdict stats card: "X links checked" at bottom of page (when history exists),
+- verdict stats card: "X links checked" directly under tagline (when history exists),
   text scales with text size setting
+- favorites grid: shown below stats card (when favorites exist)
 - tab bar: Home, Recent, Settings — persists across all screens
   NOTE: Recent sites are NOT shown on the Home/start page. History is only
   accessible from the Recent tab. The Home screen stays clean and focused.
@@ -46,8 +47,9 @@ Omnibox input classification:
 All three cases go through the same safety check → result → browsing flow.
 
 When browsing, a bottom toolbar appears matching Safari's 5-button layout:
-- Back, Forward, Share (share menu: Copy Link, Share…),
-  Bookmarks (Favorites + Reading List panel), Tabs (tab overview grid)
+- Back, Forward, Share (share menu: Copy Link, Share…, Add to Favorites,
+  Add to Reading List), Bookmarks (Favorites + Reading List panel),
+  Tabs (tab overview grid)
 - Reload/Stop and Reader Mode live in the compact address bar (top)
 - No "Open in other browser" button anywhere in the toolbar
 

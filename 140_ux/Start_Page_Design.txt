@@ -49,13 +49,17 @@ never shown. The check flow begins immediately.
   │              (green text, Theme.logoGreen, scales with text size)     │
   └──────────────────────────────────────────────────────────────────────┘
 
-  (No recent sites on the Home screen. History is shown only in the
-   Recent tab, keeping the Home screen clean and focused.)
-
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  VERDICT STATS CARD (at bottom, when history has entries)            │
+  │  VERDICT STATS CARD (directly under tagline, when history exists)    │
   │  "X links checked" — text scales with text size setting              │
   └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  FAVORITES GRID (when favorites exist)                               │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  (No recent sites on the Home screen. History is shown only in the
+   Recent tab, keeping the Home screen clean and focused.)
 
   ┌──────────────────────────────────────────────────────────────────────┐
   │  TAB BAR (bottom, three items)                                       │
@@ -162,9 +166,9 @@ never shown. The check flow begins immediately.
     matching Theme.creamyWhite. No tagline in the SVG.
     Displayed at 220×150pt with .renderingMode(.original).
   - Tagline — "A safety-driven browser" (CLAUDE.md rule 18), rendered as
-    separate SwiftUI text in Theme.logoGreen (#2E7D4F). Scales with
-    text size setting (prefStore.fontSize.taglineSize: Small 18pt,
-    Medium 20pt, Large 24pt).
+    separate SwiftUI text in Theme.logoGreen (#2E7D4F). Centered under
+    the logo. Scales with text size setting (prefStore.fontSize.taglineSize:
+    Small 18pt, Medium 20pt, Large 24pt).
 
   This section is only visible on the start page. It disappears when
   browsing begins.
@@ -227,7 +231,9 @@ never shown. The check flow begins immediately.
   - Back (chevron.left) — go back in web history, or exit browsing
   - Forward (chevron.right) — go forward in web history
   - Share (square.and.arrow.up) — opens share menu with: Copy Link,
-    Share…. No "Open in other browser" option.
+    Share…, Add to Favorites, Add to Reading List. Safari's built-in
+    "Add to Reading List" is excluded (it targets Safari, not LinkLook).
+    No "Open in other browser" option.
   - Bookmarks (book) — opens a Safari-style panel with segmented tabs
     for Favorites and Reading List. See CLAUDE.md rules 50, 52.
   - Tabs (square.on.square) — opens tab overview grid (Safari-style).
@@ -305,7 +311,8 @@ never shown. The check flow begins immediately.
                                                                     frame   browsing
 
   Toolbar: share   square.and.arrow.up      ↑           system      44pt    Share menu: Copy Link,
-                                                                    frame   Share…
+                                                                    frame   Share…, Add to Favorites,
+                                                                            Add to Reading List.
                                                                             No external browser option.
 
   Toolbar: bkmrk   book                    📖          system      44pt    Opens Bookmarks panel
@@ -422,7 +429,32 @@ never shown. The check flow begins immediately.
   find settings in the tab bar. Nothing is forced.
 
 ================================================================================
-6. RELATIONSHIP TO OTHER DOCS
+6. FUTURE: CONFIGURABLE START PAGE (V2/V3)
+================================================================================
+
+  Safari lets users choose which sections appear on the start page via an
+  "Edit" button at the bottom. Sections include: Favorites, Frequently
+  Visited, Shared with You, Reading List, Privacy Report, Siri Suggestions.
+
+  LinkLook v2 or v3 should offer similar customization:
+
+  - "Edit" button at the bottom of the start page
+  - Toggleable sections:
+    - Favorites grid (currently always shown when favorites exist)
+    - Reading List (show saved articles below Favorites)
+    - Verdict Stats card
+    - QR code scanner button
+  - Drag to reorder sections
+  - Per-section visibility toggle (eye icon)
+  - Persisted in UserDefaults
+
+  This is NOT in scope for v1. The current start page layout is fixed:
+  omnibox → QR button → logo → tagline → stats card → favorites grid.
+
+  See CLAUDE.md rule 82 for the enforceable rule.
+
+================================================================================
+7. RELATIONSHIP TO OTHER DOCS
 ================================================================================
 
   Core_User_Flows.txt (Flow 0)     Canonical flow description for the

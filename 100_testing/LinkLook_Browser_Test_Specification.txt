@@ -441,10 +441,12 @@ MB-G7-25 | Browser toolbar shows Safari 5-button layout
          | When browsing, the bottom toolbar shows five buttons matching
          | Safari: Back, Forward, Share (square.and.arrow.up), Bookmarks
          | (book), and Tabs (square.on.square). Share opens a menu with:
-         | Copy Link, Share…. Bookmarks opens a panel with Favorites and
-         | Reading List tabs. Tabs opens the tab overview grid. Reload/Stop
-         | and Reader Mode are in the compact address bar. There is NO
-         | "Open in other browser" button (CLAUDE.md rule 10).
+         | Copy Link, Share…, Add to Favorites, Add to Reading List.
+         | Safari's built-in "Add to Reading List" is excluded (it targets
+         | Safari, not LinkLook). Bookmarks opens a panel with Favorites
+         | and Reading List tabs. Tabs opens the tab overview grid.
+         | Reload/Stop and Reader Mode are in the compact address bar.
+         | There is NO "Open in other browser" button (CLAUDE.md rule 10).
 
 --- 7H: Accessibility ---
 
