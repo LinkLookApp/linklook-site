@@ -138,12 +138,13 @@ enabled. LinkLook uses a heuristic:
     heartbeat via getStatus polling) can be explored later.
 
 ================================================================================
-5. START PAGE STATUS INDICATOR
+5. START PAGE STATUS CARD
 ================================================================================
 
-The start page shows a Safari extension status indicator between the
-Favorites grid and the default browser reminder. This is a subtle status
-row, not a prominent card — it should not compete with the omnibox.
+The start page shows a Safari extension card between the Favorites grid
+and the default browser reminder. The card is prominent enough for elderly
+users to notice, but positioned below the main omnibox/Favorites area
+so it does not compete with the primary action.
 
 View: SafariExtensionStatusView.swift
 Location: TabContentView.startPageContent (between Favorites and
@@ -151,23 +152,41 @@ Location: TabContentView.startPageContent (between Favorites and
 
   If ACTIVE:
     ┌──────────────────────────────────────────────────────────────┐
-    │  🛡 Safari protection active                                 │
+    │  🛡 Safari protection is active                              │
     └──────────────────────────────────────────────────────────────┘
-    Style: green tint, small text (caption2), checkmark.shield icon
-    Not tappable — purely informational.
+    Style: green tint background, checkmark.shield.fill icon,
+    medium text (size 15, semibold). Not tappable — purely
+    informational. Compact single-row card.
 
   If NOT_SET or STALE:
     ┌──────────────────────────────────────────────────────────────┐
-    │  Safari protection not set up                                │
+    │  🧭 Do you use Safari?                                       │
+    │                                                              │
+    │  Using LinkLook as your only browser gives you the best      │
+    │  protection. If you also use Safari, you can add             │
+    │  LinkLook's warnings there too.                              │
+    │                                                              │
+    │  ┌──────────────────────────────────────────────────────┐    │
+    │  │          Set Up Safari Protection                    │    │
+    │  └──────────────────────────────────────────────────────┘    │
+    │   (green filled button, same style as onboarding)            │
     └──────────────────────────────────────────────────────────────┘
-    Style: grey text (Theme.textLight, caption2), shield.slash icon
-    Tappable → navigates to SafariExtensionGuideView
+    Style: Theme.cardSurface background, Theme.border outline,
+    Safari icon, clear headline + explanation text + full-width
+    green button. Tapping the button navigates to
+    SafariExtensionGuideView. No dismiss (×) button — the card
+    disappears only when the extension becomes active.
 
   Rules:
   - Never show on first launch (avoid overwhelming the user)
   - Show only after onboarding is complete
-  - The indicator reads from App Group UserDefaults on appear
-  - Subtle — must not alarm the user or compete with primary UI
+  - **Hidden when the default browser reminder card is visible** —
+    default browser setup is priority 1. Showing both cards at once
+    overwhelms elderly users. The Safari card appears only after the
+    default browser card is resolved (dismissed or status becomes
+    .isDefault).
+  - The card reads from App Group UserDefaults on appear
+  - Prominent enough to be noticed, but does not alarm the user
 
 ================================================================================
 6. SETTINGS SCREEN ROW

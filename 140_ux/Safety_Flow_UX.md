@@ -132,128 +132,110 @@ destinations. An interstitial for every safe link adds friction without safety
 value and risks App Review rejection. The toast confirms protection is active
 without blocking the user.
 
-### Verdict: INFORM — Light Warning Interstitial
+### Uniform Interstitial Layout (INFORM & WARN)
 
-Minor concerns — the user should be aware but can proceed easily.
+> INFORM and WARN use the **same progressive disclosure layout** so elderly
+> users learn one screen pattern. The differences between the two are:
+> color (warm yellow vs orange), headline/subtext tone, and forward-button
+> friction ("Continue →" vs tiny "Continue Anyway" with extra confirmation).
+> The structure is identical.
 
-```
-┌──────────────────────────────────────┐
-│                                      │
-│         ℹ️ This link may be         │
-│            unfamiliar                │
-│                                      │
-│    "Continue only if you trust       │
-│     this site."                      │
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │      short.link                  ││
-│  │  https://short.link/abc123       ││
-│  └──────────────────────────────────┘│
-│   (domain large, full URL small)     │
-│                                      │
-│    [Shortened link] [New domain]     │
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │           GO BACK                ││
-│  └──────────────────────────────────┘│
-│        (large, dominant)             │
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │    Check Message Context 🔍      ││
-│  └──────────────────────────────────┘│
-│       (medium, outlined, Pro)        │
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │    🔒 Safe Preview — Pro         ││
-│  │    (locked placeholder, Free)    ││
-│  │    ┌────────────────────────┐    ││
-│  │    │  Small grey preview    │    ││
-│  │    │  (expandable, Pro)     │    ││
-│  │    └────────────────────────┘    ││
-│  └──────────────────────────────────┘│
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │          Continue                ││
-│  └──────────────────────────────────┘│
-│            (small)                   │
-│                                      │
-│   Share verdict with…                │
-│                                      │
-└──────────────────────────────────────┘
-```
-
-- **Headline:** "This link may be unfamiliar"
-- **Subtext:** "Continue only if you trust this site."
-- **Large "Go Back"** button — visually dominant, the recommended path.
-- **Medium "Check Message Context"** — outlined style, Pro feature badge.
-- **Safe Preview area:**
-  - Free users: locked placeholder card ("Safe Preview — Pro" with lock icon).
-  - Pro users: small grey preview thumbnail, tappable to expand.
-- **Small "Continue"** button — opens in LinkLook. (Not "Open" — "Continue"
-  feels lighter for an advisory-level concern.)
-- Visual treatment: **dark yellow/advisory** accent (#C89400). Clearly distinct from WARN orange.
-- Signal badges visible (up to 3).
-
-### Verdict: WARN — Strong Warning Interstitial
-
-Significant concerns — the user is strongly nudged away.
+#### Default view (collapsed) — applies to both INFORM and WARN
 
 ```
 ┌──────────────────────────────────────┐
 │                                      │
-│         ⚠️ This page shows          │
-│            warning signs             │
+│         [icon] [headline]            │
 │                                      │
-│    "Going back is recommended."      │
+│           [subtext]                  │
 │                                      │
-│  ┌──────────────────────────────────┐│
-│  │      192.168.1.1                 ││
-│  │  http://192.168.1.1/login.php    ││
-│  └──────────────────────────────────┘│
-│   (domain large, full URL small)     │
-│                                      │
-│    [Raw IP] [Credential keywords]    │
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │           GO BACK                ││
-│  └──────────────────────────────────┘│
-│        (large, dominant)             │
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │    Check Message Context 🔍      ││
-│  └──────────────────────────────────┘│
-│       (medium, outlined, Pro)        │
+│            short.link                │
+│          (domain, large)             │
 │                                      │
 │  ┌──────────────────────────────────┐│
 │  │    🔒 Safe Preview — Pro         ││
-│  │    (locked placeholder, Free)    ││
 │  │    ┌────────────────────────┐    ││
-│  │    │  Always-visible grey   │    ││
+│  │    │  Grey/desaturated      │    ││
 │  │    │  preview (Pro)         │    ││
 │  │    └────────────────────────┘    ││
 │  └──────────────────────────────────┘│
 │                                      │
-│       Continue Anyway                │
-│        (very small)                  │
+│  ┌────────────────────┐              │
+│  │      GO BACK       │ [forward] →  │
+│  └────────────────────┘  (text link) │
 │                                      │
-│   Share verdict with…                │
-│   This doesn't look right            │
+│    ▼ Learn more about this link      │
 │                                      │
 └──────────────────────────────────────┘
 ```
 
+#### Expanded view (after tapping "Learn more") — applies to both
+
+```
+┌──────────────────────────────────────┐
+│                                      │
+│         [icon] [headline]            │
+│                                      │
+│           [subtext]                  │
+│                                      │
+│            short.link                │
+│   https://short.link/abc123          │
+│   (full URL, small monospace)        │
+│                                      │
+│    [Shortened link] [New domain]     │
+│          (signal badges)             │
+│                                      │
+│  ┌──────────────────────────────────┐│
+│  │    🔒 Safe Preview — Pro         ││
+│  │    ┌────────────────────────┐    ││
+│  │    │  Grey/desaturated      │    ││
+│  │    │  preview (Pro)         │    ││
+│  │    └────────────────────────┘    ││
+│  └──────────────────────────────────┘│
+│                                      │
+│  ┌────────────────────┐              │
+│  │      GO BACK       │ [forward] →  │
+│  └────────────────────┘  (text link) │
+│                                      │
+│    ▲ Learn more about this link      │
+│                                      │
+│  ┌──────────────────────────────────┐│
+│  │    Check Message Context 🔍      ││
+│  └──────────────────────────────────┘│
+│       (medium, outlined, Pro)        │
+│                                      │
+│   Share verdict with…                │
+│                                      │
+└──────────────────────────────────────┘
+```
+
+#### Design notes (shared layout)
+
+- **Default view has 5 elements:** headline + subtext, domain name, Safe Preview, Go Back button, forward text link. The preview gives the user an immediate visual anchor.
+- **"Go Back"** is a large filled button (left-aligned). The forward action is a small text link on the same row (right-aligned). Size asymmetry steers toward Go Back.
+- **Safe Preview is always visible** in the default view for both INFORM and WARN. Pro users see a grey/desaturated screenshot. Free users see a locked placeholder with lock icon and "Pro" badge. The preview sits between the domain and the action buttons — it's context, not an action.
+- **Preview unavailable state** — If the preview server is down, times out, or returns an error, Pro users see a graceful placeholder card: light grey rounded card (same dimensions as a loaded preview), centred `photo.slash` icon in `Theme.textLight` grey, text "Preview not available right now" (caption2, grey), and a small "Retry" link. The placeholder matches the height of a loaded preview so the layout does not jump. No technical error details are shown. This does not affect the verdict or any other UX element. Full spec: `Safe_Preview.md` rule 10.
+- **"Learn more about this link"** is a disclosure row (▼/▲). Tapping reveals: full URL, signal badges, Check Message Context (Pro), and Share verdict. Animated expand/collapse.
+- **Domain only in collapsed view.** Full URL appears in expanded section.
+- The expanded section scrolls if it exceeds screen height (important for smaller iPhones).
+
+### Verdict: INFORM — Light Warning
+
+Minor concerns — the user should be aware but can proceed easily.
+
+- **Headline:** "This link may be unfamiliar"
+- **Subtext:** "Continue only if you trust this site."
+- **Forward button:** small "Continue →" text link (`.openInApp`).
+- Visual treatment: **warm yellow/advisory** accent (#D4A017).
+
+### Verdict: WARN — Strong Warning
+
+Significant concerns — the user is strongly nudged away.
+
 - **Headline:** "This page shows warning signs"
 - **Subtext:** "Going back is recommended."
-- Same button structure as INFORM but with **orange/caution** (#E67300) visual treatment.
-- **Safe Preview area:**
-  - Free users: locked placeholder card ("Safe Preview — Pro" with lock icon).
-  - Pro users: always-visible grey/desaturated preview. Not collapsed — shown prominently
-    so the user can see the page without loading it.
-- WARN "Continue Anyway" button is **very small** (0.6x font, light color) to make
-  "Go Back" clearly dominant.
-- On WARN, tapping "Continue Anyway" requires an **extra confirmation tap** ("Are you sure?
-  This link has warning signs.") to add friction before proceeding.
-- Signal badges visible (up to 3).
+- **Forward button:** very small "Continue Anyway" text (`.openInApp`, 0.6x font, light color). Tapping requires an **extra confirmation tap** ("Are you sure? This link has warning signs.").
+- Visual treatment: **orange/caution** accent (#E67300).
 - Colors, icons, and wording must **clearly distinguish WARN from INFORM**.
 
 ### Verdict: BLOCK — Hard Block
@@ -318,21 +300,26 @@ device, no cookies, no IP leak.
 | Verdict | Free User                                    | Pro User                                        |
 |---------|----------------------------------------------|-------------------------------------------------|
 | OK      | No preview (page opens immediately)          | No preview (page opens immediately)             |
-| INFORM  | Locked placeholder: "Safe Preview — Pro" 🔒  | Small grey preview thumbnail, tappable to expand |
+| INFORM  | Locked placeholder: "Safe Preview — Pro" 🔒  | Always-visible grey/desaturated preview          |
 | WARN    | Locked placeholder: "Safe Preview — Pro" 🔒  | Always-visible grey/desaturated preview          |
 | BLOCK   | No preview                                   | No preview                                      |
 
 ### Design Details
 
-- **WARN preview is always visible** — the user needs to see what they're being
-  warned about. The grey/desaturated treatment reinforces caution without hiding
-  the content.
-- **INFORM preview is small/expandable** — the concern is mild, so the preview
-  is available but doesn't dominate the screen. Tap to expand.
+- **INFORM and WARN preview is always visible** — uniform layout across both
+  interstitials. The grey/desaturated treatment gives the user an immediate
+  visual anchor ("does this look like my bank?") without loading the page.
+  This is especially helpful for elderly users who may not recognize a domain
+  name but would recognize a fake page visually.
 - **Free users see a locked placeholder** — a card with a lock icon and
   "Safe Preview — Pro" text. Tapping shows a brief upgrade prompt. This follows
   the locked-but-visible pattern: show Pro features at the moment of highest
   user intent.
+- **Preview unavailable (Pro)** — If the preview server is down or the request
+  fails, the preview area shows a placeholder card matching the dimensions of a
+  loaded preview: `photo.slash` icon, "Preview not available right now" text,
+  and a "Retry" link. No technical error details. Does not affect the verdict.
+  See `Safe_Preview.md` rule 10.
 - **Consent required** — GDPR opt-in. The first time a user uses Safe Preview,
   show a consent dialog explaining that the URL will be sent to LinkLook's
   preview service.
@@ -455,7 +442,7 @@ The entire core safety product and browser:
 | Verdict  | Free user                                                          | Pro user                                            |
 |----------|---------------------------------------------------------------------|-----------------------------------------------------|
 | OK       | Toast + open (structural + GSB)                                     | Toast + open (structural + GSB + AI URL)            |
-| INFORM   | Interstitial; locked preview placeholder; context analysis locked 🔒 | Interstitial; small grey preview; context analysis  |
+| INFORM   | Interstitial; locked preview placeholder; context analysis locked 🔒 | Interstitial; always-visible grey preview; context analysis  |
 | WARN     | Interstitial; locked preview placeholder; context analysis locked 🔒 | Interstitial; always-visible grey preview; context  |
 | BLOCK    | Identical                                                           | Identical                                           |
 | UNKNOWN  | Identical                                                           | Identical                                           |
@@ -522,7 +509,7 @@ is GSB result caching (5 minutes) to avoid redundant API calls.
    pattern used by Safari and Chrome.
 3. **Button hierarchy communicates risk without words.** A screen with one giant
    "Go Back" vs. one tiny "Continue Anyway" is universally understood.
-4. **Colors and context differentiate verdicts.** INFORM (yellow #C89400) and
+4. **Colors and context differentiate verdicts.** INFORM (yellow #D4A017) and
    WARN (orange #E67300) have similar layouts; visual treatment tells the story.
 5. **Every entry point converges on the same flow.** QR, clipboard, share sheet,
    voice — they all feed into the same pipeline.

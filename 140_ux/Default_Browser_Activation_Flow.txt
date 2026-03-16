@@ -47,18 +47,17 @@ screen has a single "Continue" button at the bottom.
 --------------------------------------------------------------------------------
 
   Title:    "Set LinkLook as your default browser"
-  Subtext:  "LinkLook can only check links if iOS sends them to it.
-             This takes one step."
+  Subtext:  "Use the Apple Settings button to make LinkLook the
+             default browser."
 
-  Instructions (numbered, with visual hints):
-    1. Tap the button below to open Settings
-    2. Tap "Default Browser App"
-    3. Select "LinkLook"
-
-  Button:   "Open Settings"
+  Button:   "⚙ Apple Settings"  (gearshape.fill icon + text)
             → calls UIApplication.shared.open(URL(string:
               UIApplication.openSettingsURLString)!)
             → opens the LinkLook section in iOS Settings
+            → iOS shows the correct path regardless of version
+
+  No step-by-step instructions — the exact path in Settings differs
+  across iOS versions. The deep link takes the user to the right place.
 
   Below the button:
     "Already done? Tap Continue."
@@ -215,26 +214,40 @@ The start page reminder adapts based on the detection method:
 
   iOS 18.2+ (confirmed not-default):
   ┌──────────────────────────────────────────────────────────────────┐
-  │  LinkLook is no longer your default browser.                     │
-  │  To stay protected, go to:                                       │
-  │  ⚙ Settings → Apps → Default Apps → Browser                     │
-  │                                                     [Open Settings]│
-  │                                                          [×]     │
+  │  LinkLook is not your default browser.                           │
+  │                                                                  │
+  │  **To stay protected against unsafe links, use the              │
+  │  Apple Settings button to make LinkLook the default             │
+  │  browser.**                                                      │
+  │                                                                  │
+  │  ┌──────────────────────────────────────────────────────────┐    │
+  │  │              Apple Settings                              │    │
+  │  └──────────────────────────────────────────────────────────┘    │
+  │   (green filled button, same style as onboarding)          [×]  │
   └──────────────────────────────────────────────────────────────────┘
 
   Pre-iOS 18.2 (uncertain, first launch / no handoff received):
   ┌──────────────────────────────────────────────────────────────────┐
-  │  LinkLook hasn't processed links yet.                            │
-  │  If you didn't already set LinkLook as your default browser,     │
-  │  go to:                                                          │
-  │  ⚙ Settings → Apps → Default Apps → Browser                     │
+  │  LinkLook is not your default browser.                           │
   │                                                                  │
-  │                                                          [×]     │
+  │  **To stay protected against unsafe links, use the              │
+  │  Apple Settings button to make LinkLook the default             │
+  │  browser.**                                                      │
+  │                                                                  │
+  │  ┌──────────────────────────────────────────────────────────┐    │
+  │  │              Apple Settings                              │    │
+  │  └──────────────────────────────────────────────────────────┘    │
+  │   (green filled button, same style as onboarding)          [×]  │
   └──────────────────────────────────────────────────────────────────┘
 
   Both variants:
   - Card style: same as primary action card, subtle amber/warm background
-  - A gear icon (⚙ gearshape.fill) precedes the "Settings → ..." path
+  - "Apple Settings" button: full-width green filled button
+    (Theme.primaryGreen background, white semibold text, rounded 12pt
+    corners) — identical to the onboarding screen 2 button. No gear icon.
+  - Deep-links to LinkLook's iOS Settings page via
+    UIApplication.openSettingsURLString — iOS shows the correct
+    path regardless of version. No hardcoded navigation instructions.
   - Disappears when ANY of these conditions is met:
     (a) DefaultBrowserStatus becomes .isDefault
     (b) History has entries (any link checked, regardless of entry method)

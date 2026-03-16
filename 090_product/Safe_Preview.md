@@ -450,9 +450,32 @@ failure — the Swift client treats any non-200 as a fallback trigger.
 3. **Loading state** — Show a spinner with "Generating preview…" (1–5 seconds
    typical).
 4. **Timeout** — 8 seconds max. If the backend can't render in time, show
-   "Preview unavailable" with a subtle retry option.
+   the unavailable placeholder (see rule 10).
 5. **Non-interactive** — The image is not tappable, not zoomable (v1). Pinch-to-
    zoom could be added later.
+10. **Unavailable placeholder** — When the preview cannot be loaded (server down,
+   timeout, network error, HTTP error from backend), the preview area shows a
+   graceful placeholder card instead of a screenshot:
+   - **Visual:** Light grey rounded card, same dimensions as a loaded preview.
+     Centred icon: `photo.slash` (SF Symbols) in `Theme.textLight` grey.
+     Below icon: "Preview not available right now" in `Theme.textLight`
+     (caption2, grey). Below text: small "Retry" text link.
+   - **Retry:** Tapping "Retry" re-fetches the preview (one attempt, same
+     8-second timeout). If retry also fails, show the same placeholder with
+     no further auto-retry. The user can tap "Retry" again manually.
+   - **Layout stability:** The placeholder card MUST match the height of a
+     loaded preview so the interstitial layout does not jump or reflow. This
+     is especially important because the preview sits in the default
+     (collapsed) view between the domain and the action buttons.
+   - **No error details:** Never show HTTP status codes, server names, or
+     technical error messages. The user does not need to know why the preview
+     failed — only that it is not available right now.
+   - **Does not affect verdict:** The preview is context, not a safety signal.
+     A failed preview never changes the verdict, buttons, or any other UX
+     element. The interstitial remains fully functional without it.
+   - **Free users unaffected:** Free users already see a locked placeholder
+     ("Safe Preview — Pro" with lock icon). The unavailable state only applies
+     to Pro users whose preview request failed.
 6. **Disclaimer** — Always show below the image: "Preview only — page not loaded
    on your device."
 9. **Greyscale on WARN** — On WARN verdict screens, the preview screenshot is
