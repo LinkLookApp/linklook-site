@@ -161,13 +161,21 @@ nothing runs on your iPhone. This gives the strongest scam detection.
 ## Runtime Decision Ladder
 
 1. **On-device analysis** — Always runs first.
-2. **Cloud URL analysis** — Only if `url_analysis` scope is granted. The backend
-   analyzes the URL string only. It does NOT fetch the page.
-3. **Safe Preview** — Only if `page_fetch` scope is granted AND the user taps
-   "Preview page." Never automatic.
-4. **Deep Page Analysis** — Only if `page_ai_analysis` scope is granted. Can
+2. **Sensitive data detection** — On-device scan of URL for personal/sensitive
+   data (emails, tokens, account IDs, etc.). Runs before any backend call.
+   If sensitive data is found, the Privacy Signal flow activates (see step 2a).
+   Full spec: `URL_Privacy_Signal_Spec.md`.
+   2a. **Privacy Signal** — User chooses: privacy-protected check (masked URL),
+       full check (original URL), or cancel (no backend call). The choice applies
+       to all subsequent backend calls in this check session.
+3. **Cloud URL analysis** — Only if `url_analysis` scope is granted. The backend
+   analyzes the URL string only (masked or full per Privacy Signal choice).
+   It does NOT fetch the page.
+4. **Safe Preview** — Only if `page_fetch` scope is granted AND the user taps
+   "Preview page." Never automatic. Uses masked or full URL per Privacy Signal choice.
+5. **Deep Page Analysis** — Only if `page_ai_analysis` scope is granted. Can
    auto-run on INFORM/WARN if "Auto-use cloud URL check" is enabled, or run
-   on explicit user request.
+   on explicit user request. Uses masked or full URL per Privacy Signal choice.
 
 ### Critical rule: `/analyze-url` must be URL-only
 
@@ -220,6 +228,13 @@ The v1 `/analyze-url` endpoint calls `_run_analysis()` which does
 5. No hidden escalation: an endpoint must not do work beyond its scope.
 6. User can revoke any toggle at any time. Effect is immediate.
 7. Keep explanations plain — no jargon.
+8. **Privacy Signal gate:** When sensitive data is detected in a URL, the
+   Privacy Signal dialog must be shown before any backend call — even if all
+   consent toggles are enabled. Consent toggles control *whether* data goes
+   to the backend; the Privacy Signal controls *how* (masked or full). Both
+   layers must pass for a backend call to proceed.
+9. The Privacy Signal never silently strips or sends sensitive URL data.
+   The user always makes an explicit choice.
 
 ## Scope Interaction Matrix
 

@@ -289,6 +289,73 @@ Engine could not complete the check.
 
 ---
 
+## URL Privacy Signal (Pre-Backend Gate)
+
+> Full spec: `LinkLook-Docs/060_security/URL_Privacy_Signal_Spec.md`
+> Enforceable rules: `CLAUDE.md` rules 89–99.
+
+Before any URL leaves the device for backend analysis, LinkLook scans it
+on-device for sensitive data (email addresses, account IDs, tokens, names,
+phone numbers, etc.). If sensitive data is detected, the user sees a privacy
+signal and decides how to proceed.
+
+### Where it appears in the flow
+
+The Privacy Signal sits between the on-device verdict and any backend call:
+
+```
+URL entered → On-device check → Verdict rendered
+                                      │
+                           Sensitive data found?
+                           ┌──── No ────┐
+                           │            │
+                           ▼            ▼
+                  Privacy Signal    Backend call
+                  (user decides)    (if enabled)
+                       │
+              ┌────────┼────────┐
+              ▼        ▼        ▼
+          Protected   Full    Cancel
+           check     check   (no send)
+              │        │
+              ▼        ▼
+          Backend call with
+          masked or full URL
+```
+
+### Inline signal (on INFORM/WARN screens)
+
+When sensitive data is detected and a cloud check is enabled, a compact
+notice appears below the signal badges on the verdict screen:
+
+> 🔒 **Privacy notice** — This link may contain personal or sensitive data.
+> LinkLook will limit what is sent for checking whenever possible.
+> *Review privacy details*
+
+Tapping "Review privacy details" opens the full privacy dialog.
+
+### Privacy dialog
+
+Presented as a sheet. Shows detected item types (not raw values), three
+actions: **Privacy-protected check** (recommended, sends masked URL),
+**Full check** (sends original), and **Cancel** (no backend call). An
+expandable "View masked details" disclosure shows partially masked values
+(e.g. `ba***@example.com`, `***4831`).
+
+### Interaction with consent toggles
+
+The Privacy Signal is complementary to the Cloud Analysis Consent toggles.
+Consent toggles control *whether* a URL goes to the backend. The Privacy
+Signal controls *how* — masked or full. Both must pass for a backend call
+to proceed.
+
+### Tone
+
+Calm, clear, protective. Not a warning siren, not a legal notice — a quiet
+privacy safeguard. See tone guidelines in the full spec.
+
+---
+
 ## Safe Preview (Pro Feature)
 
 Safe Preview uses a server-side proxy (`linklook-preview.fly.dev`) that renders
@@ -491,6 +558,23 @@ URL entered
                 │
                 ▼
           Route by verdict
+                │
+                ▼
+       ┌────────────────────┐
+       │ Privacy Signal     │  ← Only if backend call needed
+       │ (on-device scan    │    AND sensitive data found
+       │  for sensitive     │
+       │  data in URL)      │
+       │                    │
+       │ User chooses:      │
+       │ • Protected check  │
+       │ • Full check       │
+       │ • Cancel           │
+       └────────┬───────────┘
+                │
+                ▼
+         Backend call
+         (if enabled)
 ```
 
 ### No safe-URL caching
