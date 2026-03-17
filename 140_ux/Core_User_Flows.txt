@@ -19,14 +19,16 @@ Canonical UX flows
 - one field does everything: URLs, domains, and search
 
 Layout (top to bottom):
-- omnibox: back chevron (when applicable), unified address/search field
-  ("Search or link") — browser-style, establishes LinkLook as a real browser.
+- omnibox: unified address/search field
+  ("Search the web or paste a link") — browser-style, establishes LinkLook
+  as a real browser. Placeholder color #787878 for WCAG AA readability.
+  Back chevron hidden on idle/home (visible on checking/result/timeout).
   Chevron size scales with text size setting (Small 16pt, Medium 18pt,
   Large 22pt). No settings gear in the top bar (tab bar only).
 - "or" label + QR button: green "or" text below omnibox (scales with text
-  size setting), then "Scan QR code" capsule button — two clear entry points
-- app identity: LinkLook SVG logo (eyes version, creamy white bg) + tagline
-  "A safety-driven browser" in Theme.logoGreen (#2E7D4F) — vertically centered
+  size setting), then "Scan QR code" full-width button — two clear entry points
+- app identity: LinkLook SVG logo (100×68pt, compact) + tagline
+  "A safety-driven browser" in Theme.logoGreen (#2E7D4F)
   in remaining space, only visible on start page. Tagline scales with text size.
 - verdict stats card: "X links checked" directly under tagline (when history exists),
   text scales with text size setting

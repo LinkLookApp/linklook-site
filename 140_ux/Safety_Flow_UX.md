@@ -214,7 +214,7 @@ without blocking the user.
 
 - **Default view has 5 elements:** headline + subtext, domain name, Safe Preview, Go Back button, forward text link. The preview gives the user an immediate visual anchor.
 - **"Go Back"** is a large filled button (left-aligned). The forward action is a small text link on the same row (right-aligned). Size asymmetry steers toward Go Back.
-- **Safe Preview is always visible** in the default view for both INFORM and WARN. Pro users see a grey/desaturated screenshot. Free users see a locked placeholder with lock icon and "Pro" badge. The preview sits between the domain and the action buttons — it's context, not an action.
+- **Safe Preview is user-initiated.** A "Preview page" button sits between the domain and the action buttons. Pro users tap it to request a server-side screenshot (grey/desaturated on WARN, full-color on INFORM). Free users see a locked placeholder with lock icon and "Pro" badge. The preview is never auto-fetched — the user must explicitly tap to request it. This keeps the privacy story clean and easy to explain to Apple.
 - **Preview unavailable state** — If the preview server is down, times out, or returns an error, Pro users see a graceful placeholder card: light grey rounded card (same dimensions as a loaded preview), centred `photo.slash` icon in `Theme.textLight` grey, text "Preview not available right now" (caption2, grey), and a small "Retry" link. The placeholder matches the height of a loaded preview so the layout does not jump. No technical error details are shown. This does not affect the verdict or any other UX element. Full spec: `Safe_Preview.md` rule 10.
 - **"Learn more about this link"** is a disclosure row (▼/▲). Tapping reveals: full URL, signal badges, Check Message Context (Pro), and Share verdict. Animated expand/collapse.
 - **Domain only in collapsed view.** Full URL appears in expanded section.
@@ -301,17 +301,18 @@ device, no cookies, no IP leak.
 | Verdict | Free User                                    | Pro User                                        |
 |---------|----------------------------------------------|-------------------------------------------------|
 | OK      | No preview (page opens immediately)          | No preview (page opens immediately)             |
-| INFORM  | Locked placeholder: "Safe Preview — Pro" 🔒  | Always-visible grey/desaturated preview          |
-| WARN    | Locked placeholder: "Safe Preview — Pro" 🔒  | Always-visible grey/desaturated preview          |
+| INFORM  | Locked placeholder: "Safe Preview — Pro" 🔒  | "Preview page" button → tap to fetch full-color preview  |
+| WARN    | Locked placeholder: "Safe Preview — Pro" 🔒  | "Preview page" button → tap to fetch grey/desaturated preview |
 | BLOCK   | No preview                                   | No preview                                      |
 
 ### Design Details
 
-- **INFORM and WARN preview is always visible** — uniform layout across both
-  interstitials. The grey/desaturated treatment gives the user an immediate
-  visual anchor ("does this look like my bank?") without loading the page.
+- **INFORM and WARN preview is user-initiated** — a "Preview page" button sits
+  in both interstitials. Tapping fetches a server-side screenshot (full-color on
+  INFORM, grey/desaturated on WARN). The preview gives the user a visual anchor
+  ("does this look like my bank?") without loading the page on their device.
   This is especially helpful for elderly users who may not recognize a domain
-  name but would recognize a fake page visually.
+  name but would recognize a fake page visually. The preview is never auto-fetched.
 - **Free users see a locked placeholder** — a card with a lock icon and
   "Safe Preview — Pro" text. Tapping shows a brief upgrade prompt. This follows
   the locked-but-visible pattern: show Pro features at the moment of highest
@@ -443,8 +444,8 @@ The entire core safety product and browser:
 | Verdict  | Free user                                                          | Pro user                                            |
 |----------|---------------------------------------------------------------------|-----------------------------------------------------|
 | OK       | Toast + open (structural + GSB)                                     | Toast + open (structural + GSB + AI URL)            |
-| INFORM   | Interstitial; locked preview placeholder; context analysis locked 🔒 | Interstitial; always-visible grey preview; context analysis  |
-| WARN     | Interstitial; locked preview placeholder; context analysis locked 🔒 | Interstitial; always-visible grey preview; context  |
+| INFORM   | Interstitial; locked preview placeholder; context analysis locked 🔒 | Interstitial; "Preview page" button (tap to fetch); context analysis  |
+| WARN     | Interstitial; locked preview placeholder; context analysis locked 🔒 | Interstitial; "Preview page" button (tap to fetch); context analysis  |
 | BLOCK    | Identical                                                           | Identical                                           |
 | UNKNOWN  | Identical                                                           | Identical                                           |
 | Checking | "Basic protection"                                                  | "AI-enhanced protection"                            |

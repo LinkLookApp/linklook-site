@@ -1,12 +1,26 @@
 LinkLook — Start Page Design
-Version: v2.0
-Date: 2026-03-12
+Version: v3.0
+Date: 2026-03-16
 Origin: Founder mockup, documented via Cowork session
 References: Core_User_Flows.txt (Flow 0), UX_Principles.txt,
             Security_Warning_User_Experience.txt
 Visual reference: Start_Page_Mockup.html (in this folder — illustrative only,
                   shows both idle and browsing states side by side. Exact
                   values are authoritative in CLAUDE.md, not in the mockup.)
+
+Changelog v3.0 (2026-03-16):
+- UI review: hierarchy improvements — action-first layout
+- Logo reduced from 220×150pt to 100×68pt (trust support, not attention dominator)
+- Removed GeometryReader 45% min-height on logo section
+- QR button made full-width with rounded rect (more prominent)
+- Omnibox placeholder changed: "Search or link" → "Search the web or paste a link"
+- Placeholder text darkened (#787878) for WCAG AA compliance on elderly users
+- Back arrow hidden on home/idle screen (no destination to go back to)
+- Tabs badge gets accessibility label ("N tabs") to clarify the number
+- Stats card simplified: removed weekly breakdown chart, added compact "This week" line
+- Verdict pills: added color dot indicators alongside text for non-color-dependent readability
+- Safari extension card: shortened copy, full-width CTA button
+- Bottom padding increased for comfortable spacing above tab bar
 
 Changelog v2.0 (2026-03-12):
 - Omnibox replaces paste-only model: one field for URLs, domains, and search
@@ -33,29 +47,34 @@ never shown. The check flow begins immediately.
 
   ┌──────────────────────────────────────────────────────────────────────┐
   │  OMNIBOX (top bar)                                                   │
-  │  ←   [ Search or link                                          ]     │
-  │  back chevron (when applicable), unified address/search field        │
+  │  [ Search the web or paste a link                        ] [tabs]    │
+  │  No back chevron on home screen. Tabs badge (right).                 │
   └──────────────────────────────────────────────────────────────────────┘
 
                                  or
-                         [ Scan QR code ]
 
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  APP IDENTITY (vertically centered in remaining space)               │
-  │                                                                      │
-  │                    [ LINK LOOK logo ]                                 │
-  │                    (SVG with eyes, creamy white bg)                   │
-  │              A safety-driven browser                                  │
-  │              (green text, Theme.logoGreen, scales with text size)     │
+  │           [QR icon]  Scan QR code                                    │
+  │           (full-width rounded button, prominent)                     │
   └──────────────────────────────────────────────────────────────────────┘
 
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  VERDICT STATS CARD (directly under tagline, when history exists)    │
-  │  "X links checked" — text scales with text size setting              │
+  │  APP IDENTITY (compact — trust, not attention)                       │
+  │                    [ LINK LOOK logo ]  (100×68pt)                    │
+  │              A safety-driven browser                                  │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  VERDICT STATS CARD (simplified, when history exists)                │
+  │  "X links checked" + verdict pills + "This week: N"                  │
   └──────────────────────────────────────────────────────────────────────┘
 
   ┌──────────────────────────────────────────────────────────────────────┐
   │  FAVORITES GRID (when favorites exist)                               │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  SAFARI EXTENSION CARD or DEFAULT BROWSER REMINDER (one at a time)   │
   └──────────────────────────────────────────────────────────────────────┘
 
   (No recent sites on the Home screen. History is shown only in the
@@ -99,13 +118,16 @@ never shown. The check flow begins immediately.
   for Apple App Review. This is the single entry point for all navigation.
 
   Elements:
-  - Back chevron (←) — a plain chevron.left icon, shown when not in browsing
-    mode; greyed out on the start page since there is no browsing history yet.
+  - Back chevron (←) — a plain chevron.left icon, shown only when the user
+    is on a non-idle screen (checking, result, timeout) and not browsing.
+    Hidden on the home/idle screen because there is nowhere to go back to.
     During browsing, back/forward move to the bottom browser toolbar. Its size
     scales with the user's text size setting (prefStore.fontSize.backButtonSize):
     Small = 16pt, Medium = 18pt, Large = 22pt. Consistent with standard
     browser conventions — no text label, just the chevron.
-  - Omnibox field — placeholder text: "Search or link"
+  - Omnibox field — placeholder text: "Search the web or paste a link"
+    Placeholder color: #787878 (Theme.placeholderText) — darker than standard
+    placeholder for WCAG AA readability, especially for elderly users.
     Keyboard type: .webSearch (gives the user a space bar for search text).
     Font size: large enough for elderly users to read comfortably without
     glasses. Exact minimum defined in CLAUDE.md (rule 14). The field must
@@ -153,18 +175,23 @@ never shown. The check flow begins immediately.
   (prefStore.fontSize.orLabelSize: Small 14pt, Medium 16pt, Large 19pt)
   connects the omnibox to the QR code scanner button below it. This makes
   the two entry points (type/paste vs scan) visually connected.
+  The "or" label is accessibilityHidden (decorative separator only).
 
-  The QR button is a green capsule: icon (24pt) + "Scan QR code" (18pt).
+  The QR button is a prominent full-width rounded rectangle (14pt corners):
+  icon (26pt) + "Scan QR code" (19pt, semibold). Green on light green
+  background. Full-width with horizontal padding 16pt. This is one of the
+  dominant elements on the home screen (action-first hierarchy).
 
   2.2 APP IDENTITY
   ─────────────────
-  Vertically centered in the remaining space below the QR button (using
-  GeometryReader, minHeight = 45% of visible area). Two elements:
+  Compact branding below the QR button. The logo supports trust without
+  dominating attention. Two elements:
   - LinkLook logo — the SVG "eyes" version (LINK on top, LOOK below with
     chain-link eyes on the OO letters). Rendered from the LinkLookLogo
     image asset (separate from AppIcon). Creamy white background (#FAF8F4)
     matching Theme.creamyWhite. No tagline in the SVG.
-    Displayed at 220×150pt with .renderingMode(.original).
+    Displayed at 100×68pt with .renderingMode(.original).
+    (Reduced from 220×150pt to prioritize action-first hierarchy.)
   - Tagline — "A safety-driven browser" (CLAUDE.md rule 18), rendered as
     separate SwiftUI text in Theme.logoGreen (#2E7D4F). Centered under
     the logo. Scales with text size setting (prefStore.fontSize.taglineSize:
@@ -180,10 +207,12 @@ never shown. The check flow begins immediately.
   that LinkLook is actively protecting the user.
 
   Content:
-  - Header: total links checked (all-time)
-  - Verdict pills: OK / Info / Warn / Block counts (color-coded)
-  - Weekly breakdown: last 4 weeks with mini verdict bars (only weeks
-    with activity are shown)
+  - Header: total links checked (all-time), shield icon
+  - Verdict pills: OK / Info / Warn / Block counts (color dot + label +
+    count). Each pill uses a colored dot indicator alongside text for
+    non-color-dependent readability (accessible for colorblind users).
+  - Compact "This week: N" line (replaces the previous weekly breakdown
+    chart which was visually busy for a first-glance card)
 
   Rules:
   - Only visible when history is enabled and at least 1 entry exists
@@ -296,8 +325,9 @@ never shown. The check flow begins immediately.
   Top bar: back    chevron.left               ←           #2E7D4F     16/18/  Plain chevron icon only.
                                                                     22pt    Size from backButtonSize
                                                                     (S/M/L) (Small/Medium/Large).
-                                                                            Disabled (opacity 0.35)
-                                                                            on start page.
+                                                                            Hidden on idle/home screen.
+                                                                            Visible on checking/result/
+                                                                            timeout screens.
 
   Top bar: Go      arrow.right              →           white on    28pt    Circular green button
                                                         #4CAF76     touch   at right end of omnibox.
@@ -349,7 +379,8 @@ never shown. The check flow begins immediately.
   SF Symbols scale automatically with Dynamic Type.
 
   Disabled state for nav arrows:
-  - On the start page, both arrows are disabled (no browsing history).
+  - On the start/idle page, the back arrow is hidden (no destination).
+  - On checking/result/timeout screens, back arrow is visible and enabled.
   - Disabled = same color (#2E7D4F) at 35% opacity.
   - Enabled = full color, tappable.
 
@@ -413,20 +444,26 @@ never shown. The check flow begins immediately.
 5. DESIGN PRINCIPLES
 ================================================================================
 
-  5.1 One thing well
-  The start page communicates: "this app does one thing — check links."
+  5.1 Action-first hierarchy
+  The start page answers "What can I do here?" within one second.
+  The omnibox and QR button dominate. Branding supports trust but
+  does not compete with primary actions.
 
-  5.2 Calm confidence
+  5.2 Clarity over decoration
+  For older users, clarity wins every time. Placeholder text is explicit,
+  contrast meets WCAG AA, and every interactive element is self-explanatory.
+
+  5.3 Calm confidence
   The user should feel safe and in control. No urgency, no alarm, no
   marketing pressure.
 
-  5.3 Real browser, focused purpose
+  5.4 Real browser, focused purpose
   Apple must see a genuine browser with navigation, address bar, and
   browsing capability. But the purpose is clear: safety first.
 
-  5.4 Progressive disclosure
-  First launch is minimal. Returning users see recent sites. Power users
-  find settings in the tab bar. Nothing is forced.
+  5.5 Progressive disclosure
+  First launch is minimal. Returning users see stats and favorites. Power
+  users find settings in the tab bar. Nothing is forced.
 
 ================================================================================
 6. FUTURE: CONFIGURABLE START PAGE (V2/V3)
@@ -449,7 +486,8 @@ never shown. The check flow begins immediately.
   - Persisted in UserDefaults
 
   This is NOT in scope for v1. The current start page layout is fixed:
-  omnibox → QR button → logo → tagline → stats card → favorites grid.
+  omnibox → "or" → QR button (full-width) → compact logo + tagline →
+  stats card → favorites grid → Safari extension / default browser card.
 
   See CLAUDE.md rule 82 for the enforceable rule.
 

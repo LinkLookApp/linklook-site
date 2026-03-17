@@ -115,23 +115,34 @@ iOS App                  LinkLook Proxy              Urlbox
 
 ### Claude Analysis Layer (SLM Training Data)
 
-**Status:** Implemented (2026-03-15)
+**Status:** Implemented (2026-03-15) — **requires scope migration (see below).**
 **Purpose:** Generate labeled training data for an on-device Small Language Model (SLM).
 
-The iOS app calls `POST /analyze` on the backend for every URL check — not just
-previews. This ensures training data is collected across all verdicts (OK, INFORM,
-WARN, BLOCK). The call is fire-and-forget: it never blocks the verdict screen.
+> **Scope migration required (v2 three-toggle model):**
+> The v1 implementation calls `POST /analyze` (now `/analyze-url`) for every URL
+> check and fetches page content server-side. This violates the three-toggle
+> consent model: `/analyze-url` is scope `url_analysis` and must NOT fetch
+> pages. Page fetching + Claude analysis must move to `/analyze-page` (scope
+> `page_ai_analysis`), which only runs when the user has enabled Deep Page
+> Analysis. See `Cloud_Analysis_Consent_Spec.md` for the full migration plan.
 
-**How it works:**
+The iOS app calls `POST /analyze-url` on the backend for URL checks. When the
+user has enabled Deep Page Analysis (`page_ai_analysis` scope), the app also
+calls `POST /analyze-page` to collect training data. The call is fire-and-forget:
+it never blocks the verdict screen.
+
+**How it works (after migration):**
 
 1. User checks any URL → iOS app receives verdict immediately.
-2. In parallel, iOS fires `POST /analyze` to the backend (fire-and-forget).
-3. Backend fetches the page HTML via httpx + trafilatura text extraction.
-4. Text is sent to Claude (Sonnet) with a structured prompt requesting a full
+2. In parallel, iOS fires `POST /analyze-url` (URL-only analysis, no page fetch).
+3. If Deep Page Analysis is enabled, iOS also fires `POST /analyze-page`.
+4. `/analyze-page` backend fetches page HTML via httpx + trafilatura text extraction.
+5. Text is sent to Claude (Sonnet) with a structured prompt requesting a full
    threat profile in JSON format.
-5. Claude's analysis is stored in both SQLite (for querying) and JSONL (for
+6. Claude's analysis is stored in both SQLite (for querying) and JSONL (for
    direct use in SLM training pipelines).
-6. The `/preview` endpoint also triggers analysis (so preview URLs are analyzed too).
+7. The `/fetch-preview` endpoint handles screenshots only — it does not trigger
+   page content analysis.
 
 **Analysis schema:**
 

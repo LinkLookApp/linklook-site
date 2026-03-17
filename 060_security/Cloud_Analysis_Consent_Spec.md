@@ -1,45 +1,66 @@
 # Cloud Analysis and Safe Preview Consent Spec
 
-> **Status:** Approved — implementation in progress.
+> **Status:** Approved — v2 (three-toggle model).
 > **Date:** 2026-03-16
+> **Supersedes:** v1 two-toggle model ("Cloud URL Check" + "Safe Preview and Deep Analysis").
 > **Scope:** Defines the user-facing, technical, and policy design for cloud URL
 > analysis, server-side safe preview, and server-side page AI analysis.
 
 ## Executive Decision
 
-Combine at the feature-family level, separate at the permission and service level.
+Three independent toggles, one protection family.
 
-- In the app, present these capabilities as part of one understandable protection family.
-- Under the hood, keep them as separate scopes, separate backend endpoints, and separate policy decisions.
+- In the app, present these capabilities as part of one understandable section ("Enhanced Cloud Protection").
+- Each toggle controls exactly one privacy action. No hidden bundling.
+- Under the hood, each toggle maps to one scope and one backend endpoint.
+- Toggles are independent: the user can enable any combination.
+
+### Why three toggles (not two)
+
+The v1 spec bundled Safe Preview and Deep Page Analysis into one toggle
+("Safe Preview and Deep Analysis"). This was a pragmatic simplification but
+caused two problems:
+
+1. **Blurred consent.** A user who just wants to see the page visually is also
+   consenting to AI content inspection — without realizing it.
+2. **Backend scope leak.** The `/analyze-url` endpoint was calling
+   `fetch_page_content()` + `analyze_page()` behind the scenes, violating the
+   "no hidden escalation" consent rule.
+
+The three-toggle model fixes both: each toggle = one privacy action = one
+endpoint = one scope. Clear for the user, clear for Apple, clear in the code.
 
 ## Core Principle
 
 LinkLook always prefers the least invasive path first:
 
-**On-device check → cloud URL check → server-side page fetch/preview only when needed and allowed.**
+**On-device check → cloud URL check → server-side page fetch → page AI analysis — only when needed and allowed.**
 
 ## Three Distinct Privacy Actions
 
-| # | Action | What it sends | Scope key |
-|---|--------|---------------|-----------|
-| 1 | Cloud URL analysis | URL + minimal metadata | `url_analysis` |
-| 2 | Server-side safe preview | Server fetches + renders the page | `page_fetch` |
-| 3 | Server-side page AI analysis | Server inspects page content | `page_ai_analysis` |
+| # | Toggle label | What happens | What leaves the device | Scope key | Backend endpoint |
+|---|-------------|-------------|----------------------|-----------|-----------------|
+| 1 | Cloud URL Check | AI analyzes the web address only | URL + minimal metadata | `url_analysis` | `/analyze-url` |
+| 2 | Safe Preview | Server fetches the page and returns a screenshot | URL (server fetches page) | `page_fetch` | `/fetch-preview` |
+| 3 | Deep Page Analysis | AI reads the page content for scam signs | URL (server fetches + inspects page) | `page_ai_analysis` | `/analyze-page` |
 
-These are **not** the same privacy action and must not be bundled behind one vague switch.
+These are **three separate privacy actions**. Each has its own consent toggle,
+its own scope, and its own backend endpoint. No bundling.
+
+### What the user gets from each
+
+| Toggle | User benefit | Privacy cost |
+|--------|-------------|-------------|
+| Cloud URL Check | Stronger scam detection from the URL alone. Catches things the on-device engine misses. | URL sent to LinkLook's server. Page is NOT fetched. |
+| Safe Preview | See the page visually without loading it on your device. | LinkLook's server visits the page and takes a screenshot. |
+| Deep Page Analysis | **Strongest protection.** AI reads the page looking for fake login forms, brand impersonation, urgency language, scam patterns. | LinkLook's server visits the page AND reads its content. |
+
+The progression is: URL only → see the page → read the page. Each step is more
+invasive and more powerful. The user decides how far to go.
 
 ## User-Facing Structure
 
 ### Settings → Enhanced Cloud Protection
-
-**A. Cloud URL Check**
-> Send the web address to LinkLook's server for a stronger scam and risk check.
-
-**B. Safe Preview and Deep Analysis**
-> Allow LinkLook to fetch the page on the server to create a safe preview or
-> inspect page content without opening the site directly on your device.
-
-### Settings Screen Layout
 
 ```
 Settings > Privacy and Protection
@@ -49,32 +70,56 @@ Settings > Privacy and Protection
     On-device checks
     Always on — Checks links locally on your device.
 
-    Cloud URL Check               [toggle]
-    Send web addresses to LinkLook's server for stronger risk analysis.
+    Cloud URL Check                    [toggle]
+    AI analyzes the web address only.
+    Catches risks the on-device check may miss.
 
-    Safe Preview and Deep Analysis [toggle]
-    Allow LinkLook to fetch pages on the server to create a safe preview
-    or inspect page content without opening the site directly on your device.
+    Safe Preview                       [toggle]
+    See the page without opening it on your device.
+    LinkLook's server takes a screenshot for you.
 
-    Ask before server-side page fetch [toggle, default ON]
-    Show a confirmation before LinkLook fetches a page on the server.
+    Deep Page Analysis                 [toggle]
+    AI reads the page for scam signs.
+    Strongest protection — detects fake login forms,
+    brand impersonation, and social engineering.
 
-    Auto-use cloud help for unclear results [toggle]
-    Use cloud URL analysis automatically for unclear or suspicious results.
+    ─────────────────────────────────────────────
 
-    Clear cloud-analysis history   [action]
-    Delete locally visible history and trigger server-side deletion where applicable.
+    Ask before fetching a page         [toggle, default ON]
+    Show a confirmation before LinkLook fetches a page
+    on the server. Applies to Safe Preview and
+    Deep Page Analysis.
+
+    Auto-use cloud URL check           [toggle]
+    Automatically send unclear or suspicious URLs
+    for cloud analysis.
+
+    Clear cloud-analysis history       [action]
+    Delete locally visible history and trigger
+    server-side deletion where applicable.
 ```
+
+### Toggle independence
+
+- Each toggle can be enabled or disabled independently.
+- Enabling Deep Page Analysis does NOT auto-enable Safe Preview (they're
+  independent — a user may want AI analysis without seeing the page).
+- Enabling Safe Preview does NOT auto-enable Deep Page Analysis.
+- Enabling either Safe Preview or Deep Page Analysis auto-enables Cloud URL
+  Check (the lightest scope) since the heavier scopes imply willingness.
+- "Ask before fetching a page" applies to both Safe Preview and Deep Page
+  Analysis (anything involving `page_fetch`).
 
 ### Default Values
 
-| Setting | First launch | After URL check enabled | After deeper enabled |
-|---------|-------------|------------------------|---------------------|
+| Setting | First launch | After URL check enabled | After preview or deep enabled |
+|---------|-------------|------------------------|------------------------------|
 | On-device checks | ON | ON | ON |
-| Cloud URL Check | OFF | ON | ON |
-| Safe Preview + Deep Analysis | OFF | OFF | ON |
+| Cloud URL Check | OFF | ON | ON (auto-enabled) |
+| Safe Preview | OFF | OFF | (whichever was toggled) |
+| Deep Page Analysis | OFF | OFF | (whichever was toggled) |
 | Ask before page fetch | ON | ON | ON |
-| Auto-use cloud for unclear | OFF | OFF → ON for INFORM/WARN | ON |
+| Auto-use cloud URL check | OFF | ON for INFORM/WARN | ON |
 
 ## First-Run Consent Sheet
 
@@ -82,71 +127,167 @@ Settings > Privacy and Protection
 
 **Options:**
 
-1. **On-device only** — Your links are checked on your device. No URL is sent to LinkLook for cloud analysis.
-2. **Cloud URL Check** — LinkLook may send the web address to our server for a stronger risk check.
-3. **Cloud URL Check + Safe Preview** — LinkLook may also fetch the page on our server to create a safe preview or inspect page content without opening the site directly on your device.
+1. **On-device only** — Your links are checked on your device. Nothing is sent to LinkLook's server.
+2. **Cloud URL Check** — LinkLook sends the web address to our server for a stronger risk check. The page itself is not fetched.
+3. **Full cloud protection** — LinkLook can also fetch the page on our server to create a safe preview and detect scam content. This gives the strongest protection.
 
-**Buttons:** Keep on-device only / Allow URL check only / Allow both
+**Buttons:** Keep on-device only / URL check only / Full protection
 
-## Just-in-Time Prompt (First Preview Tap)
+**Note:** The first-run sheet sets initial toggle state. The user can change any
+toggle in Settings at any time. "Full protection" enables all three toggles.
+
+## Just-in-Time Prompts
+
+### First Safe Preview tap
 
 **Title:** Allow safe preview?
 
-**Body:** To create a safe preview, LinkLook needs to fetch the page on our
-server instead of opening it directly on your device.
+**Body:** To show a preview, LinkLook needs to fetch the page on our server
+instead of opening it on your device. You'll see a screenshot — nothing runs
+on your iPhone.
+
+**Buttons:** Not now / Allow once / Always allow
+
+### First Deep Page Analysis trigger
+
+**Title:** Allow deep page analysis?
+
+**Body:** LinkLook's AI can read the page content to detect fake login forms,
+brand impersonation, and scam patterns. The page is fetched on our server —
+nothing runs on your iPhone. This gives the strongest scam detection.
 
 **Buttons:** Not now / Allow once / Always allow
 
 ## Runtime Decision Ladder
 
 1. **On-device analysis** — Always runs first.
-2. **Cloud URL analysis** — Only if `url_analysis` scope is granted and local result is inconclusive or policy says cloud is useful.
-3. **Page fetch / preview** — Only if `page_fetch` scope is granted AND LinkLook needs it for preview or deeper analysis.
+2. **Cloud URL analysis** — Only if `url_analysis` scope is granted. The backend
+   analyzes the URL string only. It does NOT fetch the page.
+3. **Safe Preview** — Only if `page_fetch` scope is granted AND the user taps
+   "Preview page." Never automatic.
+4. **Deep Page Analysis** — Only if `page_ai_analysis` scope is granted. Can
+   auto-run on INFORM/WARN if "Auto-use cloud URL check" is enabled, or run
+   on explicit user request.
+
+### Critical rule: `/analyze-url` must be URL-only
+
+The `/analyze-url` endpoint receives the URL string and analyzes it server-side
+(domain patterns, TLD risk, AI model on URL features). It must NEVER call
+`fetch_page_content()` or read the destination page. If it fetches the page,
+it is doing `page_fetch` work under the `url_analysis` scope — a consent
+violation.
+
+Page fetching happens ONLY via `/fetch-preview` (screenshot) and
+`/analyze-page` (AI content analysis).
 
 ### Behavior by Verdict
 
-| Verdict | Cloud URL check | Page fetch/preview |
-|---------|----------------|-------------------|
-| OK | Not needed | Not needed |
-| INFORM | Auto if enabled | Only if user requests preview |
-| WARN | Auto if enabled | Only if user requests preview |
-| BLOCK | May run | **No automatic fetch. No preview.** |
+| Verdict | Cloud URL check | Safe Preview | Deep Page Analysis |
+|---------|----------------|-------------|-------------------|
+| OK | Not needed | Not needed | Not needed |
+| INFORM | Auto if enabled | User taps "Preview page" | Auto if enabled, or user request |
+| WARN | Auto if enabled | User taps "Preview page" | Auto if enabled, or user request |
+| BLOCK | May run | **No preview** | May run for training data |
 
 ## Backend Endpoints
 
-| Endpoint | Scope required | Purpose |
-|----------|---------------|---------|
-| `/analyze-url` | `url_analysis` | URL-only risk scoring |
-| `/fetch-preview` | `page_fetch` | Server-side screenshot |
-| `/analyze-page` | `page_ai_analysis` | Page content AI analysis |
+| Endpoint | Scope required | What it does | What it must NOT do |
+|----------|---------------|-------------|-------------------|
+| `/analyze-url` | `url_analysis` | Analyze URL string (structure, domain, TLD, AI model on URL features). Return risk score. | Must NOT fetch page content. Must NOT call Urlbox. |
+| `/fetch-preview` | `page_fetch` | Fetch page via Urlbox, return JPEG screenshot. | Must NOT run page content analysis unless `/analyze-page` is also called. |
+| `/analyze-page` | `page_ai_analysis` | Fetch page content, extract text, run Claude threat analysis. Store for SLM training. | — |
 
-Server-side enforcement: reject operations outside granted scope.
+**Server-side enforcement:** Each endpoint checks the scope. Reject operations
+outside granted scope. No hidden escalation between endpoints.
+
+### Backend fix required (v2 migration)
+
+The v1 `/analyze-url` endpoint calls `_run_analysis()` which does
+`fetch_page_content()` + `analyze_page()`. This must be fixed:
+
+1. `/analyze-url` → analyze URL string only (no page fetch).
+2. Move page-fetching analysis to `/analyze-page` only.
+3. If training data collection is needed for all URLs, it must go through
+   `/analyze-page` with the `page_ai_analysis` scope — not hidden inside
+   `/analyze-url`.
 
 ## Consent Rules
 
-1. Cloud features are opt-in.
-2. Page fetch must not be silently implied by URL analysis consent.
-3. User can revoke either layer at any time.
-4. No hidden escalation from URL-only to page fetch.
-5. Keep explanations plain — no jargon.
+1. Cloud features are opt-in. All OFF by default.
+2. Each toggle controls exactly one privacy action.
+3. Safe Preview does not imply Deep Page Analysis (or vice versa).
+4. Cloud URL Check does not imply page fetching.
+5. No hidden escalation: an endpoint must not do work beyond its scope.
+6. User can revoke any toggle at any time. Effect is immediate.
+7. Keep explanations plain — no jargon.
+
+## Scope Interaction Matrix
+
+| User has enabled | `/analyze-url` | `/fetch-preview` | `/analyze-page` |
+|-----------------|----------------|------------------|-----------------|
+| Nothing | Blocked | Blocked | Blocked |
+| Cloud URL Check only | Allowed | Blocked | Blocked |
+| Safe Preview only | Auto-enabled (URL check) | Allowed | Blocked |
+| Deep Page Analysis only | Auto-enabled (URL check) | Blocked | Allowed |
+| Safe Preview + Deep | Auto-enabled (URL check) | Allowed | Allowed |
+| All three | Allowed | Allowed | Allowed |
 
 ## Logging and Retention
 
-- **URL analysis:** Store only what's needed for real-time verdicting, abuse prevention, and reliability.
-- **Page fetch / preview:** Store only what's needed for immediate rendering and short-lived safety analysis.
-- Separate retention classes: short for transient fetch artifacts, longer only for security logs if needed.
-- Avoid retaining full page content by default.
+- **URL analysis:** URL string + verdict. Short retention (days). No page content.
+- **Safe Preview:** URL sent to Urlbox for screenshot. Screenshot returned to user, not stored. URL discarded immediately.
+- **Deep Page Analysis:** Page text sent to Claude. Analysis result stored for SLM training (90-day FIFO). Page text discarded after analysis.
+- Separate retention classes per scope. Never retain page content from one scope in another's storage.
 
 ## Privacy Policy Structure
 
 1. **On-device checks** — Core link checks on device. No data leaves.
-2. **Cloud URL analysis** — If enabled, URL + limited metadata sent to server.
-3. **Safe preview and deeper analysis** — If enabled, server fetches page for preview/inspection.
-4. **User control** — Users can toggle on/off in Settings. Revocation is immediate.
+2. **Cloud URL Check** — If enabled, URL + limited metadata sent to server. Page is not fetched.
+3. **Safe Preview** — If enabled, server fetches page for screenshot only. URL discarded after render.
+4. **Deep Page Analysis** — If enabled, server fetches page and AI inspects content. Analysis stored for safety improvement; page text discarded.
+5. **User control** — Three independent toggles in Settings. Revocation is immediate.
 
-## v1 Simplification
+## Elderly-User Language Guide
 
-For v1, expose two user choices (internally three scopes):
+| Technical concept | User-facing language |
+|------------------|---------------------|
+| `url_analysis` | "AI analyzes the web address only" |
+| `page_fetch` | "See the page without opening it on your device" |
+| `page_ai_analysis` | "AI reads the page for scam signs" |
+| Scope escalation | "Each option is independent. You choose." |
+| Strongest protection | "Detects fake login forms, brand impersonation, and social engineering" |
+| Reassurance | "You stay in control. You can turn this off anytime." |
 
-- **Choice A:** Cloud URL Check (`url_analysis`)
-- **Choice B:** Safe Preview and Deep Analysis (`page_fetch` + `page_ai_analysis`)
+## Implementation Summary
+
+### What to build (code changes from v1)
+
+**Settings UI:**
+- Replace "Safe Preview and Deep Analysis" toggle with two separate toggles: "Safe Preview" and "Deep Page Analysis".
+- Add auto-enable logic: enabling Safe Preview or Deep Page Analysis auto-enables Cloud URL Check.
+- "Ask before fetching a page" applies to both Safe Preview and Deep Page Analysis.
+
+**PreferencesStore:**
+- Split `safePreviewDeepAnalysisEnabled` into `safePreviewEnabled` and `deepPageAnalysisEnabled`.
+- `pageFetchPermitted` → returns `safePreviewEnabled || deepPageAnalysisEnabled`.
+- `pageAIAnalysisPermitted` → returns `deepPageAnalysisEnabled` only.
+- Add `safePreviewPermitted` → returns `safePreviewEnabled`.
+
+**Backend:**
+- Fix `/analyze-url`: remove `fetch_page_content()` and `analyze_page()` calls. Make it truly URL-only.
+- `/fetch-preview`: unchanged (screenshot only).
+- `/analyze-page`: unchanged (page fetch + Claude analysis + storage).
+- Add scope validation to `verify_jwt` (future hardening).
+
+**Runtime logic:**
+- `submitForBackendAnalysis()` calls `/analyze-url` (URL-only, no page fetch).
+- Safe Preview button calls `/fetch-preview` (screenshot only).
+- Deep Page Analysis calls `/analyze-page` (page fetch + AI inspection).
+- JIT prompts: separate prompts for first Safe Preview tap and first Deep Page Analysis trigger.
+
+**First-run consent sheet:**
+- Update to three options: On-device only / URL check only / Full protection.
+
+### One-line conclusion
+
+Three toggles, three scopes, three endpoints. Each does exactly what it says.
