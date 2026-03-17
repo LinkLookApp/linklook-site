@@ -271,6 +271,24 @@ The v1 `/analyze-url` endpoint calls `_run_analysis()` which does
 - Separate retention classes per scope. Never retain page content from one scope in another's storage.
 - **Audit log retention:** 90 days. Log the decision, not the content. Never log raw URLs, page content, or screenshots in the audit log.
 
+## Technical Non-Logging Controls
+
+> Full spec: `LinkLook-Docs/050_architecture/URL_Webpage_Analysis_Model.md` §9a.
+> Enforceable rules: `CLAUDE.md` rules 118–119.
+
+Non-logging of sensitive data is enforced by architecture, not just policy:
+
+- **Structured allowlisted logging** — only defined fields are written to logs.
+- **No request-body logging** — middleware and proxies do not log request bodies.
+- **Query string sanitization** — sensitive URL parameters are stripped before
+  any log write.
+- **Page content excluded** — page text, HTML, and screenshots are processed
+  in memory and never written to application logs.
+- **Crash tools configured** — Sentry/Crashlytics exclude sensitive payload
+  fields from crash reports.
+- **Canary tests in CI** — automated tests inject fake sensitive markers and
+  verify they do not appear in any log output.
+
 ## Privacy Policy Structure
 
 1. **On-device checks** — Core link checks on device. No data leaves.

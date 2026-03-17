@@ -432,7 +432,7 @@ device, no cookies, no IP leak.
 ## Two-Step Analysis Model
 
 > Full spec: `LinkLook-Docs/050_architecture/URL_Webpage_Analysis_Model.md`
-> Enforceable rules: `CLAUDE.md` rules 104–117.
+> Enforceable rules: `CLAUDE.md` rules 104–120.
 
 URL checking and webpage checking are **two separate steps**. LinkLook never
 silently escalates from URL check to page fetch. The page is only fetched
@@ -468,15 +468,25 @@ urgency language, suspicious CTAs) while reducing privacy exposure. The
 stripped version omits raw personal data, session tokens, tracking data, and
 technical clutter.
 
-#### Confidence-based escalation to deeper analysis
+#### Optional deeper analysis (V1)
 
-If the privacy-reduced analysis cannot reach a confident conclusion, LinkLook
-offers the user an escalation:
+On the webpage result screen, a secondary action is available:
+
+> **Use deeper full-page analysis** — This uses more page content.
+
+This is a secondary, advanced option — not the default path. Tapping it
+triggers full-page analysis (audit logged). Most users will not need it.
+
+#### Confidence-based escalation (V1.1)
+
+A post-launch enhancement: if the privacy-reduced analysis cannot reach a
+confident conclusion, LinkLook automatically offers:
 
 > **Result uncertain** — Run deeper analysis? This uses more page content.
 
 The user can choose "Run deeper analysis" (processes more page content, audit
-logged) or "Keep current result" (stay with the reduced analysis).
+logged) or "Keep current result" (stay with the reduced analysis). This
+requires confidence scoring calibrated from real-world data.
 
 ### User-facing labels
 
