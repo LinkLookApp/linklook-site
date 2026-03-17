@@ -382,7 +382,7 @@ Full roadmap: `URL_Privacy_Signal_Spec.md` §18.
 
 ## Safe Preview (Pro Feature)
 
-Safe Preview uses a server-side proxy (`linklook-preview.fly.dev`) that renders
+Safe Preview uses a server-side proxy (`linklook-backend.fly.dev`) that renders
 the destination page in a sandbox and returns a JPEG screenshot. The user sees
 the page visually without loading it on their device. No JS runs on the user's
 device, no cookies, no IP leak.

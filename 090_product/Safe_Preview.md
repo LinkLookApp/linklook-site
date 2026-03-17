@@ -288,10 +288,10 @@ URLs are stripped of query parameters and fragments before storage.
 
 ### Proxy codebase
 
-Repository: `linklook-preview/` (inside the LinkLook monorepo).
+Repository: `linklook-backend/` (inside the LinkLook monorepo).
 
 ```
-linklook-preview/
+linklook-backend/
 ├── main.py            — FastAPI app, routes, rate limiting, background analysis
 ├── config.py          — Settings via pydantic-settings + .env
 ├── auth.py            — JWT bearer token verification (iss/aud validated)
@@ -315,7 +315,7 @@ linklook-preview/
 
 | Item | Value |
 |------|-------|
-| URL | `https://linklook-preview.fly.dev` |
+| URL | `https://linklook-backend.fly.dev` |
 | Fly.io org | `linklook` |
 | Region | `ams` (Amsterdam) |
 | Machines | 2 × shared-CPU, 512 MB (scale-to-zero enabled) |
@@ -327,7 +327,7 @@ linklook-preview/
 brew install flyctl && fly auth login
 
 # Create the app (first time only)
-fly launch --name linklook-preview --region ams --org linklook
+fly launch --name linklook-backend --region ams --org linklook
 
 # Create persistent volume for training data (first time only)
 fly volumes create linklook_data --region ams --size 1
@@ -345,10 +345,10 @@ fly secrets set \
 fly deploy
 
 # Verify
-curl https://linklook-preview.fly.dev/health
+curl https://linklook-backend.fly.dev/health
 
 # Full smoke test
-./test_deployed.sh https://linklook-preview.fly.dev "<jwt-secret>"
+./test_deployed.sh https://linklook-backend.fly.dev "<jwt-secret>"
 ```
 
 **Environment variables (set via `fly secrets`):**
@@ -540,7 +540,7 @@ API calls to local Playwright rendering. The iOS client is unaffected.
 |------|--------|
 | Product owner | Bas — all architectural and product decisions |
 | Urlbox account | Active — urlbox.io (Publishable Key + Secret Key in Fly secrets) |
-| Fly.io account | Active — org `linklook`, app `linklook-preview` |
+| Fly.io account | Active — org `linklook`, app `linklook-backend` |
 | Apple Developer | Active membership held by Bas |
-| Repo | `linklook-preview/` directory in LinkLook monorepo |
-| Live URL | `https://linklook-preview.fly.dev` |
+| Repo | `linklook-backend/` directory in LinkLook monorepo |
+| Live URL | `https://linklook-backend.fly.dev` |
