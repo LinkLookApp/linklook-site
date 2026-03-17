@@ -160,6 +160,12 @@ nothing runs on your iPhone. This gives the strongest scam detection.
 
 ## Runtime Decision Ladder
 
+> **Two-step model:** URL checking and webpage checking are separate steps.
+> The page is never fetched until the user explicitly requests it.
+> Full spec: `LinkLook-Docs/050_architecture/URL_Webpage_Analysis_Model.md`.
+
+### Step 1 — URL Phase
+
 1. **On-device analysis** — Always runs first.
 2. **Sensitive data detection** — On-device scan of URL for personal/sensitive
    data (emails, tokens, account IDs, etc.). Runs before any backend call.
@@ -171,11 +177,20 @@ nothing runs on your iPhone. This gives the strongest scam detection.
 3. **Cloud URL analysis** — Only if `url_analysis` scope is granted. The backend
    analyzes the URL string only (masked or full per Privacy Signal choice).
    It does NOT fetch the page.
+
+### Step 2 — Webpage Phase (explicit user action only)
+
 4. **Safe Preview** — Only if `page_fetch` scope is granted AND the user taps
-   "Preview page." Never automatic. Uses masked or full URL per Privacy Signal choice.
-5. **Deep Page Analysis** — Only if `page_ai_analysis` scope is granted. Can
-   auto-run on INFORM/WARN if "Auto-use cloud URL check" is enabled, or run
-   on explicit user request. Uses masked or full URL per Privacy Signal choice.
+   "Preview page." Never automatic. Uses masked or full URL per Privacy Signal
+   choice.
+5. **Deep Page Analysis** — Only if `page_ai_analysis` scope is granted AND
+   the user taps "Check webpage with AI." Never automatic. Two modes:
+   - **Reduced mode (default):** AI analyzes a stripped webpage representation
+     (extracted text, headings, forms, CTAs). Privacy-reduced.
+   - **Full mode (explicit escalation):** AI analyzes more page content. Only
+     offered when reduced analysis confidence is low, or when user explicitly
+     requests deeper analysis. Audit logged.
+   Uses masked or full URL per Privacy Signal choice.
 
 ### Critical rule: `/analyze-url` must be URL-only
 
@@ -203,7 +218,7 @@ Page fetching happens ONLY via `/fetch-preview` (screenshot) and
 |----------|---------------|-------------|-------------------|
 | `/analyze-url` | `url_analysis` | Analyze URL string (structure, domain, TLD, AI model on URL features). Return risk score. | Must NOT fetch page content. Must NOT call Urlbox. |
 | `/fetch-preview` | `page_fetch` | Fetch page via Urlbox, return JPEG screenshot. | Must NOT run page content analysis unless `/analyze-page` is also called. |
-| `/analyze-page` | `page_ai_analysis` | Fetch page content, extract text, run Claude threat analysis. Store for SLM training. | — |
+| `/analyze-page` | `page_ai_analysis` | Fetch page content, extract text, run AI threat analysis. Accepts `mode=reduced` (default: stripped representation) or `mode=full` (deeper analysis, audit logged). Store for SLM training. | Must NOT auto-escalate from reduced to full without user action. |
 
 **Server-side enforcement:** Each endpoint checks the scope. Reject operations
 outside granted scope. No hidden escalation between endpoints.
@@ -251,8 +266,10 @@ The v1 `/analyze-url` endpoint calls `_run_analysis()` which does
 
 - **URL analysis:** URL string + verdict. Short retention (days). No page content.
 - **Safe Preview:** URL sent to Urlbox for screenshot. Screenshot returned to user, not stored. URL discarded immediately.
-- **Deep Page Analysis:** Page text sent to Claude. Analysis result stored for SLM training (90-day FIFO). Page text discarded after analysis.
+- **Deep Page Analysis (reduced mode):** Stripped webpage representation sent to AI. Analysis result stored for SLM training (90-day FIFO). Page text discarded after analysis.
+- **Deep Page Analysis (full mode):** Full page content sent to AI. Analysis result stored for SLM training (90-day FIFO). Page text discarded after analysis. **Audit log entry required:** pseudonymous device ID, timestamp, event type (`full_page_analysis_selected`), URL hash, analysis mode, consent version.
 - Separate retention classes per scope. Never retain page content from one scope in another's storage.
+- **Audit log retention:** 90 days. Log the decision, not the content. Never log raw URLs, page content, or screenshots in the audit log.
 
 ## Privacy Policy Structure
 

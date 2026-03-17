@@ -336,11 +336,29 @@ Tapping "Review privacy details" opens the full privacy dialog.
 
 ### Privacy dialog
 
-Presented as a sheet. Shows detected item types (not raw values), three
-actions: **Privacy-protected check** (recommended, sends masked URL),
-**Full check** (sends original), and **Cancel** (no backend call). An
-expandable "View masked details" disclosure shows partially masked values
-(e.g. `ba***@example.com`, `***4831`).
+Presented as a sheet with the recommended copy:
+
+- **Title:** "Privacy protection available"
+- **Body:** "This link appears to include personal or sensitive information.
+  To protect your privacy, LinkLook limits what is sent for checking whenever
+  possible."
+- **List header:** "Detected in this link" (e.g. Email address, Account ID,
+  Security token)
+- **Actions:** "Continue with privacy protection" (primary, green fill) /
+  "Use full link for deeper check" (secondary, outlined) / "Cancel"
+- **Disclosure:** "Show masked details" → expands to show masked values
+
+On Pro tier, the dialog uses elevated copy: title "Your privacy is being
+protected", actions "Continue with Protection" / "Use Full Link" / "Cancel".
+
+Full copy catalog with all variants: `URL_Privacy_Signal_Spec.md` §6.
+
+### Architecture
+
+Detection logic lives in Swift code (`URLPrivacyScanner`). Detection criteria
+(sensitive key names, regex patterns, context keywords, weights) live in a
+bundled `privacy_rules_v1.json` file. This allows rule tuning without code
+changes. Full architecture: `URL_Privacy_Signal_Spec.md` §12.
 
 ### Interaction with consent toggles
 
@@ -352,7 +370,13 @@ to proceed.
 ### Tone
 
 Calm, clear, protective. Not a warning siren, not a legal notice — a quiet
-privacy safeguard. See tone guidelines in the full spec.
+privacy safeguard. See tone guidelines in `URL_Privacy_Signal_Spec.md` §8.
+
+### V1 scope
+
+The privacy scan, masking, visible signal, dialog, and bundled rules file are
+all V1 requirements. Remote rule updates and ML-based detection are deferred.
+Full roadmap: `URL_Privacy_Signal_Spec.md` §18.
 
 ---
 
@@ -402,6 +426,80 @@ device, no cookies, no IP leak.
 > decision is fully informed at the Free tier.
 >
 > "You are protected either way. Pro gives you more context before you decide."
+
+---
+
+## Two-Step Analysis Model
+
+> Full spec: `LinkLook-Docs/050_architecture/URL_Webpage_Analysis_Model.md`
+> Enforceable rules: `CLAUDE.md` rules 104–117.
+
+URL checking and webpage checking are **two separate steps**. LinkLook never
+silently escalates from URL check to page fetch. The page is only fetched
+when the user explicitly requests it.
+
+### Step 1 — URL Phase (always)
+
+The standard safety flow described above: enter URL → on-device checks →
+cloud URL analysis (if enabled) → verdict screen. The user sees the URL
+verdict, stripped URL, privacy notice, signal badges, and reasons.
+
+### Step 2 — Webpage Phase (explicit user action only)
+
+On INFORM and WARN verdict screens, a "Check webpage with AI" button lets the
+user request deeper analysis. Tapping it triggers the backend to:
+
+1. Fetch the page (via Urlbox/proxy)
+2. Generate a preview page (JPEG screenshot — the Safe Preview)
+3. Generate a stripped webpage representation (extracted text, headings, forms,
+   CTAs, brand references — privacy-reduced)
+4. AI analyzes the stripped webpage representation
+
+The user then sees:
+- Webpage verdict (may differ from the URL verdict)
+- Preview page (visual screenshot)
+- Reasons (what the AI found on the page)
+
+#### Privacy-reduced analysis by default
+
+The AI analyzes a **stripped webpage representation**, not the full page. This
+preserves risk-relevant signals (fake login forms, brand impersonation,
+urgency language, suspicious CTAs) while reducing privacy exposure. The
+stripped version omits raw personal data, session tokens, tracking data, and
+technical clutter.
+
+#### Confidence-based escalation to deeper analysis
+
+If the privacy-reduced analysis cannot reach a confident conclusion, LinkLook
+offers the user an escalation:
+
+> **Result uncertain** — Run deeper analysis? This uses more page content.
+
+The user can choose "Run deeper analysis" (processes more page content, audit
+logged) or "Keep current result" (stay with the reduced analysis).
+
+### User-facing labels
+
+| Mode | Label | Explanation |
+|------|-------|-------------|
+| Default | "Private check" | "Analyzes a reduced page version" |
+| Deeper | "Deeper check" | "Analyzes more page content for higher accuracy" |
+
+Do NOT use "stripped" and "full" as user-facing labels.
+
+### "Check webpage with AI" button
+
+- Shown on INFORM and WARN verdict screens only.
+- Medium-sized button, positioned in the expanded "Learn more" section.
+- Tapping shows a brief explanation: "LinkLook will fetch the page and analyze
+  a privacy-reduced version."
+- Pro feature (Early Access: free for all users).
+
+### Audit logging
+
+When the user selects deeper/full-page analysis, LinkLook records a minimal
+audit event: device ID (pseudonymous), timestamp, event type, URL hash,
+analysis mode chosen. The log records the decision, never the page content.
 
 ---
 
