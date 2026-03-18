@@ -10,7 +10,8 @@ LinkLook is a safety-driven browser that checks links before they open.
 
 How it works:
 When a user taps a link in Messages, Mail, or any other app, iOS delivers the
-URL to LinkLook (registered as the default browser). LinkLook runs a safety
+URL to LinkLook (designed to function as the default browser; entitlement
+status: to be requested). LinkLook runs a safety
 check BEFORE loading the page and then routes by verdict:
 - OK: opens immediately in LinkLook with a brief non-blocking confirmation toast
 - INFORM: shows a light warning interstitial with Go Back and Continue

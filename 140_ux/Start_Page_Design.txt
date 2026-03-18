@@ -8,6 +8,16 @@ Visual reference: Start_Page_Mockup.html (in this folder — illustrative only,
                   shows both idle and browsing states side by side. Exact
                   values are authoritative in CLAUDE.md, not in the mockup.)
 
+Changelog v4.0 (2026-03-18):
+- QR scanner moved from large standalone button to floating bottom bar (CLAUDE.md rule 66)
+- "or" separator removed from start page — cleaner layout
+- Tabs button moved from top bar (omnibox) to floating bottom bar, always bottom-right (CLAUDE.md rule 65)
+- App tab bar (Home/Recent/Settings) hidden by default; toggled via floating LinkLook logo (CLAUDE.md rule 63)
+- Floating bottom bar: LinkLook logo (left) | QR scanner (center) | Tabs (right)
+- Browser toolbar expanded: Logo | Back | Forward | Share | QR | Bookmarks | Tabs (7 buttons)
+- BrowserCoordinator holds strong WKWebView reference — tabs survive view recreation (CLAUDE.md rule 64)
+- All tab views kept alive via ForEach+ZStack (no more .id()-based destruction)
+
 Changelog v3.0 (2026-03-16):
 - UI review: hierarchy improvements — action-first layout
 - Logo reduced from 220×150pt to 100×68pt (trust support, not attention dominator)
@@ -47,21 +57,8 @@ never shown. The check flow begins immediately.
 
   ┌──────────────────────────────────────────────────────────────────────┐
   │  OMNIBOX (top bar)                                                   │
-  │  [ Search the web or paste a link                        ] [tabs]    │
-  │  No back chevron on home screen. Tabs badge (right).                 │
-  └──────────────────────────────────────────────────────────────────────┘
-
-                                 or
-
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │           [QR icon]  Scan QR code                                    │
-  │           (full-width rounded button, prominent)                     │
-  └──────────────────────────────────────────────────────────────────────┘
-
-  ┌──────────────────────────────────────────────────────────────────────┐
-  │  APP IDENTITY (compact — trust, not attention)                       │
-  │                    [ LINK LOOK logo ]  (100×68pt)                    │
-  │              A safety-driven browser                                  │
+  │  [ Search the web or paste a link                              ]     │
+  │  No back chevron on home screen. No tabs badge (moved to bottom).    │
   └──────────────────────────────────────────────────────────────────────┘
 
   ┌──────────────────────────────────────────────────────────────────────┐
@@ -81,22 +78,25 @@ never shown. The check flow begins immediately.
    Recent tab, keeping the Home screen clean and focused.)
 
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  TAB BAR (bottom, three items)                                       │
+  │  FLOATING BOTTOM BAR (always visible on non-browse screens)          │
   │                                                                      │
-  │         Home              Recent              Settings               │
+  │    🔗              📷              [2]                                │
+  │   logo             QR             tabs                              │
+  │  (toggle         (scan)        (overview)                           │
+  │   tab bar)                                                          │
   └──────────────────────────────────────────────────────────────────────┘
 
-  When browsing, a BROWSER TOOLBAR appears at the bottom (above tab bar).
-  Safari-style 5-button layout:
+  The app tab bar (Home/Recent/Settings) is HIDDEN by default.
+  Tapping the LinkLook logo in the floating bar toggles it on/off.
+
+  When browsing, a BROWSER TOOLBAR replaces the floating bar.
+  Safari-style layout with 7 buttons:
 
   ┌──────────────────────────────────────────────────────────────────────┐
-  │  BROWSER TOOLBAR (bottom, when browsing — Safari-style 5 buttons)    │
+  │  BROWSER TOOLBAR (bottom, when browsing — 7 buttons)                 │
   │                                                                      │
-  │     ←         →          ↑           📖          ▢                   │
-  │    back     forward    share      bookmarks    tabs                 │
-  │                       (Copy Link, (Favorites + (tab overview        │
-  │                       Share…)      Reading List  grid)              │
-  │                                    panel)                           │
+  │   🔗     ←      →      ↑      📷     📖      [2]                    │
+  │  logo   back   fwd   share    QR   bkmrks   tabs                   │
   └──────────────────────────────────────────────────────────────────────┘
 
   Reload/Stop and Reader Mode live in the COMPACT ADDRESS BAR (top):
@@ -141,9 +141,10 @@ never shown. The check flow begins immediately.
     Provides an explicit tap target for users who may not instinctively
     press the keyboard Return key.
   - No settings gear — settings are accessible via the tab bar only.
+  - No tabs badge — tabs button moved to floating bottom bar (CLAUDE.md rule 65).
 
   The top bar persists across all screens. When browsing, it shows the
-  current URL. On the start page, it shows the placeholder.
+  current URL (compact address bar). On the start page, it shows the placeholder.
 
   2.1a INPUT CLASSIFICATION (omnibox logic)
   ──────────────────────────────────────────
@@ -169,22 +170,44 @@ never shown. The check flow begins immediately.
   - Search queries skip the safety check entirely and open Google results
     directly in LinkLook's built-in browser. No verdict screen (CLAUDE.md rule 7).
 
-  2.1b "OR" SEPARATOR + QR BUTTON
-  ─────────────────────────────────
-  Directly below the omnibox, a small green "or" label
-  (prefStore.fontSize.orLabelSize: Small 14pt, Medium 16pt, Large 19pt)
-  connects the omnibox to the QR code scanner button below it. This makes
-  the two entry points (type/paste vs scan) visually connected.
-  The "or" label is accessibilityHidden (decorative separator only).
+  2.1b FLOATING BOTTOM BAR (CLAUDE.md rules 63, 65, 66)
+  ──────────────────────────────────────────────────────
+  A persistent bottom bar visible on ALL non-browsing screens (start page,
+  checking, verdict, timeout). Three buttons, evenly spaced:
 
-  The QR button is a prominent full-width rounded rectangle (14pt corners):
-  icon (26pt) + "Scan QR code" (19pt, semibold). Green on light green
-  background. Full-width with horizontal padding 16pt. This is one of the
-  dominant elements on the home screen (action-first hierarchy).
+  - LinkLook logo (left, 28×28pt) — toggles the app tab bar (Home/Recent/
+    Settings). The tab bar is hidden by default. Logo renders at 0.5 opacity
+    when tab bar is hidden, 1.0 when visible. Uses "LinkLookLogo" asset with
+    .renderingMode(.original), clipped to RoundedRectangle(cornerRadius: 6).
+    Accessibility: "Show tab bar" / "Hide tab bar".
+  - QR scanner (center, 22pt SF Symbol) — opens the camera to scan a QR code.
+    SF Symbol: qrcode.viewfinder. Color: Theme.logoGreen. Tap target: 44×44pt.
+    Replaces the old large QR button + "or" separator (removed in v4.0).
+    Accessibility: "Scan QR code".
+  - Tabs button (right) — opens the tab overview grid. Shows the current tab
+    count inside a rounded square badge (Safari-style). Matches the same
+    tabCountBadge used in the browser toolbar. Accessibility: "Tabs (N)".
+
+  The floating bar has horizontal padding 20pt and bottom padding 12pt.
+  During browsing, these three actions move into the browser toolbar (§2.6).
+
+  FIRST-USE TOOLTIPS (CLAUDE.md rule 67):
+  On first launch, small tooltip capsules appear above the two
+  LinkLook-specific icons:
+    - "Menu" above the LinkLook logo (left)
+    - "Scan QR" above the QR icon (center)
+  No tooltip for the tabs button — the number inside is self-explanatory.
+  Tooltips auto-dismiss after 4 seconds or on any button tap. They use
+  dark background (Theme.textDark 85% opacity), white text (11pt medium),
+  capsule shape. Stored in BrowserPreferenceStore.hasShownBottomBarTooltips.
+  Rationale: the logo and QR viewfinder are the only non-standard icons.
+  Back/forward/share/bookmarks/tabs are universally recognized from Safari.
+  Showing tooltips only for the unfamiliar icons is proportional, not
+  inconsistent — it avoids patronizing users about icons they already know.
 
   2.2 APP IDENTITY
   ─────────────────
-  Compact branding below the QR button. The logo supports trust without
+  Compact branding on the start page. The logo supports trust without
   dominating attention. Two elements:
   - LinkLook logo — the SVG "eyes" version (LINK on top, LOOK below with
     chain-link eyes on the OO letters). Rendered from the LinkLookLogo
@@ -238,7 +261,7 @@ never shown. The check flow begins immediately.
   If the user has disabled history (MDL-106), the Recent tab indicates
   that history recording is turned off.
 
-  2.5 TAB BAR
+  2.5 TAB BAR (hidden by default — CLAUDE.md rule 63)
   ────────────
   A standard iOS tab bar at the bottom with three items:
   - Home — ALWAYS returns to the initial start page. Tapping Home must:
@@ -250,22 +273,32 @@ never shown. The check flow begins immediately.
   - Settings — opens in-app settings. The Settings tab icon is always
     the standard gear icon — never changes. See CLAUDE.md rule 19.
 
-  The tab bar persists across all screens.
+  The tab bar is HIDDEN by default on all screens. The user reveals it by
+  tapping the floating LinkLook logo (bottom-left on non-browse screens,
+  leftmost button in browser toolbar during browsing). Tapping the logo
+  again hides the tab bar. The tab bar also auto-hides when entering
+  browse mode. This maximises screen real-estate, especially for elderly
+  users on smaller iPhones.
 
   2.6 BROWSER TOOLBAR (bottom, during browsing)
   ───────────────────────────────────────────────
   When the user is browsing (WebView active), a bottom toolbar appears
-  with five buttons matching Safari's iPhone layout, evenly spaced:
+  with seven buttons, evenly spaced:
 
+  - LinkLook logo (22×22pt) — toggles app tab bar visibility.
+    Same function as the floating logo on non-browse screens. Rendered
+    at 0.5 opacity when tab bar hidden, 1.0 when visible.
   - Back (chevron.left) — go back in web history, or exit browsing
   - Forward (chevron.right) — go forward in web history
   - Share (square.and.arrow.up) — opens share menu with: Copy Link,
     Share…, Add to Favorites, Add to Reading List. Safari's built-in
     "Add to Reading List" is excluded (it targets Safari, not LinkLook).
     No "Open in other browser" option.
+  - QR scanner (qrcode.viewfinder) — opens camera for QR scanning.
+    Always available, even mid-browse. CLAUDE.md rule 66.
   - Bookmarks (book) — opens a Safari-style panel with segmented tabs
     for Favorites and Reading List. See CLAUDE.md rules 50, 52.
-  - Tabs (square.on.square) — opens tab overview grid (Safari-style).
+  - Tabs — opens tab overview grid (Safari-style).
     See CLAUDE.md rules 19, 49 for the full spec.
 
   Reload/Stop and Reader Mode are NOT in the bottom toolbar. They live
@@ -274,9 +307,9 @@ never shown. The check flow begins immediately.
   - Reader Mode (doc.plaintext) — left side of address bar, shown only
     on article-like pages. See CLAUDE.md rule 51.
 
-  The Tabs button only appears in the bottom toolbar during browsing.
-  On the start/idle screen, Tabs is shown in the top bar instead
-  (no duplication).
+  The floating bottom bar (§2.1b) and browser toolbar share the same
+  three persistent actions (logo, QR, tabs) so the user always has
+  consistent access regardless of screen state.
 
   NOTE: There is NO "Open in other browser" button. LinkLook IS the
   browser. Users stay in LinkLook at all times. See CLAUDE.md rule 10.
@@ -348,8 +381,26 @@ never shown. The check flow begins immediately.
   Toolbar: bkmrk   book                    📖          system      44pt    Opens Bookmarks panel
                                                                     frame   (Favorites + Reading List).
 
+  Toolbar: QR      qrcode.viewfinder        📷          system      44pt    QR scanner. Between
+                                                                    frame   Share and Bookmarks.
+
   Toolbar: tabs    square.on.square         ▢           system      44pt    Tab overview grid
                                                                     frame   (Safari-style).
+
+  Toolbar: logo    LinkLookLogo asset       🔗          original    22pt    Toggle app tab bar.
+                                                                    (44pt   0.5 opacity when hidden,
+                                                                    tap)    1.0 when visible.
+
+  Float: logo      LinkLookLogo asset       🔗          original    28pt    Toggle app tab bar.
+                                                                    (44pt   Same as toolbar logo
+                                                                    tap)    but larger (28pt).
+
+  Float: QR        qrcode.viewfinder        📷          #2E7D4F     22pt    QR scanner in floating
+                                                                    (44pt   bottom bar (non-browse).
+                                                                    tap)
+
+  Float: tabs      (tabCountBadge)          [N]         #2E7D4F     28pt    Tab count badge in
+                                                                            floating bottom bar.
 
   Addr bar: reload arrow.clockwise          ↻           system      30pt    Shown in compact address
                                                                     frame   bar when page is not loading.
@@ -392,6 +443,9 @@ never shown. The check flow begins immediately.
   - Recent tab:            "Recent sites"
   - Settings tab:          "Settings"
   - Recent site row:       "{domain}, {status}" (e.g. "bank.nl, Previously checked")
+  - Float/Toolbar: logo:   "Show tab bar" / "Hide tab bar"
+  - Float/Toolbar: QR:     "Scan QR code"
+  - Float/Toolbar: tabs:   "Tabs (N)"
   - Toolbar: back:         "Back"
   - Toolbar: forward:      "Forward"
   - Toolbar: share:        "Share"
@@ -486,8 +540,8 @@ never shown. The check flow begins immediately.
   - Persisted in UserDefaults
 
   This is NOT in scope for v1. The current start page layout is fixed:
-  omnibox → "or" → QR button (full-width) → compact logo + tagline →
-  stats card → favorites grid → Safari extension / default browser card.
+  omnibox (top) → stats card → favorites grid → Safari extension /
+  default browser card → floating bottom bar (logo | QR | tabs).
 
   See CLAUDE.md rule 82 for the enforceable rule.
 

@@ -38,9 +38,13 @@ LinkLook always prefers the least invasive path first:
 
 ## Three Distinct Privacy Actions
 
-| # | Toggle label | What happens | What leaves the device | Scope key | Backend endpoint |
-|---|-------------|-------------|----------------------|-----------|-----------------|
-| 1 | Cloud URL Check | AI analyzes the web address only | URL + minimal metadata | `url_analysis` | `/analyze-url` |
+> **Naming convention:** The user-facing label in the app is "Cloud link check" (simple).
+> The technical/spec name is "Cloud URL Check" (maps to `url_analysis` scope).
+> Both refer to the same feature. Use the user-facing name in all UI text.
+
+| # | User-facing label | Technical name | What happens | What leaves the device | Scope key | Backend endpoint |
+|---|------------------|---------------|-------------|----------------------|-----------|-----------------|
+| 1 | Cloud link check | Cloud URL Check | AI analyzes the web address only | URL + minimal metadata | `url_analysis` | `/analyze-url` |
 | 2 | Safe Preview | Server fetches the page and returns a screenshot | URL (server fetches page) | `page_fetch` | `/fetch-preview` |
 | 3 | Deep Page Analysis | AI reads the page content for scam signs | URL (server fetches + inspects page) | `page_ai_analysis` | `/analyze-page` |
 
@@ -135,6 +139,47 @@ Settings > Privacy and Protection
 
 **Note:** The first-run sheet sets initial toggle state. The user can change any
 toggle in Settings at any time. "Full protection" enables all three toggles.
+
+## Cloud Upgrade Privacy Confirmation (CLAUDE.md rule 68)
+
+**Principle: every time more data goes to the cloud, confirm first.**
+
+When the user selects a cloud option (in onboarding OR in Settings), a
+`CloudPrivacyConfirmationSheet` appears explaining the privacy impact before
+the setting takes effect. The sheet has "Turn on" / "Cancel" buttons.
+
+### Two variants
+
+| Level | What the sheet says | Icon |
+|-------|-------------------|------|
+| Cloud link check | "The link you check is sent to the LinkLook cloud for AI analysis." + "The website behind the link is not fetched or opened." | `cloud` |
+| Cloud link & page check | "The link is sent to the LinkLook cloud, and the website behind it is fetched and analyzed there." + "The page is only viewed by LinkLook's server — it is not stored permanently." | `cloud.fill` |
+
+### When confirmation IS required
+
+- On-device only → Cloud link check
+- On-device only → Cloud link & page check
+- Cloud link check → Cloud link & page check (any toggle that adds page-level scope)
+
+### When confirmation is NOT required
+
+- Downgrading: Cloud → On-device only
+- Downgrading: Cloud link & page check → Cloud link check
+- Re-selecting the same level that is already active
+
+### Where it applies
+
+1. **Onboarding** (`CloudProtectionConsentSheet`) — tapping a cloud option
+   triggers the privacy confirmation as a sub-sheet before the choice is
+   applied.
+2. **Settings** (`SettingsView`) — toggle bindings intercept the ON action
+   and present the confirmation sheet. If the user cancels, the toggle stays
+   OFF. Turning toggles OFF never shows a confirmation.
+
+### Accessibility identifiers
+
+- `privacyConfirmButton` — "Turn on"
+- `privacyCancelButton` — "Cancel"
 
 ## Just-in-Time Prompts
 

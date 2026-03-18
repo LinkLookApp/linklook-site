@@ -1,0 +1,33 @@
+LinkLook Repository Changelog v23
+Date: 2026-03-17
+Origin: Claude (Cowork)
+
+Summary
+v23 adds target=_blank and window.open() support so these links open in a new
+LinkLook tab instead of being silently ignored. This closes two open test spec
+items (MB-G3-11, MB-G4-05) and adds a new CLAUDE.md rule (62).
+
+Added
+- WebViewRepresentable.swift — WKUIDelegate.createWebViewWith implementation that
+  routes target=_blank and window.open() URLs to onOpenInNewTab (new LinkLook tab)
+- WebViewRepresentable.swift — javaScriptCanOpenWindowsAutomatically = true on
+  WKWebViewConfiguration so window.open() triggers the delegate
+- LinkLookTests/WebViewDelegateTests.swift — 5 unit tests covering:
+  createWebViewWith fires onOpenInNewTab, nil-callback safety, onOpenURL not
+  called, always returns nil, config flag verification
+- CLAUDE.md rule 62 — target=_blank / window.open → new tab
+
+Changed
+- 100_testing/LinkLook_Browser_Test_Specification.txt — MB-G3-11 updated from
+  "Define expected behavior" to documented behavior (new tab via createWebViewWith)
+- 100_testing/LinkLook_Browser_Test_Specification.txt — MB-G4-05 updated from
+  "Define expected behavior" to documented behavior (new tab, scam pop-ups stay
+  inside LinkLook)
+
+Intent
+Links with target=_blank and window.open() were previously silently dropped by
+WKWebView because no createWebViewWith delegate was implemented. This meant users
+clicking such links saw nothing happen — a broken experience. More importantly,
+scam flows that use pop-ups could potentially route users outside LinkLook's
+protection perimeter. The fix ensures all new-window requests stay inside LinkLook
+as new tabs, consistent with the Primary Browser Philosophy (CLAUDE.md rule 10).

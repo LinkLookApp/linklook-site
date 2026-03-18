@@ -140,6 +140,33 @@ Failure-handling rule
 Adapters should return structured failures such as timeout, fetch_blocked, parse_failed, or lookup_unavailable.
 The policy layer then determines controlled fail-safe behavior.
 
+fatalError policy
+fatalError must never be reachable in a release build for recoverable conditions.
+Missing configuration, network failures, corrupt data, and service unavailability are
+recoverable conditions. They must be handled with:
+- a safe fallback value or degraded-but-functional state
+- a user-readable error when the failure affects visible behavior
+- structured diagnostic logging so the issue can be triaged from crash-free telemetry
+
+Use the #if DEBUG / #else pattern when a loud failure is useful during development:
+
+    #if DEBUG
+    fatalError("policy-config.json missing from bundle")
+    #else
+    return PolicyConfig.fallback
+    #endif
+
+Acceptable unguarded fatalError uses (no #if DEBUG required):
+1. required init?(coder:) on programmatic-only UIKit/UIViewController subclasses —
+   this is a standard Apple pattern and the code path is structurally unreachable.
+2. Truly impossible states that indicate a logic bug, not a runtime environment issue.
+
+Test-only code is exempt because it is never compiled into the release binary.
+
+Rationale: a security app that crashes on missing config or transient service failure
+erodes user trust more than any graceful degradation would. Reviewers and testers
+should see controlled failure, not avoidable crashes.
+
 UX architecture rule
 Screens should render from a UXModel rather than assembling warning text ad hoc from raw engine outputs.
 This preserves consistency, localization readiness, and testability.

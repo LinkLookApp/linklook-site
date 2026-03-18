@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkLook — Privacy Policy</title>
+<style>
+  :root { --green: #4CAF76; --dark: #2C2C2C; --mid: #6B6B6B; --bg: #FAF8F4; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         color: var(--dark); background: var(--bg); line-height: 1.6;
+         max-width: 680px; margin: 0 auto; padding: 24px 20px 60px; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 12px; color: var(--green); }
+  p, li { font-size: 16px; color: var(--mid); margin-bottom: 12px; }
+  ul { padding-left: 20px; }
+  .date { font-size: 14px; color: var(--mid); margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #E5E0D8; font-size: 15px; }
+  th { color: var(--dark); font-weight: 600; }
+  td { color: var(--mid); }
+  .highlight { background: #E8F5ED; padding: 16px; border-radius: 12px; margin: 16px 0; }
+  .highlight p { color: var(--dark); margin: 0; }
+  a { color: var(--green); }
+</style>
+</head>
+<body>
+
+<h1>Privacy Policy</h1>
+<p class="date">Effective date: March 18, 2026 &mdash; Version 1.0</p>
+
+<div class="highlight">
+  <p><strong>The short version:</strong> LinkLook checks links to keep you safe. By default, everything happens on your device. Cloud features are optional, off by default, and you control them.</p>
+</div>
+
+<h2>1. Who we are</h2>
+<p>LinkLook is developed by LinkLook (&ldquo;we&rdquo;, &ldquo;us&rdquo;). LinkLook is a safety-focused browser for iOS that checks links before you open them.</p>
+
+<h2>2. What data we collect</h2>
+
+<table>
+  <tr><th>Data</th><th>When</th><th>Purpose</th></tr>
+  <tr><td>URLs you check</td><td>Only when you enable Cloud URL Check</td><td>AI analysis for scam detection</td></tr>
+  <tr><td>Page content (fetched server-side)</td><td>Only when you enable Safe Preview or Deep Page Analysis</td><td>Visual preview / AI page inspection</td></tr>
+  <tr><td>Browsing history</td><td>On-device only</td><td>Recent checks list &mdash; never sent to our servers</td></tr>
+  <tr><td>Favorites &amp; Reading List</td><td>On-device only</td><td>Your bookmarks &mdash; never sent to our servers</td></tr>
+  <tr><td>Crash reports</td><td>Only if you opt in via iOS Settings</td><td>Fixing bugs</td></tr>
+</table>
+
+<h2>3. Three protection levels &mdash; you choose</h2>
+<p>LinkLook offers three protection levels. You choose during setup and can change anytime in Settings.</p>
+
+<table>
+  <tr><th>Level</th><th>What leaves your device</th><th>Default</th></tr>
+  <tr><td><strong>On-device only</strong></td><td>Nothing</td><td>Yes (default)</td></tr>
+  <tr><td><strong>Cloud link check</strong></td><td>The URL you check</td><td>Off</td></tr>
+  <tr><td><strong>Cloud link &amp; page check</strong></td><td>The URL + the page is fetched by our server</td><td>Off</td></tr>
+</table>
+
+<p>Each cloud level requires explicit confirmation before activation. You can turn any level off at any time in Settings &rarr; Enhanced Cloud Protection.</p>
+
+<h2>4. How we use your data</h2>
+<ul>
+  <li><strong>Security analysis only.</strong> URLs and page content sent to our cloud are used exclusively to check for scams, phishing, and malicious content.</li>
+  <li><strong>No advertising.</strong> We do not use your data for advertising, profiling, or selling to third parties.</li>
+  <li><strong>No tracking.</strong> LinkLook does not track you across apps or websites. <code>NSPrivacyTracking</code> is set to <code>false</code>.</li>
+</ul>
+
+<h2>5. Third parties</h2>
+<ul>
+  <li><strong>Google Safe Browsing (GSB).</strong> LinkLook queries the Google Safe Browsing API to check URLs against known threat lists. Google receives a partial URL hash (not the full URL). Google&rsquo;s privacy policy applies to this data.</li>
+  <li><strong>LinkLook cloud servers.</strong> When you enable cloud features, URLs and/or page content are processed on LinkLook&rsquo;s own servers. We do not share this data with other parties.</li>
+  <li><strong>No other third-party SDKs</strong> that collect user data are included in LinkLook.</li>
+</ul>
+
+<h2>6. Data retention</h2>
+<table>
+  <tr><th>Data</th><th>Retention</th></tr>
+  <tr><td>On-device history</td><td>Up to 100 entries, stored on your device only. You can clear it anytime.</td></tr>
+  <tr><td>Cloud URL analysis</td><td>Server-side logs are retained for up to 90 days, then automatically deleted.</td></tr>
+  <tr><td>Page content (fetched)</td><td>Not stored permanently. Processed in memory and discarded after analysis.</td></tr>
+  <tr><td>Audit log</td><td>Minimal audit events (no raw URLs) retained for 90 days.</td></tr>
+</table>
+
+<h2>7. Your rights</h2>
+<ul>
+  <li><strong>Control.</strong> You can disable any cloud feature at any time in Settings.</li>
+  <li><strong>Delete.</strong> Clear your on-device history in Settings &rarr; History. Clear cloud analysis history in Settings &rarr; Enhanced Cloud Protection.</li>
+  <li><strong>Access.</strong> All your data is visible in the app (Recent tab, Settings).</li>
+  <li><strong>Withdraw consent.</strong> Turn off any cloud toggle to immediately stop sending data.</li>
+  <li><strong>Data portability / erasure requests.</strong> Contact us at <a href="mailto:privacy@linklook.app">privacy@linklook.app</a>.</li>
+</ul>
+
+<h2>8. Sensitive data protection</h2>
+<p>Before any URL is sent to our cloud, LinkLook scans it on-device for sensitive information (email addresses, phone numbers, tokens, health data). If detected, you are warned and can choose to mask, skip, or proceed. This happens before any data leaves your device.</p>
+
+<h2>9. Children&rsquo;s privacy</h2>
+<p>LinkLook does not knowingly collect personal information from children under 13. The app is designed for general audiences focused on online safety.</p>
+
+<h2>10. Changes to this policy</h2>
+<p>We may update this policy. Material changes will be communicated through the app. The &ldquo;effective date&rdquo; at the top reflects the latest version.</p>
+
+<h2>11. Contact</h2>
+<p>Questions about this privacy policy? Email us at <a href="mailto:privacy@linklook.app">privacy@linklook.app</a>.</p>
+
+</body>
+</html>

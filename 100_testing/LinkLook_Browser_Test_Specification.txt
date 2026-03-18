@@ -163,7 +163,9 @@ MB-G3-07 | In-page navigation stays in browser
          | Normal in-page link navigation remains inside LinkLook browser.
          |
 MB-G3-08 | HTTPS error handling
-         | Invalid certificate / TLS issue gives proper error state.
+         | Invalid certificate / TLS issue triggers browser error page
+         | (CLAUDE.md rule 123). Shows domain, error description, Retry,
+         | Go Back. No blank screen.
          |
 MB-G3-09 | No blank screen after successful load
          | Page content becomes visible and interactive.
@@ -176,8 +178,9 @@ MB-G3-10 | Basic cookies/session behavior
          | Login/session survives normal navigation if intended.
          |
 MB-G3-11 | target=_blank behavior
-         | Define expected behavior (same view, new view, or blocked),
-         | then test that exact behavior.
+         | Links with target=_blank open in a new LinkLook tab via
+         | createWebViewWith → onOpenInNewTab. The delegate returns nil
+         | (no extra WKWebView). Unit tests: WebViewDelegateTests.
          |
 MB-G3-12 | Downloads behavior
          | If unsupported, show clear message. If supported later, test
@@ -214,8 +217,11 @@ MB-G4-04 | Phishing-like domain display
          | understanding.
          |
 MB-G4-05 | Pop-up / window.open behavior
-         | Define expected behavior and test it. Especially important
-         | for scam flows.
+         | window.open() and pop-ups open in a new LinkLook tab (same
+         | path as target=_blank). javaScriptCanOpenWindowsAutomatically
+         | = true enables the delegate call. Scam pop-ups stay inside
+         | LinkLook — no external browser escape.
+         | Unit tests: WebViewDelegateTests.
          |
 MB-G4-06 | Deep link / app-store / tel / sms / mailto links
          | Browser handles these safely and predictably.
@@ -236,17 +242,32 @@ Priority: P0
 ID       | Title
 ---------|--------------------------------------------------------------
 MB-G5-01 | No network
-         | App shows clear error, not endless spinner.
+         | App shows browser error page overlay (not blank screen or
+         | spinner). Shows: "Page failed to load", domain name, system
+         | error description, Retry button, Go Back button.
+         | Implementation: BrowserCoordinator.loadError → browserErrorPage
+         | overlay in TabContentView. NSURLErrorCancelled ignored.
+         | CLAUDE.md rule 123. UI test: testErrorPage_appearsOnLoadFailure.
          |
 MB-G5-02 | DNS failure
-         | Proper error state.
+         | Browser error page shows with domain from
+         | NSURLErrorFailingURLStringErrorKey (webView.url is nil during
+         | provisional navigation failures). Retry re-attempts load.
+         | Go Back returns to idle. UI tests:
+         | testErrorPage_showsDomain, testErrorPage_retryReloadsPage,
+         | testErrorPage_goBackReturnsToIdle.
          |
 MB-G5-03 | Backend unavailable
          | Decision service failure handled safely (fail-safe, not
          | fail-open).
          |
 MB-G5-04 | Web page load failure after safe verdict
-         | User sees browser/network error, not decision error.
+         | After OK/INFORM/WARN verdict opens WKWebView, if page load
+         | fails (TLS error, timeout, network lost), browser error page
+         | appears over the WebView. User sees Retry and Go Back — not
+         | a blank screen or the verdict screen. Error cleared on next
+         | successful navigation start. Unit tests:
+         | WebViewDelegateTests (7 loadError tests).
          |
 MB-G5-05 | App goes to background during decision
          | Returning to app restores correct state.

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkLook — Privacy Choices</title>
+<style>
+  :root { --green: #4CAF76; --dark-green: #2E7D4F; --dark: #2C2C2C; --mid: #6B6B6B; --bg: #FAF8F4; --card: #F2EFE9; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         color: var(--dark); background: var(--bg); line-height: 1.6;
+         max-width: 680px; margin: 0 auto; padding: 24px 20px 60px; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 12px; color: var(--green); }
+  p { font-size: 16px; color: var(--mid); margin-bottom: 12px; }
+  .date { font-size: 14px; color: var(--mid); margin-bottom: 24px; }
+  .card { background: var(--card); border-radius: 16px; padding: 20px; margin: 16px 0; }
+  .card h3 { font-size: 18px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .card .icon { font-size: 24px; }
+  .card .sent, .card .not-sent { font-size: 15px; margin: 8px 0 0; padding-left: 4px; }
+  .card .sent::before { content: "↑ "; color: var(--green); font-weight: bold; }
+  .card .not-sent::before { content: "✕ "; color: var(--mid); }
+  .default-badge { display: inline-block; background: var(--green); color: white;
+                   font-size: 12px; font-weight: 600; padding: 2px 8px;
+                   border-radius: 8px; margin-left: 8px; vertical-align: middle; }
+  .howto { background: #E8F5ED; border-radius: 12px; padding: 16px; margin: 16px 0; }
+  .howto p { color: var(--dark); margin: 0; }
+  a { color: var(--green); }
+</style>
+</head>
+<body>
+
+<h1>Privacy choices in LinkLook</h1>
+<p class="date">Last updated: March 18, 2026</p>
+
+<p>LinkLook gives you full control over what data leaves your device. You choose one of three protection levels during setup, and you can change your choice at any time.</p>
+
+<div class="card">
+  <h3><span class="icon">📱</span> On-device only <span class="default-badge">Default</span></h3>
+  <p class="sent" style="color: var(--dark);">Everything stays on your iPhone.</p>
+  <p class="not-sent">No data is sent to LinkLook&rsquo;s servers or any third party.</p>
+  <p style="font-size: 14px; color: var(--mid); margin-top: 12px;">LinkLook&rsquo;s built-in engine analyzes the link structure locally. This catches many scam patterns without any cloud connection.</p>
+</div>
+
+<div class="card">
+  <h3><span class="icon">☁️</span> Cloud link check</h3>
+  <p class="sent">The link you check is sent to the LinkLook cloud for AI analysis.</p>
+  <p class="not-sent">The website behind the link is not fetched or opened.</p>
+  <p style="font-size: 14px; color: var(--mid); margin-top: 12px;">Our AI examines the web address for patterns that the on-device engine might miss. The actual webpage is never visited by our servers.</p>
+</div>
+
+<div class="card">
+  <h3><span class="icon">☁️</span> Cloud link &amp; page check</h3>
+  <p class="sent">The link is sent, and the website is fetched and analyzed by LinkLook&rsquo;s server.</p>
+  <p class="not-sent">The page is only viewed by our server &mdash; it is not stored permanently.</p>
+  <p style="font-size: 14px; color: var(--mid); margin-top: 12px;">Strongest protection. Our AI reads the page looking for fake login forms, brand impersonation, and social engineering. The page content is processed in memory and discarded after analysis.</p>
+</div>
+
+<h2>How to change your choice</h2>
+<div class="howto">
+  <p>Open LinkLook &rarr; tap the LinkLook logo (bottom-left) &rarr; Settings &rarr; Enhanced Cloud Protection. Toggle any option on or off. Changes take effect immediately.</p>
+</div>
+
+<h2>Google Safe Browsing</h2>
+<p>In addition to LinkLook&rsquo;s own checks, the app queries the Google Safe Browsing API using partial URL hashes (not full URLs). This check runs regardless of your cloud protection choice and helps detect known malicious sites. <a href="https://policies.google.com/privacy">Google&rsquo;s Privacy Policy</a> applies.</p>
+
+<h2>Sensitive data detection</h2>
+<p>Before any URL leaves your device, LinkLook scans it for sensitive information (emails, phone numbers, tokens, health data). If detected, you&rsquo;re warned and can choose to mask, skip, or proceed. This happens on-device, before any cloud transmission.</p>
+
+<h2>Questions?</h2>
+<p>Email us at <a href="mailto:privacy@linklook.app">privacy@linklook.app</a> or read our full <a href="privacy-policy.html">Privacy Policy</a>.</p>
+
+</body>
+</html>
