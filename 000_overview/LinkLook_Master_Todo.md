@@ -1,14 +1,12 @@
 # LinkLook — Master Todo List
 
-> **Last updated:** 2026-03-18
+> **Last updated:** 2026-03-19
 > **Status:** Living document — update after every work session.
 
 ---
 
 ## NU — Privacy & App Store Submission
 
-- [ ] Host `privacy-policy.html` op `https://linklook.app/privacy-policy`
-- [ ] Host `privacy-choices.html` op `https://linklook.app/privacy-choices`
 - [ ] App Store Connect Privacy questionnaire invullen (guide: `080_compliance/legal/App_Store_Privacy_Guide.md`)
 
 ## NU — Apple Review Readiness
@@ -45,6 +43,7 @@
 ## Entitlement & Default Browser
 
 - [ ] Make UI entitlement ready (zie ChatGPT discussie)
+- [ ] Inhoud privacy-policy.html en privacy-choices.html reviewen vóór entitlement request
 - [ ] Fill entitlement form
 - [ ] Set Default app help (zie ChatGPT chat 16 maart)
 - [ ] Test < 18.2 versions op "Default Browser" handling na entitlement
@@ -105,7 +104,7 @@
 
 ---
 
-## Afgerond (2026-03-18)
+## Afgerond (2026-03-19)
 
 - [x] Tab overview thumbnails — captureAllSnapshots()
 - [x] Tab bar hideable — floating LinkLook logo als toggle
@@ -131,3 +130,5 @@
 - [x] Script naming convention (rule in CLAUDE.md)
 - [x] "After every code change → check tests and docs" regel
 - [x] Stale referenties MinimalBrowserView opgeruimd
+- [x] Host `privacy-policy.html` op `https://linklook.app/privacy-policy`
+- [x] Host `privacy-choices.html` op `https://linklook.app/privacy-choices`
