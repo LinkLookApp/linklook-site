@@ -8,6 +8,24 @@
 ## NU — Privacy & App Store Submission
 
 - [x] App Store Connect Privacy questionnaire invullen — KLAAR
+- [x] **KRITIEK:** Privacy policy + choices + App Store Guide: GSB "partial URL hash" → gecorrigeerd naar "URL is sent to Google" (2026-03-20)
+- [x] **KRITIEK:** "Emails or Text Messages" (Check Message Context) toegevoegd aan privacy-policy.html sectie 2 (2026-03-20)
+- [x] Privacy-choices.html: GSB-tekst gecorrigeerd (2026-03-20)
+- [x] App_Store_Privacy_Guide.md: bijgewerkt — GSB-claim, hosting status, Web Risk notitie (2026-03-20)
+- [x] Privacy_Trust_Roadmap.md: statussen bijgewerkt — hosting done, privacy review sectie toegevoegd, GDPR items bij V2 (2026-03-20)
+- [ ] Kinderen-leeftijd in privacy policy: "under 13" (COPPA) → "under 16" voor NL/EU GDPR compliance
+- [ ] Privacy policy sectie 1 bijwerken zodra BV is opgericht (naam + KvK + adres)
+
+## PARALLEL — BV-oprichting (niet blokkend voor launch)
+
+> **Beslissing 2026-03-20:** LinkLook B.V. oprichten voor aansprakelijkheidsbescherming. Loopt parallel aan development — niet blokkend voor entitlement of App Store submission. Privacy policy wordt bijgewerkt zodra KvK-nummer beschikbaar is.
+
+- [ ] **Stap 1:** Notaris kiezen + afspraak maken (online notarissen zoals Ligo, Firmright, of Notaris.nl zijn snel en goedkoop, ~€400-500)
+- [ ] **Stap 2:** Statuten laten opstellen (notaris doet dit, keuzes: naam "LinkLook B.V.", doel, aandelenstructuur — standaard 1 aandeelhouder/bestuurder is prima)
+- [ ] **Stap 3:** Bankrekening openen op naam van B.V. i.o. (minimaal €0,01 stortingskapitaal)
+- [ ] **Stap 4:** Oprichtingsakte ondertekenen bij notaris → KvK-inschrijving volgt automatisch
+- [ ] **Stap 5:** Vestigingsadres regelen (huisadres of virtueel kantooradres als je huisadres niet in de privacy policy wilt)
+- [ ] **Stap 6:** Na KvK: privacy policy updaten + deployen, Apple Developer account overzetten naar BV
 
 ## NU — Analytics & Crash SDK beslissing
 
@@ -28,7 +46,7 @@
 
 - [ ] Strengthen "real browser" story
 - [ ] Prepare clear App Review notes
-- [ ] Make App Store privacy details fully accurate
+- [ ] Make App Store privacy details fully accurate (incl. GSB + Emails/Text fixes hierboven)
 - [ ] Geef één reproduceerbare testflow in review notes
 
 ## NU — Gap Analysis
@@ -38,6 +56,12 @@
 - [ ] Check which docs are missing
 - [ ] Which test types are missing?
 - [ ] Judge all browser pages on Safari-likeness (screenshots → review)
+- [ ] Privacy-specifieke tests bouwen:
+  - [ ] Canary log test: inject fake sensitive data → verifieer niet in logs (staat in Consent Spec als planned)
+  - [ ] Consent scope test: verifieer dat `/analyze-url` nooit page content fetcht
+  - [ ] Data retention test: verifieer auto-purge na 90 dagen in audit logger
+  - [ ] Privacy Signal test: verifieer masking vóór elke backend call
+  - [ ] Tekst-consistentie test: geautomatiseerde check onboarding ↔ settings ↔ website ↔ privacy policy
 
 ## NU — Build & Bugs
 
@@ -58,7 +82,7 @@
 ## Entitlement & Default Browser
 
 - [ ] Make UI entitlement ready (zie ChatGPT discussie)
-- [ ] Inhoud privacy-policy.html en privacy-choices.html reviewen vóór entitlement request
+- [x] Inhoud privacy-policy.html en privacy-choices.html reviewen vóór entitlement request — KLAAR (review 2026-03-20, fixes in NU-sectie)
 - [ ] Fill entitlement form
 - [ ] Set Default app help (zie ChatGPT chat 16 maart)
 - [ ] Test < 18.2 versions op "Default Browser" handling na entitlement
@@ -112,6 +136,11 @@
 - [ ] Settings privacy-sectie verbeteren (samenvatting huidige stand, directe uit-knop, links)
 - [ ] Logging/bewaarbeleid expliciet documenteren
 - [ ] Consistente privacy-teksten audit (alle surfaces)
+- [ ] Privacy-choices.html uitbreiden: Safe Preview als apart niveau benoemen (nu vereenvoudigd naar 2 cloud levels, code heeft 3 toggles)
+- [ ] DPIA (Data Protection Impact Assessment) opstellen — sterk aanbevolen vóór cloud features live gaan
+- [ ] GDPR verwerkingsregister (Article 30) formaliseren — veel info staat al in docs, nog niet in officieel formaat
+- [ ] Subprocessors documenteren: Anthropic/Claude (page analysis), Urlbox (screenshots), Google (GSB/Web Risk)
+- [ ] Internationale datatransfers documenteren: serverlocatie(s) + waarborgen (SCCs indien buiten EU)
 
 ## V3 — Trust & Transparency
 
@@ -119,6 +148,7 @@
 - [ ] Open source selectie (on-device logic, rules, consent flow)
 - [ ] Publiek trust statement pagina
 - [ ] Formele certificering evalueren
+- [ ] DPO-aanstelling evalueren (bij grote schaal)
 
 ---
 

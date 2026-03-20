@@ -61,11 +61,12 @@
 
 ## 3. Third-Party Partners
 
-### Google Safe Browsing API
-- **Data shared:** Partial URL hashes (not full URLs)
+### Google Safe Browsing / Web Risk
+- **Data shared:** The URL being checked (full URL sent via Lookup API)
 - **Purpose:** Checking URLs against known threat databases
 - **Linked to user:** No
 - **Used for tracking:** No
+- **Note:** v1.0 uses Safe Browsing v4 Lookup API (full URL). Migration to Web Risk API planned before App Store launch (same Lookup approach, commercially compliant).
 
 ### No other third-party SDKs collect user data.
 
@@ -103,13 +104,13 @@ NSPrivacyAccessedAPITypes:
 
 | Field | URL | Status |
 |-------|-----|--------|
-| Privacy Policy URL | `https://linklook.app/privacy-policy` | Needs hosting |
-| Privacy Choices URL (optional) | `https://linklook.app/privacy-choices` | Needs hosting |
+| Privacy Policy URL | `https://linklook.app/privacy-policy` | ✅ Live + ingevuld in ASC |
+| Privacy Choices URL (optional) | `https://linklook.app/privacy-choices` | ✅ Live + ingevuld in ASC |
 
 ## 7. Hosting Checklist
 
-- [ ] Host `privacy-policy.html` at `https://linklook.app/privacy-policy`
-- [ ] Host `privacy-choices.html` at `https://linklook.app/privacy-choices`
-- [ ] Enter Privacy Policy URL in App Store Connect → App Privacy
-- [ ] Enter Privacy Choices URL in App Store Connect → App Privacy (optional)
-- [ ] Add Privacy Policy link in app Settings (see CLAUDE.md rule 69)
+- [x] Host `privacy-policy.html` at `https://linklook.app/privacy-policy` — DONE
+- [x] Host `privacy-choices.html` at `https://linklook.app/privacy-choices` — DONE
+- [x] Enter Privacy Policy URL in App Store Connect → App Privacy — DONE (2026-03-20)
+- [x] Enter Privacy Choices URL in App Store Connect → App Privacy — DONE (2026-03-20)
+- [x] Add Privacy Policy link in app Settings (see CLAUDE.md rule 69) — DONE

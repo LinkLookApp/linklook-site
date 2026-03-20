@@ -52,7 +52,7 @@ TC-GSB-001
 - reason: gsb_threat_match
 - policy: GSB escalation to BLOCK (CLAUDE.md rule 30)
 - UX mapping: "Flagged by Google Safe Browsing" message
-- privacy: URL hash prefixes sent to Google (CLAUDE.md rule 32)
+- privacy: full URL sent to Google via Lookup API (CLAUDE.md rule 32). Migration to Web Risk planned.
 
 TC-GSB-002
 - component: GSBCache + LinkCheckService

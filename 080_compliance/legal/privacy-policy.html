@@ -42,6 +42,7 @@
   <tr><th>Data</th><th>When</th><th>Purpose</th></tr>
   <tr><td>URLs you check</td><td>Only when you enable Cloud URL Check</td><td>AI analysis for scam detection</td></tr>
   <tr><td>Page content (fetched server-side)</td><td>Only when you enable Safe Preview or Deep Page Analysis</td><td>Visual preview / AI page inspection</td></tr>
+  <tr><td>Message text you paste</td><td>Only when you use &ldquo;Check Message Context&rdquo;</td><td>AI context analysis for social engineering detection &mdash; discarded after analysis</td></tr>
   <tr><td>Browsing history</td><td>On-device only</td><td>Recent checks list &mdash; never sent to our servers</td></tr>
   <tr><td>Favorites &amp; Reading List</td><td>On-device only</td><td>Your bookmarks &mdash; never sent to our servers</td></tr>
   <tr><td>Crash reports</td><td>Only if you opt in via iOS Settings</td><td>Fixing bugs</td></tr>
@@ -68,7 +69,7 @@
 
 <h2>5. Third parties</h2>
 <ul>
-  <li><strong>Google Safe Browsing (GSB).</strong> LinkLook queries the Google Safe Browsing API to check URLs against known threat lists. Google receives a partial URL hash (not the full URL). Google&rsquo;s privacy policy applies to this data.</li>
+  <li><strong>Google Safe Browsing.</strong> LinkLook queries the Google Safe Browsing service to check URLs against known threat lists. The URL you check is sent to Google for this lookup. Google&rsquo;s <a href="https://policies.google.com/privacy">privacy policy</a> applies to this data.</li>
   <li><strong>LinkLook cloud servers.</strong> When you enable cloud features, URLs and/or page content are processed on LinkLook&rsquo;s own servers. We do not share this data with other parties.</li>
   <li><strong>No other third-party SDKs</strong> that collect user data are included in LinkLook.</li>
 </ul>

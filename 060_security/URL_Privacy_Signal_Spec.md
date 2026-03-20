@@ -46,8 +46,10 @@ The Privacy Signal activates when **all** of the following are true:
 
 The Privacy Signal does **not** trigger for:
 
-- On-device-only checks (structural analysis, GSB hash-prefix lookup, on-device
-  AI URL analysis). These never send the full URL to LinkLook's server.
+- On-device-only checks (structural analysis, on-device AI URL analysis). These
+  never send data to LinkLook's server. Note: GSB Lookup sends the full URL
+  directly to Google (not via LinkLook's server) — this is separate from the
+  Privacy Signal scope which governs LinkLook backend calls.
 - URLs with no detected sensitive data.
 
 ---

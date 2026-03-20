@@ -1,6 +1,6 @@
 # LinkLook — Privacy & Trust Roadmap
 
-> **Date:** 2026-03-18
+> **Date:** 2026-03-20
 > **Status:** Living document — tracks privacy maturity from V1 to V3.
 
 ## NU (V1 — Required for App Store submission)
@@ -14,11 +14,11 @@
 - Consistent across all surfaces (CLAUDE.md rule 70)
 - On-device / Cloud link check / Cloud link & page check
 
-### 3. Privacy Policy URL ✅ DONE (needs hosting)
+### 3. Privacy Policy URL ✅ DONE
 - HTML page created: `LinkLook-Docs/080_compliance/legal/privacy-policy.html`
 - Link in Settings → About (CLAUDE.md rule 69)
-- **TODO:** Host at `https://linklook.app/privacy-policy`
-- **TODO:** Enter URL in App Store Connect
+- Hosted at `https://linklook.app/privacy-policy` (2026-03-20)
+- URL ingevuld in App Store Connect (2026-03-20)
 
 ### 4. App Privacy in App Store Connect ✅ DONE
 - Guide created: `App_Store_Privacy_Guide.md`
@@ -36,11 +36,22 @@
 - Audit complete: no "fully private/secure/detects all" found
 - CLAUDE.md rule 71 prevents future overclaiming
 
+### 6. Privacy review inhoud (2026-03-20) ✅ DONE
+- GSB "partial URL hash" claim gecorrigeerd → "URL is sent to Google" in privacy-policy.html, privacy-choices.html, App_Store_Privacy_Guide.md
+- "Emails or Text Messages" (Check Message Context) toegevoegd aan privacy-policy.html sectie 2
+- Interne docs bijgewerkt (URL_Privacy_Signal_Spec.md, Test_Traceability_Matrix.txt)
+- Bestanden gedeployed naar linklook.app (2026-03-20)
+
+### 7. Nog open (NU) ⬜ TODO
+- Juridische entiteit specificeren: "LinkLook is developed by LinkLook" → echte entiteit + adres
+- Kinderen-leeftijd: "under 13" (COPPA) → "under 16" voor NL/EU GDPR
+
 ## V2 (Post-launch improvements)
 
-### 1. Publieke privacy-uitlegpagina ✅ DONE (needs hosting)
+### 1. Publieke privacy-uitlegpagina ✅ DONE
 - HTML page created: `privacy-choices.html`
-- **TODO:** Host at `https://linklook.app/privacy-choices`
+- Hosted at `https://linklook.app/privacy-choices` (2026-03-20)
+- URL ingevuld in App Store Connect (2026-03-20)
 
 ### 2. Settings privacy-sectie verbeteren ⬜ TODO
 - Add: current protection level summary at top
@@ -57,6 +68,15 @@
 - Verify identical descriptions across:
   onboarding / settings / website / privacy policy / support docs
 - Run after every text change
+
+### 5. Privacy-choices uitbreiden ⬜ TODO
+- Safe Preview als apart niveau benoemen (nu vereenvoudigd naar 2 cloud levels, code heeft 3 toggles)
+
+### 6. GDPR compliance verdiepen ⬜ TODO
+- DPIA (Data Protection Impact Assessment) opstellen
+- Verwerkingsregister (Article 30) formaliseren
+- Subprocessors documenteren: Anthropic/Claude, Urlbox, Google (GSB/Web Risk)
+- Internationale datatransfers documenteren: serverlocatie(s) + waarborgen
 
 ## V3 (Trust & transparency)
 
@@ -76,19 +96,27 @@
 - Not needed for Apple review
 - Relevant later for enterprise/partnerships
 
+### 5. DPO-aanstelling ⬜ FUTURE
+- Evalueren bij grote schaal
+
 ## Priority Order
 
 | Phase | Action | Status |
 |-------|--------|--------|
 | **NU** | Consent flow | ✅ Done |
-| **NU** | Privacy policy live | ⬜ Needs hosting |
+| **NU** | Privacy policy live | ✅ Done (hosted + ASC) |
 | **NU** | App Store Privacy | ✅ Done |
 | **NU** | Text consistency | ✅ Done |
 | **NU** | No overclaiming | ✅ Done |
-| **V2** | Public privacy page | ✅ Created, needs hosting |
+| **NU** | Privacy review inhoud | ✅ Done (GSB + Emails/Text fix) |
+| **NU** | Juridische entiteit + kinderen-leeftijd | ⬜ |
+| **V2** | Public privacy page | ✅ Done (hosted + ASC) |
 | **V2** | Settings improvements | ⬜ |
 | **V2** | Logging policy | ⬜ |
+| **V2** | Privacy-choices uitbreiden | ⬜ |
+| **V2** | GDPR compliance verdiepen | ⬜ |
 | **V3** | External review | ⬜ |
 | **V3** | Open source | ⬜ |
 | **V3** | Trust statement | ⬜ |
 | **V3** | Certification | ⬜ |
+| **V3** | DPO-aanstelling | ⬜ |
