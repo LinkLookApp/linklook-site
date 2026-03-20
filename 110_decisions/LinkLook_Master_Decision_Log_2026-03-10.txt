@@ -1878,4 +1878,27 @@ LinkLookCore.
 Date(s):
 - 2026-03-20
 
+MDL-121
+Subject: CI Pipeline — CLAUDE.md split for token reduction
+Status: Decided
+Title: CLAUDE.md gesplitst in 3 bestanden voor CI performance
+Decision:
+CLAUDE.md (428 regels) werd volledig gelezen door elke Claude Code call in
+01_sync.sh, terwijl micro-syncs alleen UX/engine regels nodig hebben en
+test-syncs alleen test regels. Dit verspilde tokens en verwerkingstijd.
+Oplossing: twee CI-optimized subsets naast de master:
+- CLAUDE_ENGINE.md (192 regels) — UX rules, decision engine, privacy signal,
+  policy, Safari extension, default browser detection. Gelezen door micro-sync.
+- CLAUDE_TESTING.md (59 regels) — test rules, priority order, capacity limits,
+  privacy test requirements, UI test patterns. Gelezen door test-sync.
+CLAUDE.md blijft de single source of truth. Regel 6 bijgewerkt: "All rules
+originate here. CLAUDE_ENGINE.md and CLAUDE_TESTING.md are CI-optimized
+subsets. When updating rules, update CLAUDE.md first, then propagate."
+01_sync.sh prompts bijgewerkt: micro-sync leest CLAUDE_ENGINE.md, test-sync
+leest CLAUDE_TESTING.md, beide met CLAUDE.md als fallback.
+Geschatte token reductie: micro-sync 55%, test-sync 86%. Verwachte tijdwinst:
+20-30% snellere Claude Code responses per sync call.
+Date(s):
+- 2026-03-20
+
 End of document.

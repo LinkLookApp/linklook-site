@@ -171,6 +171,7 @@
 ## Afgerond (2026-03-20)
 
 - [x] CI sync prompts aangescherpt: compilatie/test verboden in micro-sync en test-sync (MDL-120) — ~50-70 min besparing per CI run
+- [x] CLAUDE.md gesplitst in CLAUDE_ENGINE.md (192r) + CLAUDE_TESTING.md (59r) voor CI token reductie (MDL-121) — ~55-86% minder tokens per sync call
 - [x] App aangemaakt in App Store Connect (LinkLook, com.linklook.app)
 - [x] Privacy Tracker spreadsheet (App_Store_Privacy_Tracker.xlsx)
 - [x] App Store Connect Privacy questionnaire volledig ingevuld en gepubliceerd
