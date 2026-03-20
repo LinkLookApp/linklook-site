@@ -1,13 +1,19 @@
 # LinkLook — Master Todo List
 
-> **Last updated:** 2026-03-19
+> **Last updated:** 2026-03-20
 > **Status:** Living document — update after every work session.
 
 ---
 
 ## NU — Privacy & App Store Submission
 
-- [ ] App Store Connect Privacy questionnaire invullen (guide: `080_compliance/legal/App_Store_Privacy_Guide.md`)
+- [~] App Store Connect Privacy questionnaire invullen — BEZIG
+  - [x] App aangemaakt in App Store Connect (LinkLook, com.linklook.app, SKU: linklook001)
+  - [x] Privacy Tracker spreadsheet gemaakt (App_Store_Privacy_Tracker.xlsx)
+  - [ ] Datatypes aanvinken: Browsing History, Emails or Text Messages, Device ID, Product Interaction, Crash Data, Performance Data
+  - [ ] Per datatype: linked/tracking/doel bevestigen
+  - [ ] Privacy labels reviewen en publiceren
+- [ ] Privacy policy URL invoeren in App Store Connect (https://linklook.app/privacy-policy)
 
 ## NU — Apple Review Readiness
 
@@ -71,6 +77,9 @@
 ## Backend — Business
 
 - [ ] Pricing model — more than 2 layers?
+- [ ] Sign in with Apple implementeren (bij premium release)
+- [ ] Subscription/IAP opzetten
+- [ ] App Store Privacy labels updaten bij premium (Contact Info, User ID, Purchases toevoegen)
 
 ---
 
@@ -103,6 +112,20 @@
 - [ ] Formele certificering evalueren
 
 ---
+
+## Beslissingen (2026-03-20)
+
+- **Geen login in v1.0** — app blijft laagdrempelig, geen account nodig. Scan-geschiedenis lokaal op device.
+- **Sign in with Apple bij premium/v2.0** — pas wanneer sync, subscriptions of persoonlijke alerts komen.
+- **App Store Privacy v1.0 datatypes:** Browsing History, Emails or Text Messages, Device ID, Product Interaction, Crash Data, Performance Data. Geen data linked to user, geen tracking.
+- **Emails or Text Messages:** nodig vanwege context-analyse feature (gebruiker plakt tekst uit e-mail/bericht zodat AI de link in context beoordeelt).
+- **Device ID bron:** pseudonieme ID uit AnalysisAuditLogger (niet IDFA, niet persistent na herinstallatie). Gebruikt voor audit logging bij cloud analyse-requests.
+- **Foundation claims alleen bij premium** — verificatie via Sign in with Apple, niet via los e-mailadres. Device ID volstaat niet voor claims; Apple ID geeft sterkere identiteitsverificatie.
+
+## Afgerond (2026-03-20)
+
+- [x] App aangemaakt in App Store Connect (LinkLook, com.linklook.app)
+- [x] Privacy Tracker spreadsheet (App_Store_Privacy_Tracker.xlsx)
 
 ## Afgerond (2026-03-19)
 

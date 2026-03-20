@@ -20,9 +20,14 @@
 - **TODO:** Host at `https://linklook.app/privacy-policy`
 - **TODO:** Enter URL in App Store Connect
 
-### 4. App Privacy in App Store Connect ⬜ TODO
+### 4. App Privacy in App Store Connect 🔄 IN PROGRESS
 - Guide created: `App_Store_Privacy_Guide.md`
-- **TODO:** Fill in App Store Connect questionnaire
+- App created in App Store Connect (2026-03-20)
+- Privacy Tracker spreadsheet created (App_Store_Privacy_Tracker.xlsx)
+- **Decision:** No login in v1.0 → no Contact Info, no User ID, no Purchases
+- **v1.0 datatypes:** Browsing History, Emails or Text Messages, Device ID, Product Interaction, Crash Data, Performance Data
+- **All data:** Not linked to user, not used for tracking
+- **TODO:** Complete questionnaire in App Store Connect (datatypes → purposes → publish)
 
 ### 5. Geen overdreven claims ✅ DONE
 - Audit complete: no "fully private/secure/detects all" found
@@ -74,7 +79,7 @@
 |-------|--------|--------|
 | **NU** | Consent flow | ✅ Done |
 | **NU** | Privacy policy live | ⬜ Needs hosting |
-| **NU** | App Store Privacy | ⬜ Needs filling |
+| **NU** | App Store Privacy | 🔄 In progress |
 | **NU** | Text consistency | ✅ Done |
 | **NU** | No overclaiming | ✅ Done |
 | **V2** | Public privacy page | ✅ Created, needs hosting |

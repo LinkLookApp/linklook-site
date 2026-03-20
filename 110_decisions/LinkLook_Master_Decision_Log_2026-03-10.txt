@@ -1760,4 +1760,81 @@ The current canonical direction is:
     response plan, bug bounty. Product positioning: never claim device-wide
     or 100% protection.
 
+================================================================
+SECTION — ADDITIONS 2026-03-20
+================================================================
+
+MDL-114
+Subject: Authentication / Login
+Status: Decided
+Title: No user login in v1.0; Sign in with Apple deferred to premium/v2.0
+Decision:
+LinkLook v1.0 ships without any user account or login system.
+Scan history is stored locally on-device only.
+Rationale: keeps the app laagdrempelig (low barrier), reduces privacy
+complexity (fewer App Store Privacy datatypes to declare), and simplifies
+v1.0 development. Sign in with Apple will be introduced when premium
+features require it (sync between devices, subscriptions, personal
+threat alerts). At that point, Contact Info (Email), User ID, and
+Purchases must be added to App Store Privacy labels.
+
+MDL-115
+Subject: App Store Connect Setup
+Status: Decided
+Title: LinkLook registered in App Store Connect
+Decision:
+App created 2026-03-20 with:
+  - Platform: iOS
+  - Name: LinkLook
+  - Bundle ID: com.linklook.app
+  - SKU: linklook001
+  - User Access: Full Access
+  - Primary Language: English (U.K.)
+
+MDL-116
+Subject: App Store Privacy — v1.0 Data Types
+Status: Decided
+Title: Six data types declared for v1.0 privacy labels
+Decision:
+v1.0 declares the following data types in App Store Connect:
+  1. Browsing History — URLs scanned by user (core feature)
+  2. User Content → Emails or Text Messages — context-analyse feature
+     (user pastes text from email/message so AI can assess link in context)
+  3. Identifiers → Device ID — pseudonymous ID from AnalysisAuditLogger
+     (not IDFA, not persistent across reinstalls, used for audit logging
+     of cloud analysis requests)
+  4. Usage Data → Product Interaction — app usage, scan results
+  5. Diagnostics → Crash Data — crash reporting
+  6. Diagnostics → Performance Data — performance monitoring
+All data: NOT linked to user identity, NOT used for tracking.
+Primary purpose: App Functionality (browsing history, emails/messages,
+crash data) and Analytics (device ID, product interaction, performance).
+Will be expanded when premium/login features are added (see MDL-114).
+
+MDL-117
+Subject: Foundation Claims — Premium Only
+Status: Decided
+Title: Foundation claims restricted to premium users, verified via Sign in with Apple
+Decision:
+Foundation claims (reimbursement for scam losses) are only available to
+premium subscribers. Rationale:
+  - Premium users pay and contribute to the fund
+  - Sign in with Apple provides strong identity verification (one Apple ID
+    = one person = no duplicate claims)
+  - Communication via Apple's relay email
+  - No separate email collection needed for claims
+  - Device ID alone is insufficient for fraud prevention on claims
+v1.0 has no claims system; no extra privacy datatypes needed for this.
+
+MDL-118
+Subject: Search History — Not Collected
+Status: Decided
+Title: Search History not declared in App Store Privacy
+Decision:
+Although LinkLook has an omnibox (search + URL bar), search queries are
+not stored as a retrievable, scrollable search history. The omnibox
+processes queries but does not persist them as "search history" in Apple's
+definition. Recently visited pages are stored (covered by Browsing History).
+Therefore Search History is not declared.
+
 End of document.
