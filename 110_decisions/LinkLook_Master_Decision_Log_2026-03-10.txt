@@ -1854,4 +1854,28 @@ GSBCache kan hergebruikt worden, privacy-impact is identiek.
 Date(s):
 - 2026-03-20
 
+MDL-120
+Subject: CI Pipeline — Sync prompt performance
+Status: Decided
+Title: Micro-sync en test-sync prompts: compilatie/test verboden in sync-stappen
+Decision:
+De micro-sync prompt in 01_sync.sh bevatte de instructie "Ensure all changes
+compile", waardoor Claude Code per sync-groep een volledige xcodebuild test
+draaide — 57 minuten voor één groep. De test-sync prompt had geen expliciete
+beperking. Beide prompts zijn aangescherpt:
+- Micro-sync: "NEVER run xcodebuild, swift build, swift test — CODE CHANGES
+  ONLY." Tevens: "NEVER create or modify test files."
+- Test-sync: "NEVER run xcodebuild build or xcodebuild test — WRITE/UPDATE
+  test code only."
+- Beide: "Be fast: read only the files you need, make targeted edits, finish
+  quickly."
+Rationale: compilatie (02_build.sh) en testen (03_test.sh) zijn aparte
+pipeline-stappen. Claude Code in sync-stappen hoeft alleen code te schrijven.
+Geschatte besparing: 50-70 minuten per full CI run.
+Toekomstige versnellingen (niet geïmplementeerd): parallelle micro-syncs,
+pre-boot simulator parallel met sync, swift build i.p.v. xcodebuild voor
+LinkLookCore.
+Date(s):
+- 2026-03-20
+
 End of document.

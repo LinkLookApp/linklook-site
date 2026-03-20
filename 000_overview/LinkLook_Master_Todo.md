@@ -20,12 +20,12 @@
 
 > **Beslissing 2026-03-20:** LinkLook B.V. oprichten voor aansprakelijkheidsbescherming. Loopt parallel aan development — niet blokkend voor entitlement of App Store submission. Privacy policy wordt bijgewerkt zodra KvK-nummer beschikbaar is.
 
-- [ ] **Stap 1:** Notaris kiezen + afspraak maken (online notarissen zoals Ligo, Firmright, of Notaris.nl zijn snel en goedkoop, ~€400-500)
+- [x] **Stap 1:** Notaris gekozen: UwBVoprichten.nl (Damsté Notarissen), aanvraag ingediend €399, normaal traject, verwacht ~7 april 2026
 - [ ] **Stap 2:** Statuten laten opstellen (notaris doet dit, keuzes: naam "LinkLook B.V.", doel, aandelenstructuur — standaard 1 aandeelhouder/bestuurder is prima)
 - [ ] **Stap 3:** Bankrekening openen op naam van B.V. i.o. (minimaal €0,01 stortingskapitaal)
 - [ ] **Stap 4:** Oprichtingsakte ondertekenen bij notaris → KvK-inschrijving volgt automatisch
-- [ ] **Stap 5:** Vestigingsadres regelen (huisadres of virtueel kantooradres als je huisadres niet in de privacy policy wilt)
-- [ ] **Stap 6:** Na KvK: privacy policy updaten + deployen, Apple Developer account overzetten naar BV
+- [ ] **Stap 5:** Na KvK: privacy policy updaten met BV-naam + KvK-nummer + deployen, Apple Developer account overzetten naar BV
+- [ ] **Stap 6 (post-launch):** Vestigingsadres omzetten van privéadres naar virtueel kantooradres (~€40/maand) → KvK wijzigen + privacy policy updaten
 
 ## NU — Analytics & Crash SDK beslissing
 
@@ -83,6 +83,12 @@
 
 - [ ] Make UI entitlement ready (zie ChatGPT discussie)
 - [x] Inhoud privacy-policy.html en privacy-choices.html reviewen vóór entitlement request — KLAAR (review 2026-03-20, fixes in NU-sectie)
+- [ ] Privacy HTML's finaliseren vóór entitlement:
+  - [ ] Sectie 1: juridische entiteit invullen (zodra BV rond is, of tijdelijke formulering)
+  - [ ] Sectie 9: kinderen-leeftijd "under 13" → "under 16" (NL/EU GDPR)
+  - [ ] Effective date bijwerken naar datum van laatste wijziging
+  - [ ] Laatste leescheck: toon, consistentie, taalfouten
+  - [ ] Deploy naar linklook.app
 - [ ] Fill entitlement form
 - [ ] Set Default app help (zie ChatGPT chat 16 maart)
 - [ ] Test < 18.2 versions op "Default Browser" handling na entitlement
@@ -164,6 +170,7 @@
 
 ## Afgerond (2026-03-20)
 
+- [x] CI sync prompts aangescherpt: compilatie/test verboden in micro-sync en test-sync (MDL-120) — ~50-70 min besparing per CI run
 - [x] App aangemaakt in App Store Connect (LinkLook, com.linklook.app)
 - [x] Privacy Tracker spreadsheet (App_Store_Privacy_Tracker.xlsx)
 - [x] App Store Connect Privacy questionnaire volledig ingevuld en gepubliceerd
