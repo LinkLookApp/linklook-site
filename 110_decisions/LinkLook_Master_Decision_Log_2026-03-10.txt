@@ -1837,4 +1837,21 @@ processes queries but does not persist them as "search history" in Apple's
 definition. Recently visited pages are stored (covered by Browsing History).
 Therefore Search History is not declared.
 
+MDL-119
+Subject: API Strategy — Safe Browsing v4 vs Web Risk
+Status: Decided
+Title: Safe Browsing v4 for dev/TestFlight, Web Risk API for App Store
+Decision:
+Google Safe Browsing v4 (Lookup API) blijft in gebruik voor development en
+TestFlight builds — gratis, geen ToS-conflict bij non-commercieel gebruik.
+Vóór de eerste App Store submission migreren naar Google Web Risk API, de
+door Google aangewezen route voor commerciële apps. Web Risk biedt 100.000
+gratis calls/maand, ruim voldoende tot er daadwerkelijk geschaald wordt.
+Actie: Google Cloud account aanmaken en Web Risk API enablen (kost niks
+tot boven de gratis grens). GSBLookupClient refactoren naar WebRiskClient.
+Migratie-impact is beperkt: protocol is vergelijkbaar (hash-prefix lookup),
+GSBCache kan hergebruikt worden, privacy-impact is identiek.
+Date(s):
+- 2026-03-20
+
 End of document.

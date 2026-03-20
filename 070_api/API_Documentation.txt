@@ -1,6 +1,6 @@
 LINKLOOK — API DOCUMENTATION
-Version: 1.0
-Date: 2026-03-07
+Version: 1.1
+Date: 2026-03-20
 
 Endpoint
 --------
@@ -13,3 +13,56 @@ Request
 Response
 --------
 { "verdict": "SAFE | WARNING | BLOCK" }
+
+================================================================
+GOOGLE THREAT INTELLIGENCE — API STRATEGIE
+================================================================
+
+Overzicht
+---------
+LinkLook gebruikt Google's threat-intelligence voor URL-reputatiechecks.
+Er zijn twee API's beschikbaar met verschillende use cases:
+
+1. Google Safe Browsing v4 API (development + TestFlight)
+2. Google Web Risk API (productie / App Store)
+
+Fasering
+--------
+
+Fase 1 — Development & TestFlight
+  API:       Google Safe Browsing v4 (Lookup API)
+  Kosten:    Gratis, geen limiet voor non-commercieel gebruik
+  Geschikt:  Interne builds, TestFlight beta, development
+  Status:    ACTIEF — huidige implementatie (GSBLookupClient)
+
+Fase 2 — App Store Lancering
+  API:       Google Web Risk API
+  Kosten:    100.000 calls/maand gratis (ruim voldoende voor launch)
+             Daarboven: pay-as-you-go pricing
+  Geschikt:  Commerciële distributie via App Store
+  Reden:     Safe Browsing v4 ToS staan commercieel gebruik niet toe.
+             Web Risk is de door Google aangewezen route voor commerciële apps.
+  Migratie:  Vóór eerste App Store submission
+
+Migratie-impact
+---------------
+- Protocol is vergelijkbaar (hash-prefix lookup), migratie is beperkt
+- GSBLookupClient aanpassen naar WebRiskClient (nieuw endpoint + auth)
+- GSBCache kan hergebruikt worden (zelfde TTL-logica)
+- Privacy-impact: identiek — alleen hash-prefixes worden verstuurd
+- Privacy Policy en Privacy Choices hoeven niet aangepast (Google's
+  Privacy Policy blijft van toepassing, data-type blijft hetzelfde)
+
+Actie
+-----
+- Google Cloud account aanmaken (gratis)
+- Web Risk API enablen in Google Cloud Console (gratis tot 100k calls/maand)
+- API key genereren en opslaan in Secrets.xcconfig als WEB_RISK_API_KEY
+- GSBLookupClient refactoren naar WebRiskClient vóór App Store submission
+- Safe Browsing v4 key behouden voor development/TestFlight builds
+
+Referenties
+-----------
+- Safe Browsing v4: https://developers.google.com/safe-browsing/v4
+- Web Risk API:     https://cloud.google.com/web-risk
+- Web Risk pricing: https://cloud.google.com/web-risk/pricing

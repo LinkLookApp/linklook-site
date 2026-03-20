@@ -7,13 +7,22 @@
 
 ## NU — Privacy & App Store Submission
 
-- [~] App Store Connect Privacy questionnaire invullen — BEZIG
-  - [x] App aangemaakt in App Store Connect (LinkLook, com.linklook.app, SKU: linklook001)
-  - [x] Privacy Tracker spreadsheet gemaakt (App_Store_Privacy_Tracker.xlsx)
-  - [ ] Datatypes aanvinken: Browsing History, Emails or Text Messages, Device ID, Product Interaction, Crash Data, Performance Data
-  - [ ] Per datatype: linked/tracking/doel bevestigen
-  - [ ] Privacy labels reviewen en publiceren
-- [ ] Privacy policy URL invoeren in App Store Connect (https://linklook.app/privacy-policy)
+- [x] App Store Connect Privacy questionnaire invullen — KLAAR
+
+## NU — Analytics & Crash SDK beslissing
+
+- [ ] Beslissen of analytics/crash SDK (Firebase, Crashlytics, Sentry, etc.) nodig is vóór v1.0 release
+- [ ] Zo ja: integreren + App Store Privacy labels updaten (Product Interaction, Crash Data, Performance Data toevoegen)
+
+## NU — Google Web Risk Migratie (vóór App Store)
+
+- [ ] Google Cloud account aanmaken + Web Risk API enablen
+- [ ] Web Risk API key genereren → `Secrets.xcconfig` als `WEB_RISK_API_KEY`
+- [ ] GSBLookupClient refactoren naar WebRiskClient (Web Risk endpoint + auth)
+- [ ] Dual-config: Safe Browsing v4 voor dev/TestFlight, Web Risk voor Release
+- [ ] Smoke test Web Risk integratie (clean URL + known-bad URL)
+
+> **Beslissing 2026-03-20:** Safe Browsing v4 blijft voor development/TestFlight (gratis, geen ToS-issue). Migratie naar Web Risk API vóór App Store lancering — dat is de commercieel conforme route. 100.000 gratis calls/maand dekt ruim tot schaling.
 
 ## NU — Apple Review Readiness
 
@@ -117,7 +126,8 @@
 
 - **Geen login in v1.0** — app blijft laagdrempelig, geen account nodig. Scan-geschiedenis lokaal op device.
 - **Sign in with Apple bij premium/v2.0** — pas wanneer sync, subscriptions of persoonlijke alerts komen.
-- **App Store Privacy v1.0 datatypes:** Browsing History, Emails or Text Messages, Device ID, Product Interaction, Crash Data, Performance Data. Geen data linked to user, geen tracking.
+- **App Store Privacy v1.0 datatypes (definitief):** Browsing History, Emails or Text Messages, Device ID. Alle drie: not linked to user, no tracking, App Functionality.
+- **Product Interaction, Crash Data, Performance Data verwijderd** — geen analytics/crash SDK geïnstalleerd, dus niet declareren. Toevoegen zodra Firebase/Crashlytics/Sentry wordt geïntegreerd.
 - **Emails or Text Messages:** nodig vanwege context-analyse feature (gebruiker plakt tekst uit e-mail/bericht zodat AI de link in context beoordeelt).
 - **Device ID bron:** pseudonieme ID uit AnalysisAuditLogger (niet IDFA, niet persistent na herinstallatie). Gebruikt voor audit logging bij cloud analyse-requests.
 - **Foundation claims alleen bij premium** — verificatie via Sign in with Apple, niet via los e-mailadres. Device ID volstaat niet voor claims; Apple ID geeft sterkere identiteitsverificatie.
@@ -126,6 +136,10 @@
 
 - [x] App aangemaakt in App Store Connect (LinkLook, com.linklook.app)
 - [x] Privacy Tracker spreadsheet (App_Store_Privacy_Tracker.xlsx)
+- [x] App Store Connect Privacy questionnaire volledig ingevuld en gepubliceerd
+  - Datatypes: Browsing History, Emails or Text Messages, Device ID
+  - Privacy Policy URL + Privacy Choices URL ingevuld
+  - Privacy labels gepubliceerd
 
 ## Afgerond (2026-03-19)
 
